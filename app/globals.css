@@ -1,0 +1,291 @@
+/* Identity Labs — hero landing page.
+   Source: Figma "Zoomcast", section 109:897 / frame 109:715 (1280 × 832).
+
+   Layout system
+   ─────────────
+   .frame    1056px column bounded by two vertical rules; 24px inner padding.
+             It is the size container: 100cqw = the content width inside the padding.
+   .golden   golden-ratio construction spanning that content width.
+             ≥960px: horizontal, 1006 × 592 — small column 384 (38.2%) holds the
+             headline, large square 622 (61.8%) holds the body copy.
+             <960px: rotated vertical so the squares stay square; the headline sits
+             in the large square, body copy flows beneath the construction.
+   Type inside the construction scales with the column (--gu = one Figma px at
+   the 1008px reference width), with readable minimums. */
+
+@font-face { font-family: 'Instrument Serif'; src: url('/fonts/instrument-serif-latin-400-normal.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'IBM Plex Mono'; src: url('/fonts/ibm-plex-mono-latin-400-normal.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: 'IBM Plex Mono'; src: url('/fonts/ibm-plex-mono-latin-500-normal.woff2') format('woff2'); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Inter'; src: url('/fonts/inter-latin-wght-normal.woff2') format('woff2'); font-weight: 100 900; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Source Serif 4'; src: url('/fonts/source-serif-4-latin-opsz-normal.woff2') format('woff2'); font-weight: 200 900; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Source Serif 4'; src: url('/fonts/source-serif-4-latin-opsz-italic.woff2') format('woff2'); font-weight: 200 900; font-style: italic; font-display: swap; }
+
+:root {
+  --bg: #2a2c31;
+  --ink: #ebebeb;
+  --body-ink: #b2b2b2;
+  --rule: rgb(130 130 130 / 0.15);
+  --tile: #383f4c;
+  --tile-hover: #3e4656;
+  --accent: #c2551e;
+  --serif: 'Instrument Serif', 'Times New Roman', serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --sans: 'Inter', system-ui, sans-serif;
+  --wordmark: 'Source Serif 4', Georgia, serif;
+
+  --frame-max: 1056px;
+  --pad: 24px;      /* inside the frame rules */
+  --gutter: 24px;   /* outside the frame rules, when the viewport is narrower than the frame */
+  /* Frame width steps: 1056 below 1512w, 1440 from 1512w, 1560 from 1900w (see bottom). */
+
+  --ease-out: cubic-bezier(.2, .8, .2, 1);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--bg); } /* dark shows on top overscroll */
+body { margin: 0; background: transparent; }
+body { color: var(--ink); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
+h1, p, ul { margin: 0; padding: 0; font-weight: inherit; font-size: inherit; }
+img { display: block; max-width: none; }
+a { color: inherit; text-decoration: none; }
+a:focus-visible { outline: 1px solid var(--ink); outline-offset: 4px; border-radius: 2px; }
+::selection { background: var(--accent); color: #fff; }
+
+/* ───────── Surface ───────── */
+/* Fixed page material behind everything: white base, dark paper on top whose opacity
+   follows --theme (0 = dark hero, 1 = white section 2), set from scroll in SectionTwo. */
+.backdrop { position: fixed; inset: 0; z-index: -1; background: #fff; pointer-events: none; }
+.backdrop-dark { position: absolute; inset: 0; background: var(--bg); isolation: isolate; opacity: calc(1 - var(--theme, 0)); }
+.hero { position: relative; min-height: 100svh; overflow: clip; opacity: var(--hero-fade, 1); }
+.texture {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  /* Figma's render of layer 109:727 (alpha 0.48 baked in), color-burned onto the ground. */
+  background: url('/assets/texture.webp') center top / 1280px auto repeat;
+  mix-blend-mode: color-burn;
+}
+
+/* ───────── Frame: 1056 column, 24 padding ───────── */
+.frame {
+  position: relative; z-index: 1;
+  width: min(var(--frame-max), 100% - 2 * var(--gutter));
+  min-height: 100svh;
+  margin-inline: auto;
+  padding: 0 var(--pad);
+  container-type: inline-size;
+  /* One Figma px, grown with the frame (never below 1px). Resolved by descendants against the frame. */
+  --px: max(1px, calc(100cqw / 1008));
+}
+/* The two frame rules: one fixed pair for the whole page, so they run unbroken from
+   the hero into section 2 and change colour with --theme instead of switching. */
+.frame.rails { position: fixed; top: 0; bottom: 0; left: 50%; translate: -50% 0; z-index: 0; min-height: 0; padding: 0; pointer-events: none; }
+.rails::before, .rails::after {
+  content: ''; position: absolute; top: 0; bottom: 0; width: 1px;
+  background: color-mix(in srgb, #e0e0e0 calc(var(--theme, 0) * 100%), rgb(130 130 130 / 0.15));
+  transform-origin: top; animation: draw-y 1400ms var(--ease-out) both;
+}
+.rails::before { left: 0; }
+.rails::after { right: 0; }
+
+/* 12px markers sitting on the frame rules */
+.tick { position: absolute; top: var(--tick-y, 100%); width: 12px; height: 12px; background: var(--rule); translate: -50% -50%; animation: fade 600ms var(--ease-out) 700ms both; pointer-events: none; }
+.tick-l { left: calc(-1 * var(--pad)); }
+.tick-r { left: calc(100% + var(--pad)); }
+
+/* ───────── Header ───────── */
+.site-header { position: relative; display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; height: calc(80 * var(--px)); padding-top: calc(27 * var(--px)); }
+.wordmark {
+  margin-left: calc(9 * var(--px));
+  font-family: var(--wordmark); font-weight: 400; font-optical-sizing: auto;
+  font-size: calc(24.789 * var(--px)); letter-spacing: calc(-1.9831 * var(--px)); line-height: normal; white-space: nowrap; color: var(--ink);
+  animation: rise 700ms var(--ease-out) 120ms both;
+}
+.wordmark .wm-space { letter-spacing: calc(-4.4 * var(--px)); }
+.wordmark em { font-style: italic; }
+.nav { display: flex; gap: calc(34 * var(--px)); margin-right: calc(-5 * var(--px)); padding-top: calc(6 * var(--px)); animation: rise 700ms var(--ease-out) 200ms both; }
+
+/* Rolling text on hover: a second copy slides up into place. */
+.roll { display: inline-block; height: 1.4em; overflow: hidden; font-family: var(--sans); font-weight: 450; font-size: calc(15 * var(--px)); line-height: 1.4; color: var(--ink); white-space: nowrap; }
+.roll-track { display: flex; flex-direction: column; transition: transform 320ms var(--ease-out); }
+.roll-track > span { display: block; height: 1.4em; }
+.roll-track > span + span { color: #fff; }
+.roll:hover .roll-track, .roll:focus-visible .roll-track { transform: translateY(-50%); }
+
+/* ───────── Golden construction ───────── */
+.golden {
+  --gu: calc(100cqw / 1008);
+  position: relative;
+  display: grid;
+  margin-top: calc(26 * var(--px));
+  /* horizontal: small column 384 : large 622; small column rows 366 : 226 */
+  grid-template-columns: 38.17% 61.83%;
+  grid-template-rows: calc(100cqw * 366 / 1006) calc(100cqw * 226 / 1006);
+  --tick-y: calc(100cqw * 366 / 1006);
+}
+.spiral-box { position: absolute; inset: 0; overflow: visible; pointer-events: none; user-select: none; }
+.spiral {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  transform: scaleX(-1);
+  /* Revealed outward from the spiral's eye (unmirrored artwork coordinates). */
+  animation: reveal 1800ms var(--ease-out) 150ms both;
+}
+.cell { position: relative; min-width: 0; }
+.cell-small { grid-column: 1; grid-row: 1; padding: calc(30 * var(--gu)) 0 0 calc(23 * var(--gu)); }
+.cell-large { grid-column: 2; grid-row: 1 / span 2; padding: calc(30 * var(--gu)) 0 0 calc(48 * var(--gu)); }
+
+.headline {
+  max-width: calc(353 * var(--gu));
+  font-family: var(--serif); font-weight: 400;
+  font-size: max(30px, calc(36 * var(--gu))); line-height: 1; letter-spacing: -0.01em;
+  color: var(--ink); text-wrap: pretty;
+}
+/* Word mask reveal */
+.headline .w { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.16em; margin-bottom: -0.16em; }
+.headline .wi { display: inline-block; animation: word 950ms var(--ease-out) var(--d, 0ms) both; }
+
+.body-copy {
+  display: flex; flex-direction: column;
+  width: calc(530 * var(--gu)); max-width: 100%;
+  gap: max(16px, calc(20 * var(--gu)));
+  padding-block: calc(6 * var(--gu));
+  font-family: var(--mono); font-weight: 400;
+  font-size: max(13px, calc(15 * var(--gu))); line-height: 1.4;
+  text-transform: uppercase; color: var(--body-ink); text-wrap: pretty;
+}
+.body-copy ul { list-style: none; margin-top: 1.4em; }
+.body-copy li { position: relative; padding-left: 1.2em; }
+.body-copy li::before { content: '\2022'; position: absolute; left: 0.3em; }
+.rise { animation: rise 800ms var(--ease-out) var(--d, 0ms) both; }
+
+/* ───────── Client logos ───────── */
+.clients { position: relative; margin-top: calc(31 * var(--px)); padding-bottom: calc(45 * var(--px)); --tick-y: calc(100% - 25 * var(--px)); }
+.logo-grid { list-style: none; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: calc(7.4628 * var(--px)); }
+.tile {
+  position: relative; overflow: clip;
+  display: flex; align-items: center; justify-content: center;
+  height: calc(57 * var(--px)); background: var(--tile);
+  transition: background-color 160ms var(--ease-out);
+  animation: rise 700ms var(--ease-out) var(--d, 0ms) both;
+}
+.tile:hover { background-color: var(--tile-hover); }
+.logo { position: relative; display: block; flex: none; width: calc(var(--w) * var(--px)); height: calc(var(--h) * var(--px)); overflow: clip; }
+.part { position: absolute; display: block; }
+.part > img { position: absolute; inset: 0; width: 100%; height: 100%; }
+.lv {
+  position: absolute; display: block;
+  -webkit-mask: url('/assets/lovable-mask.svg') no-repeat;
+  mask: url('/assets/lovable-mask.svg') no-repeat;
+  mask-mode: alpha;
+  -webkit-mask-position: calc(var(--mx) * var(--px)) calc(var(--my) * var(--px)); mask-position: calc(var(--mx) * var(--px)) calc(var(--my) * var(--px));
+  -webkit-mask-size: calc(14.369 * var(--px)) calc(14.348 * var(--px)); mask-size: calc(14.369 * var(--px)) calc(14.348 * var(--px));
+}
+/* Glow overlay (Figma "image 502"): 50% color-burn, sized relative to the tile. */
+.glow { position: absolute; left: calc(-35.047 * var(--px)); top: calc(-4.266 * var(--px)); width: calc(100% + 71.63 * var(--px)); height: calc(100% + 6.967 * var(--px)); object-fit: cover; opacity: 0.5; mix-blend-mode: color-burn; pointer-events: none; }
+
+/* ───────── Fit to viewport height (horizontal layout) ─────────
+   The whole composition is 832 units tall per 1008 units of content width,
+   so the frame is also capped by height: content ≤ 100svh × 1008 / 832.
+   880px floor keeps type readable on very short windows (page scrolls there). */
+@media (min-width: 960px) {
+  .frame { width: max(880px, min(var(--frame-max), 100% - 2 * var(--gutter), 100svh * 1008 / 832 + 2 * var(--pad))); }
+  /* Header and logo strip scale with the frame in both directions here, so the whole composition fits. */
+  .frame { --px: calc(100cqw / 1008); }
+}
+
+/* ───────── Wide screens: larger frame ───────── */
+@media (min-width: 1512px) { :root { --frame-max: 1440px; } }
+@media (min-width: 1900px) { :root { --frame-max: 1560px; } }
+
+/* ───────── Vertical construction (<960px) ───────── */
+@media (max-width: 959px) {
+  :root { --gutter: 16px; }
+  .golden {
+    /* construction rotated: large square on top (W × 1.0507W), small rectangle below (W × 0.6486W), then the copy */
+    grid-template-columns: 100%;
+    grid-template-rows: calc(100cqw * 622 / 592) calc(100cqw * 384 / 592) auto;
+    --tick-y: calc(100cqw * 622 / 592);
+  }
+  .spiral-box { inset: 0 0 auto 0; height: calc(100cqw * 1006 / 592); }
+  .spiral {
+    inset: auto; left: 50%; top: 50%;
+    width: calc(100% * 1006 / 592); height: calc(100% * 592 / 1006);
+    transform: translate(-50%, -50%) rotate(90deg);
+  }
+  .cell-small { grid-column: 1; grid-row: 1; padding: 24px 24px 0; }
+  .cell-large { grid-column: 1; grid-row: 3; padding: 40px 0 0; }
+  .headline { max-width: 12em; font-size: clamp(30px, 7.2cqw, 54px); }
+  .body-copy { width: auto; max-width: 600px; font-size: 14px; gap: 20px; padding-block: 0; }
+  .logo-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .clients { margin-top: 40px; padding-bottom: 45px; }
+}
+
+@media (max-width: 559px) {
+  :root { --gutter: 10px; }
+  .nav { gap: 22px; margin-right: 0; }
+  .wordmark { margin-left: 0; }
+  .body-copy { font-size: 13px; }
+  .logo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ───────── Section 2 · Algorithm research (white, pinned) ─────────
+   Figma 110:920 / 110:898. Same frame system as the hero, light palette. */
+.s2 { position: relative; }
+.s2-stage { position: sticky; top: 0; height: 100svh; overflow: clip; }
+.s2-frame { --rule: #e0e0e0; display: grid; grid-template-rows: auto 1fr auto; height: 100svh; min-height: 0; margin-inline: auto; }
+/* Chrome stays hidden until the stage has pinned, then glitches / fades in place. */
+.s2-frame .tick { background: #d9d9d9; animation: none; opacity: 0; transition: opacity 400ms var(--ease-out); }
+.s2-header .wordmark { color: #4a4a4a; animation: none; opacity: 0; transition: opacity 500ms var(--ease-out); }
+.s2[data-chrome] .s2-frame .tick, .s2[data-chrome] .s2-header .wordmark { opacity: 1; }
+.s2-menu { padding-top: calc(6 * var(--px)); font-family: var(--sans); font-weight: 450; font-size: calc(15 * var(--px)); line-height: 1.4; color: #737373; transition: color 160ms var(--ease-out); }
+.s2-menu:hover { color: #1f1f1f; }
+
+.s2-part1, .s2-part2 { grid-row: 2; grid-column: 1; min-height: 0; }
+.s2-part1 {
+  align-self: center; justify-self: center;
+  display: flex; flex-direction: column; gap: calc(20 * var(--px));
+  width: min(100%, calc(512 * var(--px)));
+  font-family: var(--mono); font-size: max(12px, calc(12 * var(--px))); line-height: 1.5;
+  text-transform: uppercase; text-align: center; color: #1f1f1f; text-wrap: pretty;
+}
+.s2-part2 { position: relative; display: grid; grid-template-rows: auto 1fr; }
+.s2-part2 .pipe { align-self: center; position: relative; opacity: 0; transition: opacity 600ms var(--ease-out); }
+.s2[data-part2] .s2-part2 .pipe { opacity: 1; transition-delay: 120ms; }
+.s2-part2 svg { display: block; width: 100%; height: auto; aspect-ratio: 1200 / 560; overflow: hidden; }
+
+/* Step label: the current step glitches out and the next one glitches in. */
+.s2-steps {
+  display: flex; gap: calc(6 * var(--px)); align-items: flex-start;
+  padding-top: calc(28 * var(--px)); min-height: calc((28 + 36) * var(--px));
+  width: min(100%, calc(300 * var(--px)));
+  font-family: var(--mono); font-size: max(12px, calc(12 * var(--px))); line-height: 1.5;
+  text-transform: uppercase; color: #1f1f1f; text-wrap: pretty;
+}
+.s2-num { flex: none; min-width: calc(12 * var(--px)); }
+
+/* Glitch text states (see components/Glitch.tsx) */
+.glitch .g-h { color: transparent; }
+.glitch .g-s { color: #a4a49f; }
+.glitch .g-b { color: #2f6bff; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+.s2-foot {
+  position: relative; display: flex; justify-content: space-between;
+  padding-bottom: calc(55 * var(--px));
+  font-family: var(--mono); font-size: max(12px, calc(12 * var(--px))); line-height: normal; color: #4a4a4a;
+  --tick-y: calc(100% - 26 * var(--px));
+}
+
+/* ───────── Motion ───────── */
+@keyframes draw-y { from { transform: scaleY(0); } }
+@keyframes fade { from { opacity: 0; } }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } }
+@keyframes word { from { transform: translateY(110%); } }
+@keyframes reveal {
+  from { clip-path: circle(0% at 70.85% 70.93%); }
+  to { clip-path: circle(150% at 70.85% 70.93%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; }
+  .roll-track { transition: none; }
+}
