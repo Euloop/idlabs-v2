@@ -249,8 +249,8 @@ a:focus-visible { outline: 1px solid var(--ink); outline-offset: 4px; border-rad
 .s2-part1, .s2-part2 { min-height: 0; }
 .s2-part1 {
   align-self: center; justify-self: center;
-  display: flex; flex-direction: column; gap: calc(20 * var(--px));
-  width: min(100%, calc(512 * var(--px)));
+  display: flex; flex-direction: column; gap: 20px;
+  width: min(100%, 512px);
   font-family: var(--mono); font-size: 12px; line-height: 1.5;
   text-transform: uppercase; text-align: center; color: #1f1f1f; text-wrap: pretty;
 }
@@ -260,13 +260,13 @@ a:focus-visible { outline: 1px solid var(--ink); outline-offset: 4px; border-rad
 
 /* Step label: the current step glitches out and the next one glitches in. */
 .s2-steps {
-  display: flex; gap: calc(6 * var(--px)); align-items: flex-start;
+  display: flex; gap: 6px; align-items: flex-start;
   padding-top: calc(28 * var(--px)); min-height: calc((28 + 36) * var(--px));
-  width: min(100%, calc(300 * var(--px)));
+  width: min(100%, 300px);
   font-family: var(--mono); font-size: 12px; line-height: 1.5;
   text-transform: uppercase; color: #1f1f1f; text-wrap: pretty;
 }
-.s2-num { flex: none; min-width: calc(12 * var(--px)); }
+.s2-num { flex: none; min-width: 12px; }
 
 /* Glitch text states (see components/Glitch.tsx) */
 .glitch .g-h { color: transparent; }
