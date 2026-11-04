@@ -7,17 +7,23 @@ import './pipeline/pipeline.css';
 
 /* Section 2 — Algorithm research. Figma 110:920 (part 1) and 110:898 (part 2).
 
-   Transition from the hero: the page material fades dark → white while the hero
-   leaves. Nothing of this section is shown until its stage has pinned at the top;
-   then its chrome and text glitch in. Scroll budget (viewport heights beyond the pin):
+   Transition from the hero: this section starts one viewport early (pulled up under
+   the hero) so its stage is already pinned while the hero scrolls away above it.
+   The page fades dark → white; once the hero has faded out (theme ≥ 0.45, hero's bottom
+   edge near mid-screen) the chrome and part 1 glitch in, so there is never an empty
+   screen and nothing slides in from below.
+   Scroll budget (viewport heights after the hero has left):
      0    → 0.7   part 1 holds
-     0.7  → 1.2   hand-over: part 1 glitches out, part 2 glitches in
-     1.2  → 5.6   the pipeline diagram is scrubbed: overview → sourcing → scoring → selection → overview
-     5.6  → 6.0   hold, then the pin releases                                                    */
+     0.7  → 0.8   part 1 glitches out while the diagram starts to build (no empty beat)
+     0.8  → 1.8   the diagram builds in, scrubbed: a soft left→right wipe in the direction
+                  posts travel (all posts → funnel → feed); the step label glitches in midway
+     1.8  → 6.2   the camera is scrubbed: overview → sourcing → scoring → selection → overview
+     6.2  → 6.6   hold, then the pin releases                                              */
 const HOLD = 0.7;
-const SWAP = 0.5;
+const GAP = 0.1;
+const BUILD = 1.0;
 const DIAGRAM = 4.4;
-const TOTAL = 6;
+const TOTAL = 6.6;
 
 /* Step 1 copy is from Figma. Steps 2 and 3 are draft copy — replace when final. */
 const STEPS = [
@@ -64,19 +70,22 @@ export default function SectionTwo() {
       root.style.setProperty('--hero-fade', clamp(1 - theme / 0.45).toFixed(3));
 
       const r = section.getBoundingClientRect();
-      const d = clamp(-r.top / Math.max(1, r.height - vh)) * TOTAL;
-      const swap = clamp((d - HOLD) / SWAP);
+      // d = viewport heights scrolled since the hero fully left (negative while it is leaving).
+      const d = Math.min(TOTAL, (-r.top - vh) / vh);
+      const build = clamp((d - HOLD - GAP) / BUILD);
+      section.style.setProperty('--build', smooth(build).toFixed(4));
       const pinned = r.top <= 1 && r.bottom >= vh - 1;
+      const arrived = pinned && theme >= 0.45;
 
-      const target = clamp((d - HOLD - SWAP) / DIAGRAM);
+      const target = clamp((d - HOLD - GAP - BUILD) / DIAGRAM);
       smoothed += (target - smoothed) * 0.16;
       if (Math.abs(target - smoothed) < 0.0005) smoothed = target;
 
       const ci = pipe.chapter(smoothed);
       const next: View = {
-        chrome: pinned,
-        part1: pinned && swap < 0.3,
-        part2: pinned && swap > 0.6,
+        chrome: arrived,
+        part1: arrived && d < HOLD,
+        part2: arrived && build > 0.45,
         step: ci <= 1 ? 0 : ci === 2 ? 1 : 2,
       };
       if (next.chrome !== last.chrome || next.part1 !== last.part1 || next.part2 !== last.part2 || next.step !== last.step) {
@@ -84,7 +93,7 @@ export default function SectionTwo() {
         setView(next);
       }
 
-      if (swap > 0.4) {
+      if (build > 0) {
         // Narrow screens: zoom the camera in inside each stage so labels stay legible.
         const boost = Math.max(1, 760 / Math.max(1, svg.clientWidth));
         pipe.render(reduce.matches ? 0 : (now - start) / 1000, smoothed, boost);
@@ -125,8 +134,7 @@ export default function SectionTwo() {
       className="s2"
       aria-label="Algorithm research"
       data-chrome={chrome || undefined}
-      data-part2={part2 || undefined}
-      style={{ height: `${(TOTAL + 1) * 100}svh` }}
+      style={{ height: `${(TOTAL + 2) * 100}svh` }}
     >
       <div className="s2-stage">
         <div className="frame s2-frame">
