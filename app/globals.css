@@ -234,12 +234,13 @@ a:focus-visible { outline: 1px solid var(--ink); outline-offset: 4px; border-rad
 .hero { z-index: 2; }
 .s2 { position: relative; z-index: 1; margin-top: -100svh; }
 .s2-stage { position: sticky; top: 0; height: 100svh; overflow: clip; }
+/* All section 2 text is a fixed 12px (wordmark excepted — it is the logo). */
 .s2-frame { --rule: #e0e0e0; display: grid; grid-template-rows: auto 1fr auto; height: 100svh; min-height: 0; margin-inline: auto; }
 /* Chrome stays hidden until the stage has pinned, then glitches / fades in place. */
 .s2-frame .tick { background: #d9d9d9; animation: none; opacity: 0; transition: opacity 400ms var(--ease-out); }
 .s2-header .wordmark { color: #4a4a4a; animation: none; opacity: 0; transition: opacity 500ms var(--ease-out); }
 .s2[data-chrome] .s2-frame .tick, .s2[data-chrome] .s2-header .wordmark { opacity: 1; }
-.s2-menu { padding-top: calc(6 * var(--px)); font-family: var(--sans); font-weight: 450; font-size: calc(15 * var(--px)); line-height: 1.4; color: #737373; transition: color 160ms var(--ease-out); }
+.s2-menu { padding-top: calc(6 * var(--px)); font-family: var(--sans); font-weight: 450; font-size: 12px; line-height: 1.4; color: #737373; transition: color 160ms var(--ease-out); }
 .s2-menu:hover { color: #1f1f1f; }
 
 /* Band between header and footer; parts 1 and 2 are stacked in a track that moves 1:1 with scroll. */
@@ -250,7 +251,7 @@ a:focus-visible { outline: 1px solid var(--ink); outline-offset: 4px; border-rad
   align-self: center; justify-self: center;
   display: flex; flex-direction: column; gap: calc(20 * var(--px));
   width: min(100%, calc(512 * var(--px)));
-  font-family: var(--mono); font-size: max(12px, calc(12 * var(--px))); line-height: 1.5;
+  font-family: var(--mono); font-size: 12px; line-height: 1.5;
   text-transform: uppercase; text-align: center; color: #1f1f1f; text-wrap: pretty;
 }
 .s2-part2 { position: relative; display: grid; grid-template-rows: auto 1fr; }
@@ -262,7 +263,7 @@ a:focus-visible { outline: 1px solid var(--ink); outline-offset: 4px; border-rad
   display: flex; gap: calc(6 * var(--px)); align-items: flex-start;
   padding-top: calc(28 * var(--px)); min-height: calc((28 + 36) * var(--px));
   width: min(100%, calc(300 * var(--px)));
-  font-family: var(--mono); font-size: max(12px, calc(12 * var(--px))); line-height: 1.5;
+  font-family: var(--mono); font-size: 12px; line-height: 1.5;
   text-transform: uppercase; color: #1f1f1f; text-wrap: pretty;
 }
 .s2-num { flex: none; min-width: calc(12 * var(--px)); }
@@ -276,7 +277,7 @@ a:focus-visible { outline: 1px solid var(--ink); outline-offset: 4px; border-rad
 .s2-foot {
   position: relative; display: flex; justify-content: space-between;
   padding-bottom: calc(55 * var(--px));
-  font-family: var(--mono); font-size: max(12px, calc(12 * var(--px))); line-height: normal; color: #4a4a4a;
+  font-family: var(--mono); font-size: 12px; line-height: normal; color: #4a4a4a;
   --tick-y: calc(100% - 26 * var(--px));
 }
 
