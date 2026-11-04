@@ -21,7 +21,7 @@ Rules draw down, spiral reveals outward from its eye, headline words rise throug
 - Frame rules are one fixed `.frame.rails` pair for the whole page; colour follows `--theme`, so they run unbroken across the transition.
 - Section 2 chrome/text stay hidden until the stage pins, then appear with `components/Glitch.tsx` (decode from random glyphs, accent-blue flicker, left→right; reverse on exit; no layout shift; reduced-motion = plain toggle).
 - Page material is a fixed `.backdrop` (white base + dark paper layer). `--theme` 0→1 fades the dark paper as the hero leaves.
-- Section is `700svh` tall with a sticky stage: part 1 holds 0.7vh, hands over (part 1 out, then part 2 in), the diagram scrubs over 4.4vh, short hold, release.
+- Section starts one viewport early under the hero (pinned stage). After the hero leaves: part 1 holds 0.7vh, then a plain 1:1 scroll inside the band between header and footer (part 1 up and out, diagram up into the centre), then the diagram pins and the camera scrubs over 4.4vh, 0.4vh hold, release.
 - Diagram: `components/pipeline/engine.js` is v26 from the supplied `x-for-you-pipeline.html` (original kept in `ref/`), with only the helpers it uses. Changes: lookups scoped to its `<svg>`, a zoom boost on narrow screens (applied inside stages only), and in-SVG chapter label/dots removed (page renders the step label). Styles are scoped under `.pipe`; fonts mapped to IBM Plex Mono / Inter.
 - Step copy 2 and 3 in `SectionTwo.tsx` is draft — replace with final copy.
 - In dev, open http://localhost:3000 (Next 16 blocks dev scripts on 127.0.0.1).
