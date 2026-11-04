@@ -86,7 +86,7 @@ export default function SectionTwo() {
       const arrived = pinned && theme >= 0.45;
 
       const target = clamp((s - hold - band) / (DIAGRAM * vh));
-      smoothed += (target - smoothed) * 0.16;
+      smoothed += (target - smoothed) * 0.3; // light: Lenis already smooths the scroll itself
       if (Math.abs(target - smoothed) < 0.0005) smoothed = target;
 
       const ci = pipe.chapter(smoothed);

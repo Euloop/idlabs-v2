@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from 'next';
+import SmoothScroll from '../components/SmoothScroll';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -17,7 +18,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <link rel="preload" href="/fonts/instrument-serif-latin-400-normal.woff2" as="font" type="font/woff2" crossOrigin="" />
         <link rel="preload" href="/fonts/ibm-plex-mono-latin-400-normal.woff2" as="font" type="font/woff2" crossOrigin="" />
       </head>
-      <body>{children}</body>
+      <body><SmoothScroll />{children}</body>
     </html>
   );
 }
