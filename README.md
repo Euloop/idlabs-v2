@@ -5,7 +5,7 @@ File key `aWd28sY1hrq3jdhoRdAlku`.
 
 - `npm run dev` → http://localhost:3000
 - `npm run build` → static site in `out/`
-- Page: `app/page.tsx`; logo strip: `components/ClientLogos.tsx`; styles: `app/globals.css`; assets and fonts: `public/`.
+- Page: `app/page.tsx` (live, iterate here); `/temp` (`app/temp/page.tsx`) is a frozen, self-contained snapshot of Section 2 v1 (`components/snapshots/v1/`, classes `s2v1-*` / `.pipe-v1`, commit 18b8973) — don't edit it; logo strip: `components/ClientLogos.tsx`; styles: `app/globals.css`; assets and fonts: `public/`.
 
 ## Layout system
 - `.frame`: 1056px column between the two vertical rules, 24px inner padding; it is the size container (`100cqw` = content width).

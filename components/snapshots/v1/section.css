@@ -1,0 +1,70 @@
+/* SNAPSHOT v1 (frozen 2026-11-05) — Section 2 styles copied from app/globals.css, classes renamed s2v1-*. */
+/* ───────── Section 2 · Algorithm research (white, pinned) ─────────
+   Figma 110:920 / 110:898. Same frame system as the hero, light palette. */
+/* Pulled up one viewport so the stage is pinned beneath the hero while it leaves.
+   The hero (transparent) paints above it. */
+.hero { z-index: 2; }
+.s2v1 { position: relative; z-index: 1; margin-top: 0; } /* standalone page: no hero above it */
+.s2v1-stage { position: sticky; top: 0; height: 100svh; overflow: clip; }
+/* All section 2 text is a fixed 12px (wordmark excepted — it is the logo). */
+.s2v1-frame { --rule: #e0e0e0; display: grid; grid-template-rows: auto 1fr auto; height: 100svh; min-height: 0; margin-inline: auto; }
+/* Chrome stays hidden until the stage has pinned, then glitches / fades in place. */
+.s2v1-frame .tick { background: #d9d9d9; animation: none; opacity: 0; transition: opacity 400ms var(--ease-out); }
+.s2v1-header .wordmark { color: #4a4a4a; animation: none; opacity: 0; transition: opacity 500ms var(--ease-out); }
+.s2v1[data-chrome] .s2v1-frame .tick, .s2v1[data-chrome] .s2v1-header .wordmark { opacity: 1; }
+.s2v1-menu { padding-top: calc(6 * var(--px)); font-family: var(--sans); font-weight: 450; font-size: 12px; line-height: 1.4; color: #737373; transition: color 160ms var(--ease-out); }
+.s2v1-menu:hover { color: #1f1f1f; }
+
+/* Band between header and footer; parts 1–3 share one grid cell and swap in place (pinned). */
+.s2v1-window { grid-row: 2; min-height: 0; overflow: clip; position: relative; display: grid; }
+.s2v1-part1, .s2v1-part2, .s2v1-part3 { grid-area: 1 / 1; min-height: 0; }
+.s2v1-part1 {
+  align-self: center; justify-self: center;
+  display: flex; flex-direction: column; gap: 20px;
+  width: min(100%, 512px);
+  font-family: var(--mono); font-size: 12px; line-height: 1.5;
+  text-transform: uppercase; text-align: center; color: #1f1f1f; text-wrap: pretty;
+}
+/* Part 3: glitches in after the diagram fades (see SectionTwo.tsx). */
+.s2v1-part3 {
+  align-self: center; justify-self: center; margin: 0;
+  width: min(100%, 448px);
+  font-family: var(--mono); font-size: 12px; line-height: 1.4;
+  text-transform: uppercase; text-align: center; color: #1f1f1f; text-wrap: pretty;
+}
+.s2v1-part2 { position: relative; display: grid; }
+.s2v1-part2 .pipe-v1 { align-self: center; position: relative; }
+.s2v1-part2 svg { display: block; width: 100%; height: auto; aspect-ratio: 1200 / 560; overflow: hidden; }
+
+/* Step label, top left: the current step glitches out and the next one glitches in. */
+.s2v1-part2 { grid-template-rows: auto 1fr; }
+.s2v1-steps {
+  display: flex; gap: 6px; align-items: flex-start;
+  padding-top: calc(28 * var(--px)); min-height: calc((28 + 36) * var(--px));
+  width: min(100%, 300px);
+  font-family: var(--mono); font-size: 12px; line-height: 1.5;
+  text-transform: uppercase; color: #1f1f1f; text-wrap: pretty;
+}
+.s2v1-num { flex: none; min-width: 12px; }
+
+/* Notes over the diagram (positions in SVG units, from pipeline/engine.js). */
+.s2v1-notes { position: absolute; inset: 0; pointer-events: none; }
+.s2v1-note {
+  position: absolute;
+  font-family: var(--mono); font-size: 12px; line-height: 1.4;
+  text-transform: uppercase; color: #4a4a4a; text-wrap: pretty;
+}
+
+/* Glitch text states (see components/Glitch.tsx) */
+.glitch .g-h { color: transparent; }
+.glitch .g-s { color: #a4a49f; }
+.glitch .g-b { color: #2f6bff; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+.s2v1-foot {
+  position: relative; display: flex; justify-content: space-between;
+  padding-bottom: calc(55 * var(--px));
+  font-family: var(--mono); font-size: 12px; line-height: normal; color: #4a4a4a;
+  --tick-y: calc(100% - 26 * var(--px));
+}
+
