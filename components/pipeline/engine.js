@@ -55,7 +55,11 @@ function v7Sourcing(){
   S+=outl(ca,'pl')+TT(cx,476,'ALL POSTS','cp')+TT(SX,138,'THUNDER','cp')+TT(SX,446,'PHOENIX','cp');
   const quad=(a,c,b)=>'M'+R1(a[0])+' '+R1(a[1])+'Q'+R1(c[0])+' '+R1(c[1])+' '+R1(b[0])+' '+R1(b[1]);
   const LY=ca.cy+ca.H/2+ca.W*.15+24,L=10;
-  return {st:S,dyn:t=>{const ph=((t%L)+L)%L/L,f=clamp(ph*2.6),fillN=Math.floor(f*48),a=ang(t),PP=P.map(p=>pj(p,a)),flow=ph<.4;let s='';
+  /* highlighted post (scrubbed, q 0 → 1): appears on the globe, goes out of network via
+     Phoenix, lands in grid cell HI, is hydrated and survives the filter */
+  const HI=21,HP0=[390,345],HC=[488,418];
+  const anchors={post:HP0,live:HP0,phoenix:[SX+14,PY+24],node:[ca.n[HI].x,ca.n[HI].y]};
+  return {st:S,anchors,dyn:(t,q)=>{const SCRUB=q!==undefined,ph=SCRUB?q*.86:((t%L)+L)%L/L,f=clamp(ph*2.6),fillN=Math.floor(f*48),a=ang(t),PP=P.map(p=>pj(p,a)),flow=ph<.4;let s='';
     PP.forEach((q,i)=>{if(capOf[i]>=0){if(q.f>0)s+=XP(q.x,q.y,2.2,'xs');}else s+=DOT(q.x,q.y,q.f>0?1.1:.8,q.f>0?'tg':'dt');});
     CAP.forEach((c,k)=>{const q=pj(c,a);if(q.f<=.05)return;const cc=[(q.x+TIN[0])/2,Math.min(q.y,TIN[1])-40];
       s+='<path class="e3" d="'+quad([q.x,q.y],cc,TIN)+'"/>';if(flow)for(let j=0;j<2;j++){const u=(t*.35+j*.5+k*.17)%1,pp=qb([q.x,q.y],cc,TIN,u);s+=XP(pp[0],pp[1],2.4,'x');}});
@@ -63,12 +67,21 @@ function v7Sourcing(){
       s+='<path class="e3" d="'+quad([q.x,q.y],cc,PIN)+'"/>'+DOT(q.x,q.y,2.4,'tg');if(flow){const u=(t*.35+j*.29)%1,pp=qb([q.x,q.y],cc,PIN,u);s+=DOT(pp[0],pp[1],2,'tg');}});
     if(flow)for(let j=0;j<3;j++){const u=(t*.45+j/3)%1;s+=XP(lerp(TO.x,sheetIn[0].x,u),lerp(TO.y,sheetIn[0].y,u),2.4,'x');const v=(t*.45+j/3+.16)%1;s+=DOT(lerp(PO.x,sheetIn[1].x,v),lerp(PO.y,sheetIn[1].y,v),2,'tg');}
     const fo=ease(seg(ph,.68,.8));
-    ca.n.forEach((q,i)=>{if((i*29)%48>=fillN){s+=i%2?DOT(q.x,q.y,1.6,'dt'):XP(q.x,q.y,3.5,'xg');return;}
+    ca.n.forEach((q,i)=>{if(SCRUB&&i===HI&&q.live)return;if((i*29)%48>=fillN){s+=i%2?DOT(q.x,q.y,1.6,'dt'):XP(q.x,q.y,3.5,'xg');return;}
       const h=ease(seg(ph,hyT(i),hyT(i)+.05)),gone=REM.indexOf(i)>=0;
       if(h<=0){s+=i%2?DOT(q.x,q.y,2.6,'tg'):XP(q.x,q.y,4.5,'x');return;}
       const cls=gone&&fo>0?'xg':'x',op=gone?1-.75*fo:1;
       if(i%2&&h<1)s+=DOT(q.x,q.y,2.6*(1-h),'tg');
       s+='<g opacity="'+R1((i%2?h:1)*op*10)/10+'">'+XR(q.x,q.y,4.5,(i%2?Math.PI/4:h*Math.PI/4),cls)+'</g>';});
+    if(SCRUB){const n=ca.n[HI];let p=null;
+      if(q>=.04&&q<.14)p=HP0;
+      else if(q>=.14&&q<.3)p=qb(HP0,HC,PIN,ease(seg(q,.14,.3)));
+      else if(q>=.3&&q<.36){const v=seg(q,.3,.36);p=[lerp(PIN[0],PO.x,v),lerp(PIN[1],PO.y,v)];}
+      else if(q>=.36&&q<.46)p=along([[PO.x,PO.y],[sheetIn[1].x,sheetIn[1].y],[n.x,n.y]],ease(seg(q,.36,.46)));
+      anchors.live=p||(q>=.46?[n.x,n.y]:HP0);
+      if(p)s+='<circle class="hr" cx="'+R1(p[0])+'" cy="'+R1(p[1])+'" r="7"/>'+DOT(p[0],p[1],3,'hb');
+      if(q>=.46){const h=ease(seg(ph,hyT(HI),hyT(HI)+.05));
+        s+='<circle class="hr" cx="'+R1(n.x)+'" cy="'+R1(n.y)+'" r="9"/>'+(h<=0?DOT(n.x,n.y,3,'hb'):XR(n.x,n.y,5,Math.PI/4,'xb'));}}
     const st=ph<.42?0:ph<.66?1:2;
     s+=TT(ca.cx-62,LY,'COLLECT','cp'+(st===0?' on':''))+TT(ca.cx,LY,'HYDRATE','cp'+(st===1?' on':''))+TT(ca.cx+62,LY,'FILTER','cp'+(st===2?' on':''));
     const T=st===0?[Math.round(f*1500).toLocaleString('en-US'),'CANDIDATES']:st===1?['+3','HYDRATED']:['×','FILTERED'];
@@ -88,7 +101,10 @@ function v10Scoring(){
   const post=k=>{const r=j=>fr(k*.618+j*.377+.13);return {i:(k*5+2)%6,a:(k*3+1)%8,b:(k*5+4)%8,
     v:[.06+.12*r(1),.01+.04*r(2),.01+.03*r(3),.02+.05*r(4),.002+.008*r(5)],S:.45+.5*r(6),rep:k%3===2};};
   const f2=v=>v<.01?v.toFixed(3).slice(1):v.toFixed(2).slice(1);
-  return {st:S,dyn:t=>{let s='',atHead=null,atSig=null,atDiv=null;const k0=Math.floor(t/SP);
+  /* scrubbed (U 0 → 1): only post 0 runs, drawn as the highlighted post */
+  const anchors={post:[IN[2].x,IN[2].y],heads:[HD[4].x,HD[4].y],sigma:[SG.x,SG.y-16],div:[DV.x,DV.y-16]};
+  return {st:S,anchors,dyn:(t,U)=>{const SCRUB=U!==undefined,mc=SCRUB?'xb':'x';if(SCRUB)t=U*D;let s='',atHead=null,atSig=null,atDiv=null;const k0=Math.floor(t/SP);
+    if(SCRUB&&U<.08)s+='<circle class="hr" cx="'+IN[2].x+'" cy="'+IN[2].y+'" r="9"/>';
     for(let k=k0;k>k0-Math.ceil(D/SP)-1;k--){if(k<0)continue;const u=(t-k*SP)/D;if(u<0||u>1)continue;const p=post(k);
       const A=IN[p.i],B=C1[p.a],Cn=C2[p.b],op=1-seg(u,.78,.95),grow=(u0,u1)=>seg(u,u0,u1);
       let g='',m=null;
@@ -107,8 +123,8 @@ function v10Scoring(){
       if(u>=.6&&u<.74&&!atSig)atSig=p;
       if(u>=.7&&u<.86&&!atDiv)atDiv=p;
       if(u>=.7){const x=lerp(DV.x,EX,ease(seg(u,.8,1)));if(u>=.8)m=[x,DV.y];}
-      if(m&&!(u>=.46&&u<.8))s+=XR(m[0],m[1],4.5,Math.PI/4,'x');
-      else if(m&&u>=.8)s+='<g opacity="'+R1((1-seg(u,.92,1))*10)/10+'">'+XR(m[0],m[1],4.5,Math.PI/4,'x')+'</g>';}
+      if(m&&!(u>=.46&&u<.8))s+=XR(m[0],m[1],4.5,Math.PI/4,mc);
+      else if(m&&u>=.8)s+='<g opacity="'+R1((1-seg(u,.92,1))*10)/10+'">'+XR(m[0],m[1],4.5,Math.PI/4,mc)+'</g>';}
     if(atHead)HD.forEach((q,i)=>s+=DOT(q.x,q.y,2.2,'tg')+TT(q.x+92,q.y+4,f2(atHead.v[i]),'hv','start'));
     if(atSig)s+=DOT(SG.x,SG.y,20,'oc2')+TT(SG.x,SG.y+42,'S = '+atSig.S.toFixed(2),'sv');
     if(atDiv){const f=atDiv.rep?.55:1;s+=DOT(DV.x,DV.y,20,'oc2')+TT(DV.x,DV.y+42,'× '+f.toFixed(2),'sv')+TT(DV.x,DV.y+58,atDiv.rep?'repeat author':'new author','rk');}
@@ -122,79 +138,230 @@ function v17Select(){
   for(let j=0;j<K-1;j++){const p=slot(j);S+=RC(p[0],p[1],FW,SH,3,'xg');}
   S+=TT(270,476,'TOP-K BY SCORE','cp')+TT((G1+G2)/2,476,'VISIBILITY FILTER','cp')+TT(FX+FW/2,476,'FEED','cp');
   const L=9;
-  return {st:S,dyn:t=>{const ph=((t%L)+L)%L/L,rise=ease(seg(ph,0,.08)),srt=ease(seg(ph,.1,.24)),cut=seg(ph,.27,.34);let s='';
+  /* scrubbed (q 0 → 1): rank HR is the highlighted post — above the cut, through the gate, into slot 2 */
+  const HR=1,anchors={bar:[bx(HR)+BW/2,base-H[HR]],gate:[(G1+G2)/2,200],slot:[FX+FW,slot(HR)[1]+SH/2]};
+  return {st:S,anchors,dyn:(t,q)=>{const SCRUB=q!==undefined,ph=SCRUB?q*.92:((t%L)+L)%L/L,rise=ease(seg(ph,0,.08)),srt=ease(seg(ph,.1,.24)),cut=seg(ph,.27,.34);let s='';
     for(let r=0;r<n;r++){const x=lerp(bx(perm.indexOf(r)),bx(r),srt),h=H[r]*rise,kept=r<K;if(h<.5)continue;
-      s+='<rect class="'+((!kept&&cut>0)?'xg':'x')+'" x="'+R1(x)+'" y="'+R1(base-h)+'" width="'+BW+'" height="'+R1(h)+'" rx="2"/>';}
+      s+='<rect class="'+(SCRUB&&r===HR?'xb':(!kept&&cut>0)?'xg':'x')+'" x="'+R1(x)+'" y="'+R1(base-h)+'" width="'+BW+'" height="'+R1(h)+'" rx="2"/>';}
     if(cut>0)s+='<g opacity="'+R1(cut*10)/10+'">'+LN(X0-10,cutY,bx(n-1)+BW+10,cutY,'gt')+'</g>';
     let drop=0;
     for(let r=0;r<K;r++){const st=.38+r*.07,u=seg(ph,st,st+.12);if(u<=0)continue;const top=[bx(r)+BW/2,base-H[r]],gate=[(G1+G2)/2,AY];
       if(r===SPAM){const a=seg(u,0,.6),d=seg(u,.6,1);drop=d;const m=a<1?along([top,[590,AY],gate],ease(a)):[gate[0],AY+d*100];if(d<1)s+='<g opacity="'+R1((1-.7*d)*10)/10+'">'+XR(m[0],m[1],4.5,Math.PI/4,d>0?'xg':'x')+'</g>';continue;}
       const j=r<SPAM?r:r-1,sl=slot(j),end=[sl[0]+FW/2,sl[1]+SH/2];
-      if(u<1){const m=along([top,[590,AY],gate,[800,AY],end],ease(u));s+=XR(m[0],m[1],4.5,Math.PI/4,'x');}else s+=RC(sl[0],sl[1],FW,SH,3,'x');}
+      const hc=SCRUB&&r===HR?'xb':'x';
+      if(u<1){const m=along([top,[590,AY],gate,[800,AY],end],ease(u));s+=XR(m[0],m[1],4.5,Math.PI/4,hc);}else s+=RC(sl[0],sl[1],FW,SH,3,hc);}
     if(drop>0)s+='<g opacity="'+R1(Math.min(1,drop*2)*10)/10+'">'+TT((G1+G2)/2,AY+122,'removed','rk')+'</g>';
     return s;}};
 }
-/* ================= v26 · funnel stretches with the stages, closes like before ================= */
-function v26Story(){
-  const src0=v7Sourcing(),src={st:src0.st,dyn:t=>{const s=src0.dyn(t),i=s.indexOf('<text class="rt"');return i>=0?s.slice(0,i):s;}};
-  const sco=v10Scoring(),sel=v17Select(),SC=[src,sco,sel];
-  const K=.42,OC=[0,1046,1517],OF=[0,1012,2104],ZO=.58;
-  const cy=290,X0=800,Xa=1772,X1=1815,R0=250,Ra=72,Rn=72,ER=.3;
-  const P2=(x,r,a)=>[x+r*ER*Math.cos(a),cy+r*Math.sin(a)];
-  const arc=(x,r,a0,a1,n)=>{const p=[];for(let i=0;i<=n;i++)p.push(P2(x,r,a0+(a1-a0)*i/n));return p;};
-  const pth=(pts,c,z)=>'<path class="'+c+'" d="M'+pts.map(p=>R1(p[0])+' '+R1(p[1])).join('L')+(z?'Z':'')+'"/>';
-  const H=Math.PI/2,rc=x=>lerp(R0,Ra,(x-X0)/(Xa-X0));
-  const top=[[X0,cy-R0],[Xa,cy-Ra],[X1,cy-Rn]],bot=top.map(p=>[p[0],2*cy-p[1]]).reverse();
-  let F=pth(top.concat(arc(X1,Rn,-H,H,24),bot,arc(X0,R0,H,-H,40)),'fw',1)+pth(top,'x')+pth(bot,'x');
-  [-.7,0,.7].forEach(a=>F+=pth([P2(X0,R0,a),P2(Xa,Ra,a)],'pl'));
-  {const x=lerp(X0,Xa,.5),r=rc(x);F+=pth(arc(x,r,-H,H,30),'x');for(let k=-6;k<=6;k++){const p=P2(x+8,r*.985,k*.24);F+=DOT(p[0],p[1],2,'tg');}}
-  F+=pth(arc(Xa,Ra,-H,H,24),'x')+pth(arc(X0,R0,0,2*Math.PI,90),'mouth',1)+pth(arc(X0+6,R0*.9,0,2*Math.PI,90),'pl',1)+pth(arc(X1,Rn,0,2*Math.PI,40),'endo',1);
-  const FL=X0-R0*ER,FR=X1+Rn*ER;
-  let ST='<defs><linearGradient id="gM" gradientUnits="userSpaceOnUse" x1="'+FL+'" y1="0" x2="'+(X0+10)+'" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity="1"/></linearGradient>'+
-    '<linearGradient id="gE" gradientUnits="userSpaceOnUse" x1="'+X1+'" y1="0" x2="'+FR+'" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="1"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>'+
-    '<clipPath id="cw" clipPathUnits="userSpaceOnUse"><rect id="cwr" x="'+(FL-6)+'" y="-2000" width="'+(FR-FL+20)+'" height="5000"/></clipPath></defs>';
-  ST+='<g id="scnG" class="scn"><path id="cl1" class="e3" d=""/><path id="cl2" class="e3" d=""/><g id="dfl"></g>';
-  SC.forEach((S,k)=>ST+='<g id="sg'+k+'">'+S.st+'<g id="sd'+k+'"></g></g>');
-  ST+='</g><g id="funG" clip-path="url(#cw)">'+F+'</g><g id="ovG"></g>';
-  /* camera: zoom only on the way in and the way out, flat pans in between */
-  const KP=[0,.24,.5,.76,1],KX=[1035,600,OF[1]+560,OF[2]+515,1035];
-  const cr=(p0,p1,p2,p3,u)=>.5*(2*p1+(-p0+p2)*u+(2*p0-5*p1+4*p2-p3)*u*u+(-p0+3*p1-3*p2+p3)*u*u*u);
-  const spl=(A,P)=>{let i=0;while(i<KP.length-2&&P>KP[i+1])i++;const u=clamp((P-KP[i])/(KP[i+1]-KP[i])),g=k=>A[Math.max(0,Math.min(A.length-1,k))];return cr(g(i-1),g(i),g(i+1),g(i+2),u);};
-  const zAt=P=>P<.24?Math.exp(lerp(Math.log(ZO),0,ease(P/.24))):P>.76?Math.exp(lerp(0,Math.log(ZO),ease((P-.76)/.24))):1;
-  const CH=['OVERVIEW','01  SOURCING','02  SCORING','03  SELECTION','OVERVIEW'];
-  let E=null,frame=0,lastHud='';
-  return {st:ST,dyn:(t,P,B)=>{P=P||0;B=B||1;
-    if(!E||!E.scn.isConnected){const q=id=>svg.querySelector('#'+id);E={scn:q('scnG'),fl:q('dfl'),fun:q('funG'),cw:q('cwr'),ov:q('ovG'),c1:q('cl1'),c2:q('cl2'),sg:[0,1,2].map(k=>q('sg'+k)),sd:[0,1,2].map(k=>q('sd'+k))};}
-    const cx=spl(KX,P),z=zAt(P);B=1+(B-1)*ease(clamp((z-ZO)/(1-ZO)));const w=1200/(z*B),h=560/(z*B),vx=cx-w/2,vy=280-h/2;
-    svg.setAttribute('viewBox',R1(vx)+' '+R1(vy)+' '+R1(w)+' '+R1(h));
-    const m=ease(clamp((z-ZO)/(1-ZO))),sk=[1,lerp(K,1,m),lerp(K,1,m)],ox=[0,lerp(OC[1],OF[1],m),lerp(OC[2],OF[2],m)];
-    for(let k=1;k<3;k++)E.sg[k].setAttribute('transform','translate('+R1(ox[k])+' '+cy+') scale('+sk[k].toFixed(4)+') translate(0 '+(-cy)+')');
-    const a1=[1022,290],b1=[ox[1]+128*sk[1],290],a2=[ox[1]+1112*sk[1],290],b2=[ox[2]+66*sk[2],290+10*sk[2]];
-    E.c1.setAttribute('d','M'+R1(a1[0])+' '+a1[1]+'L'+R1(b1[0])+' '+b1[1]);E.c2.setAttribute('d','M'+R1(a2[0])+' '+a2[1]+'L'+R1(b2[0])+' '+R1(b2[1]));
-    E.scn.style.setProperty('--to',clamp((z-.66)/.3).toFixed(2));
-    E.fun.setAttribute('transform','translate('+X0+' 0) scale('+lerp(1,(2800-X0)/(X1-X0),m).toFixed(4)+' 1) translate('+(-X0)+' 0)');
-    const wipe=ease(seg(z,.64,1));
-    if(wipe>=.999)E.fun.style.display='none';else{E.fun.style.display='';const L=lerp(FL-6,FR+8,wipe);E.cw.setAttribute('x',R1(L));E.cw.setAttribute('width',R1(FR+12-L));}
+/* ================= v31 · zoom through the globe, funnel lines erased to reveal the stages =================
+   Overview (small, centred): the ALL POSTS globe on the left, posts flowing from it into a
+   solid ring funnel, a few reaching the FEED slots on the right.
+   Zoom in: the camera zooms into the globe until it is exactly the Sourcing stage's globe
+   (same dots, same rotation, same size and place). Meanwhile the funnel turns to a skeleton
+   and its lines are erased along their paths left → right (pen strokes), and the rest of the Sourcing stage (Thunder, Phoenix,
+   the candidate grid) is revealed behind that front.
+   Stage to stage: the outgoing stage moves left and fades, the incoming one comes in from
+   the right (never more than two on screen). Selection is held to the end (no zoom out).  */
+function v31Story(){
+  const src0=v7Sourcing(),src={st:src0.st,anchors:src0.anchors,dyn:(t,q)=>{const s=src0.dyn(t,q),i=s.indexOf('<text class="rt"');return i>=0?s.slice(0,i):s;}};
+  const SC=[src,v10Scoring(),v17Select()];
+  const OFF=[15,-20,95],CX=600,CY=280,D=110;
+
+  /* Emil's strong ease-in-out, cubic-bezier(0.77, 0, 0.175, 1) — stage-to-stage slides. */
+  const bez=(x1,y1,x2,y2)=>{const A=(a,b)=>1-3*b+3*a,Bq=(a,b)=>3*b-6*a,C=a=>3*a,
+    f=(t,a,b)=>((A(a,b)*t+Bq(a,b))*t+C(a))*t,df=(t,a,b)=>3*A(a,b)*t*t+2*Bq(a,b)*t+C(a);
+    return x=>{if(x<=0)return 0;if(x>=1)return 1;let t=x;for(let i=0;i<6;i++){const d=df(t,x1,x2);if(Math.abs(d)<1e-6)break;t-=(f(t,x1,x2)-x)/d;}return f(clamp(t),y1,y2);};};
+  const EIO=bez(.77,0,.175,1),fr=x=>x-Math.floor(x);
+
+  /* ---- world geometry (overview), centred on x = 600 ---- */
+  const GX=280,GR=68,X0=445,XS=565,XW=675,XE=775,X1=880,R0=95,RW=12,RE=75,EX=.17,SL=930,SR=990;
+  /* anchors: the stage point that the world point turns into */
+  const A0={w:[GX,CY],l:[300,290],r:150/GR};          /* sourcing globe centre (radius 150 vs 68) */
+  const ZO=2.6,A2={w:[960,CY],l:[895,285],r:ZO};      /* selection feed slots, drawn ZO× smaller in the overview */
+  const rad=x=>x<=XW?RW+(R0-RW)*Math.pow(clamp((XW-x)/(XW-X0)),1.7):RW+(RE-RW)*Math.pow(clamp((x-XW)/(X1-XW)),1.7);
+  const RINGS=[];
+  for(let i=0;i<=24;i++)RINGS.push(lerp(X0,XW,i/24));for(let i=1;i<=16;i++)RINGS.push(lerp(XW,X1,i/16));
+  const RG=RINGS.map(x=>({x,c:x===X0||x===X1?'rim':Math.abs(x-XW)<18?'rw':'rf'})).concat([{x:XS,c:'mk'},{x:XE,c:'mk'}]);
+  const pts=a=>a.map(p=>R1(p[0])+' '+R1(p[1])).join('L');
+  const arc=(x,r,a0,a1)=>{const n=Math.max(2,Math.ceil(Math.abs(a1-a0)*8)),p=[];for(let i=0;i<=n;i++){const a=a0+(a1-a0)*i/n;p.push([x+r*EX*Math.cos(a),CY+r*Math.sin(a)]);}return p;};
+  const H=Math.PI/2;
+  const PROF=Array.from({length:61},(_,i)=>lerp(X0,X1,i/60));
+  const BODY='M'+pts(PROF.map(x=>[x,CY-rad(x)]))+'L'+pts(PROF.slice().reverse().map(x=>[x,CY+rad(x)]))+'Z';
+  const sy=x=>{const v=(x-SL)/(SR-SL);return [CY-lerp(80,96,v),CY+lerp(74,86,v)];};
+  /* feed slots: the selection stage's slots (x 840, w 110, h 18, every 28 from y 220) scaled by 1/ZO about the anchor */
+  const wS=(lx,ly)=>[A2.w[0]+(lx-A2.l[0])/ZO,A2.w[1]+(ly-A2.l[1])/ZO];
+  const slotC=j=>wS(895,229+j*28);
+  let SCREEN='<path class="gs" d="M'+SL+' '+R1(sy(SL)[0])+'L'+SR+' '+R1(sy(SR)[0])+'L'+SR+' '+R1(sy(SR)[1])+'L'+SL+' '+R1(sy(SL)[1])+'Z"/>',SLOTS='';
+  for(let j=0;j<5;j++){const p=wS(840,220+j*28);SLOTS+=RC(p[0],p[1],110/ZO,18/ZO,3/ZO,'xg');}
+  const LABELS=TT(GX,425,'ALL POSTS','cp')+TT((X0+XS)/2,425,'01  SOURCING','cp')+TT(XW,425,'02  SCORING','cp')+TT((XE+X1)/2,425,'03  SELECTION','cp')+TT((SL+SR)/2,425,'FEED','cp');
+  const GROUND='<path class="gl" d="M150 392Q600 418 1050 386"/>';
+
+  /* ---- the overview as pen strokes ----
+     Every line is a polyline that is traced along its own path (like a pen) on the way in and
+     erased along its path on the way out. Each stroke owns a window of the progress 0 → 1;
+     strokes are staggered left → right, rings trace round from the top (front half first,
+     then the back half). Fills only exist once the lines are there. */
+  const nr=x=>(x-X0)/(X1-X0);
+  const poly=(p,cls,a,b,o)=>{const L=[0];for(let i=1;i<p.length;i++)L.push(L[i-1]+Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]));return {p,L,T:L[L.length-1]||1,cls,a,b,o};};
+  const cut=(S,f0,f1)=>{if(f1<=f0+1e-4)return '';const T=S.T,l0=f0*T,l1=f1*T,p=S.p,L=S.L,out=[];
+    const at=l=>{let i=1;while(i<L.length-1&&L[i]<l)i++;const v=L[i]===L[i-1]?0:(l-L[i-1])/(L[i]-L[i-1]);return [lerp(p[i-1][0],p[i][0],v),lerp(p[i-1][1],p[i][1],v)];};
+    out.push(at(l0));for(let i=0;i<L.length;i++)if(L[i]>l0&&L[i]<l1)out.push(p[i]);out.push(at(l1));return 'M'+pts(out);};
+  const ell=(x,r,a0,a1)=>{const n=Math.max(4,Math.ceil(Math.abs(a1-a0)*14)),q=[];for(let i=0;i<=n;i++){const t=a0+(a1-a0)*i/n;q.push([x+r*EX*Math.cos(t),CY+r*Math.sin(t)]);}return q;};
+  const STK=[];
+  STK.push(poly(Array.from({length:41},(_,i)=>{const x=lerp(150,1050,i/40),v=i/40;return qb([150,392],[600,418],[1050,386],v);}),'gl',0,.9,'aux'));
+  STK.push(poly(Array.from({length:73},(_,i)=>{const t=-H+i/72*2*Math.PI;return [GX+GR*Math.cos(t),CY+GR*Math.sin(t)];}),'pl',0,.28,'globe'));
+  STK.push(poly(PROF.map(x=>[x,CY-rad(x)]),'pf',.14,.86,''),poly(PROF.map(x=>[x,CY+rad(x)]),'pf',.14,.86,''));
+  RG.slice().sort((p,q)=>p.x-q.x).forEach(g=>{const o=.14+.56*nr(g.x),r=rad(g.x),rim=g.c==='rim',fc=rim||g.c==='mk'?'x':g.c;
+    STK.push(poly(ell(g.x,r,-H,H),fc,o,o+.1,''));STK.push(poly(ell(g.x,r,H,3*H),rim?'x':'rb',o+.1,o+.16,rim?'':'back'));});
+  const sq=[[SL,sy(SL)[0]],[SR,sy(SR)[0]],[SR,sy(SR)[1]],[SL,sy(SL)[1]],[SL,sy(SL)[0]]];
+  STK.push(poly(sq,'gs',.72,.92,''));
+  for(let j=0;j<5;j++){const q=wS(840,220+j*28),w=110/ZO,h=18/ZO;STK.push(poly([[q[0],q[1]],[q[0]+w,q[1]],[q[0]+w,q[1]+h],[q[0],q[1]+h],[q[0],q[1]]],'xg',.8+j*.03,.9+j*.02,''));}
+  /* drawn: 0 → 1 traces every stroke in; erased: 0 → 1 erases them (globe outline excepted) */
+  const strokes=(drawn,erased,solid)=>{let s='';
+    if(solid>.01)s+='<path class="fw" d="'+BODY+'" opacity="'+solid.toFixed(2)+'"/><ellipse class="fin" cx="'+X0+'" cy="'+CY+'" rx="'+R1(R0*EX)+'" ry="'+R0+'" opacity="'+solid.toFixed(2)+'"/>';
+    STK.forEach(S=>{const d=seg(drawn,S.a,S.b),e=S.o==='globe'?0:seg(erased,S.a,S.b);if(d<=e)return;
+      const op=S.o==='back'?1-solid:1;if(op<.02)return;
+      s+='<path class="'+S.cls+'" d="'+cut(S,e,d)+'"'+(op<1?' opacity="'+op.toFixed(2)+'"':'')+'/>';});
+    return s;};
+  /* world x of the erase front (rings left of it are gone) — the stage is revealed behind it */
+  const eraseFront=er=>X0+(X1-X0)*clamp((er-.14)/.62)+(er>.76?(SR-X1+40)*seg(er,.76,.92):0);
+
+  /* the ALL POSTS globe — the same points, caps and rotation as the Sourcing stage's globe,
+     so at the end of the zoom it is that globe. Marks keep a constant screen size (÷Z). */
+  const GN=280,GP=[],ga=Math.PI*(3-Math.sqrt(5)),cb=Math.cos(.32),sb=Math.sin(.32),gang=t=>.45*Math.sin(t*.25);
+  for(let i=0;i<GN;i++){const y=1-2*(i+.5)/GN,rr=Math.sqrt(1-y*y),th=i*ga;GP.push([Math.cos(th)*rr,y,Math.sin(th)*rr]);}
+  const nrm=v=>{const l=Math.hypot(v[0],v[1],v[2]);return v.map(q=>q/l);};
+  const CAP=[nrm([.42,.5,.76]),nrm([-.6,.05,.8]),nrm([.45,-.55,.7])];
+  const capOf=GP.map(p=>{for(let c=0;c<3;c++)if(p[0]*CAP[c][0]+p[1]*CAP[c][1]+p[2]*CAP[c][2]>.935)return c;return -1;});
+  const globe=(t,Z)=>{const a=gang(t),ca=Math.cos(a),sa=Math.sin(a);let s='';
+    GP.forEach((p,i)=>{const X=p[0]*ca+p[2]*sa,Zz=-p[0]*sa+p[2]*ca,f=Zz*cb-p[1]*sb,x=GX+GR*X,y=CY-GR*(p[1]*cb+Zz*sb);
+      if(capOf[i]>=0){if(f>0)s+=XP(x,y,2.2/Z,'xs');}else s+=DOT(x,y,(f>0?1.1:.8)/Z,f>0?'tg':'dt');});return s;};
+
+  /* posts: globe → funnel mouth; a few come out the far end into a feed slot */
+  const NP=36,PT=Array.from({length:NP},(_,i)=>({ph:i/NP,s:(fr(i*.618+.21)*2-1),keep:i%6===0,slot:(i/6|0)%5}));
+  const posts=(t,end)=>{let s='';PT.forEach(p=>{const u=fr(t*.07+p.ph);
+    if(!end&&u<.42){const v=u/.42,th=p.s*1.05,a=[GX+GR*.9*Math.cos(th),CY+GR*.9*Math.sin(th)],b=[X0,CY+p.s*R0*.65],q=qb(a,[(a[0]+b[0])/2,a[1]],b,ease(v));
+      s+=DOT(q[0],q[1],p.ph?1.4:2.4,p.ph?'tg':'hb',Math.min(seg(v,0,.15),1-seg(v,.88,1)));}
+    if(end&&p.keep&&u>=.72){const v=(u-.72)/.28,a=[X1,CY+p.s*RE*.55],b=slotC(p.slot),q=qb(a,[(a[0]+b[0])/2,a[1]],b,ease(v));
+      s+=DOT(q[0],q[1],p.ph?1.6:2.4,p.ph?'tg':'hb',Math.min(seg(v,0,.12),1-seg(v,.9,1)));}});return s;};
+
+  /* ---- scroll timeline (P 0 → 1) ----
+     overview hold · zoom into the globe · sourcing · → scoring · → selection, held to the end */
+  /* overview · zoom · sourcing story · → · scoring story · → · selection story (held to the end).
+     In each story window the highlighted post is scrubbed through the stage (q 0 → 1). */
+  const TR=[[.05,.18],[.38,.45],[.65,.72]],HW=[[.18,.38],[.45,.65],[.72,.95]];
+  const chapter=P=>P<.115?0:P<.415?1:P<.685?2:3;
+  const OUT=u=>1-seg(u,0,.55),IN=u=>seg(u,.45,1),EDGE=140;
+
+  /* ---- notes ----
+     Short explanations, shown one at a time as the highlighted post reaches each point.
+     Text is HTML over the SVG (SectionTwo.tsx, glitch); the page measures where each text
+     actually sits (setRects) and the leader is drawn from the text edge facing the anchor:
+     a short horizontal stub towards the anchor, then straight to it, ending in a dot.
+     Coordinates are SVG units. Copy is draft. */
+  const AN=(j,a)=>[SC[j].anchors[a][0]+OFF[j],SC[j].anchors[a][1]];
+  const NOTE=(id,st,text,a,x,y,w,win)=>({id,st,text,a,x,y,w,win});
+  const NOTES=[
+    NOTE('n1a',1,'Your post \u2014 one of ~500M posted every day',()=>AN(0,'live'),486,462,190,[.02,.3]),
+    NOTE('n1b',1,'Phoenix finds it for people who don\u2019t follow you',AN(0,'phoenix'),712,402,156,[.3,.5]),
+    NOTE('n1c',1,'Hydrated with features \u2014 it survives the filters',AN(0,'node'),1016,300,170,[.5,1]),
+    NOTE('n2a',2,'One of ~1,500 candidates for each viewer',AN(1,'post'),176,92,210,[0,.46]),
+    NOTE('n2b',2,'A model predicts each action: like, reply, repost, click',AN(1,'heads'),650,512,260,[.46,.66]),
+    NOTE('n2c',2,'Weighted into one score \u2014 replies count far more than likes',AN(1,'sigma'),866,170,230,[.66,.82]),
+    NOTE('n2d',2,'Repeat authors are discounted',AN(1,'div'),1004,186,170,[.82,1]),
+    NOTE('n3a',3,'Ranked by score \u2014 only the top few clear the cut',AN(2,'bar'),300,70,230,[.28,.5]),
+    NOTE('n3b',3,'Spam and unsafe posts are filtered out',AN(2,'gate'),806,110,200,[.5,.7]),
+    NOTE('n3c',3,'Lands in slot 2 of the feed',AN(2,'slot'),1084,300,110,[.7,1]),
+  ];
+  const visible=(P,I)=>{const on=new Set();if(I<1)return on;const c=chapter(P);if(!c)return on;
+    if(P<HW[c-1][0]-.005||(c<3&&P>HW[c-1][1]+.005))return on;
+    const q=seg(P,HW[c-1][0],HW[c-1][1]);
+    NOTES.forEach(n=>{if(n.st===c&&(q>=n.win[0]&&q<n.win[1]||(n.win[1]===1&&q>=1)))on.add(n.id);});return on;};
+  /* rects: { id: [left, top, right, bottom] } in SVG units, measured by the page */
+  let RECTS={},LDR={};
+  const anc=n=>typeof n.a==='function'?n.a():n.a;
+  const leaderOf=n=>{const r=RECTS[n.id]||[n.x,n.y,n.x+n.w,n.y+40],a=anc(n),y=r[1]+10;
+    const right=a[0]>r[2]?1:a[0]<r[0]?0:(a[0]>(r[0]+r[2])/2?1:0);
+    const sx=right?r[2]+10:r[0]-10,room=Math.abs(a[0]-sx),stub=Math.min(18,room*.45)*(right?1:-1);
+    return poly([[sx,y],[sx+stub,y],a],'ld',0,1,'');};
+  const setRects=R=>{RECTS=R||{};LDR={};};
+  const LP={};let lastT=null;
+  const leaders=(on,t,RM)=>{const dt=lastT===null?0:Math.max(0,Math.min(.1,t-lastT));lastT=t;let s='';
+    NOTES.forEach(n=>{const tg=on.has(n.id)?1:0;let l=LP[n.id]||0;l=RM?tg:tg>l?Math.min(1,l+dt/.35):Math.max(0,l-dt/.25);LP[n.id]=l;if(l<=0)return;
+      const live=typeof n.a==='function',L=live?leaderOf(n):LDR[n.id]||(LDR[n.id]=leaderOf(n)),e=ease(l),a=anc(n);
+      s+='<path class="ld" d="'+cut(L,0,e)+'"/>';if(e>=1)s+=DOT(a[0],a[1],1.8,'ldd');});
+    return s;};
+
+  /* soft-edged reveal mask for the Sourcing stage, in its own coordinates */
+  const MASK=id=>'<linearGradient id="'+id+'g" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#000"/></linearGradient>'+
+    '<mask id="'+id+'" maskUnits="userSpaceOnUse" x="-3000" y="-3000" width="7000" height="7000"><rect x="-3000" y="-3000" width="7000" height="7000" fill="url(#'+id+'g)"/></mask>';
+  let ST='<defs>'+MASK('mg')+'</defs>';
+  ST+='<g id="wG"><g id="wL">'+LABELS+'</g><g id="wQ"></g><g id="wF"></g><g id="wE"></g><g id="wGl"></g></g>';
+  SC.forEach((S,k)=>ST+='<g id="sg'+k+'" style="opacity:0">'+S.st+'<g id="sd'+k+'"></g></g>');
+  ST+='<g id="ovG"></g>';
+
+  let E=null,frame=0,lastHint='',lastF='';
+  /* I = the diagram drawing itself in (0 → 1) before the scroll story starts */
+  return {st:ST,notes:NOTES.map(n=>({id:n.id,text:n.text,x:n.x,y:n.y,w:n.w})),visible,chapter,setRects,dyn:(t,P,B,RM,I)=>{P=P||0;B=B||1;I=I===undefined?1:I;
+    if(!E||!E.w.isConnected){const q=id=>svg.querySelector('#'+id);
+      E={w:q('wG'),l:q('wL'),q:q('wQ'),f:q('wF'),e:q('wE'),gl:q('wGl'),ov:q('ovG'),mg:q('mgg'),
+         sg:[0,1,2].map(k=>q('sg'+k)),sd:[0,1,2].map(k=>q('sd'+k))};}
+    const u=TR.map(r=>seg(P,r[0],r[1])),e=u.map(EIO),M=RM?0:1,v=u[0];
+    const inWorld=P<TR[0][1];
+    const setG=(g,a,b)=>{g.setAttribute('x1',R1(a));g.setAttribute('x2',R1(b));};
+
+    /* camera on the zoom: the globe's screen position eases from the overview to where the
+       stage globe sits, while Z grows exponentially to the radius ratio — so the overview
+       globe becomes the Sourcing globe */
+    let Z=1,cx=CX,cy=CY,sx=A0.w;
+    const S0=[CX+(A0.l[0]-(CX-OFF[0]))*B,CY+(A0.l[1]-CY)*B],Zend=A0.r*B;
+    if(inWorld&&!RM){const zc=ease(v);Z=Math.exp(lerp(0,Math.log(Zend),zc));sx=[lerp(A0.w[0],S0[0],zc),lerp(A0.w[1],S0[1],zc)];cx=A0.w[0]-(sx[0]-CX)/Z;cy=A0.w[1]-(sx[1]-CY)/Z;}
+
+    /* pen progress: draw in during the intro; on the zoom the fill goes first, then the lines erase */
+    const drawn=RM?1:I,erased=RM?0:seg(v,.1,.85),solid=I<1?seg(I,.88,1):1-seg(v,0,.15);
+    const aux=I<1?seg(I,.85,1):1-seg(v,0,.25);
+
+    svg.setAttribute('viewBox','0 0 1200 560');
+    E.w.style.display=inWorld&&I>0?'':'none';
+    if(inWorld&&I>0){
+      E.w.setAttribute('transform','translate('+CX+' '+CY+') scale('+Z.toFixed(4)+') translate('+R1(-cx)+' '+R1(-cy)+')');
+      E.l.style.opacity=aux.toFixed(3);E.q.style.opacity=aux.toFixed(3);E.e.style.opacity=aux.toFixed(3);
+      E.gl.style.opacity=(I<1?seg(I,.08,.35):1-seg(v,.85,1)).toFixed(3);
+      const key=drawn.toFixed(4)+'|'+erased.toFixed(4)+'|'+solid.toFixed(2);if(key!==lastF){E.f.innerHTML=strokes(drawn,erased,solid);lastF=key;}}
+
+    /* stages */
+    const op=[Math.min(seg(v,.25,.6),OUT(u[1])),Math.min(IN(u[1]),OUT(u[2])),IN(u[2])];
+    if(RM)op[0]=Math.min(IN(v),OUT(u[1]));
+    const dx=[-D*e[1],D*(1-e[1]-e[2]),D*(1-e[2])];
+    op.forEach((o,j)=>{const g=E.sg[j],on=o>.001;g.style.opacity=o.toFixed(3);g.style.display=on?'':'none';if(!on)return;
+      if(j===0&&inWorld&&!RM){/* ride the world globe, revealed behind the erase front */
+        const sc=Z/A0.r,fs=CX+(eraseFront(erased)-cx)*Z,fl=A0.l[0]+(fs-sx[0])/sc;
+        g.setAttribute('transform','translate('+R1(sx[0])+' '+R1(sx[1])+') scale('+sc.toFixed(4)+') translate('+(-A0.l[0])+' '+(-A0.l[1])+')');
+        setG(E.mg,fl,fl+EDGE);g.setAttribute('mask','url(#mg)');}
+      else{g.removeAttribute('mask');
+        g.setAttribute('transform','translate('+R1(CX+dx[j]*M)+' '+CY+') scale('+B.toFixed(4)+') translate('+(-(CX-OFF[j]))+' '+(-CY)+')');}});
+
     frame++;
     if(frame%2===0){
-      SC.forEach((S,k)=>{const x0=k?ox[k]:0,wd=1200*sk[k],vis=!(x0+wd<vx||x0>vx+w);E.sg[k].style.display=vis?'':'none';
-        if(vis&&!(wipe<.02&&k>0))E.sd[k].innerHTML=S.dyn(t+k*3.1);});
-      let f='';if(wipe>.02)[[a1,b1],[a2,b2]].forEach(sg=>{for(let j=0;j<2;j++){const u=(t*.22+j/2)%1;f+=XR(lerp(sg[0][0],sg[1][0],u),lerp(sg[0][1],sg[1][1],u),4,Math.PI/4,'x');}});E.fl.innerHTML=f;}
-    const lo=1-clamp((z-.64)/.2),fz=(9.5/(z*B)).toFixed(1),ci=P<.12?0:P<.37?1:P<.63?2:P<.88?3:4,FEEDX=ox[2]+895*sk[2];
-    let s='';
-    if(lo>.01){const Ls=[[300,490,'ALL POSTS'],[620,128,'THUNDER'],[612,472,'PHOENIX'],[FEEDX,cy+(476-cy)*sk[2]+30,'FEED']];
-      s+='<g opacity="'+lo.toFixed(2)+'">'+Ls.map(l=>'<text class="cp" x="'+R1(l[0])+'" y="'+R1(l[1])+'" text-anchor="middle" style="font-size:'+fz+'px">'+l[2]+'</text>').join('')+'</g>';}
-    if(P<.04)s+='<text class="cp" x="'+R1(vx+w/2)+'" y="'+R1(vy+h-28/(z*B))+'" text-anchor="middle" style="font-size:'+fz+'px" opacity="'+(1-P/.04).toFixed(2)+'">SCROLL TO LOOK INSIDE</text>';
-    if(s!==lastHud){E.ov.innerHTML=s;lastHud=s;}
+      if(inWorld&&I>0){E.gl.innerHTML=globe(t,Z);if(aux>.01){E.q.innerHTML=posts(t,false);E.e.innerHTML=posts(t,true);}}
+      SC.forEach((S,j)=>{if(op[j]>.001)E.sd[j].innerHTML=S.dyn(t+j*3.1,seg(P,HW[j][0],HW[j][1]));});}
+    const h=I>=1&&P<.04?(1-P/.04):0,hs=(h>.01?'<text class="cp" x="'+CX+'" y="476" text-anchor="middle" opacity="'+h.toFixed(2)+'">SCROLL TO LOOK INSIDE</text>':'')+leaders(visible(P,I),t,RM);
+    if(hs!==lastHint){E.ov.innerHTML=hs;lastHint=hs;}
     return '';}};
 }
-  const story = v26Story();
+  const story = v31Story();
   return {
     /** static markup for the <svg> */
     markup: story.st,
-    /** advance one frame: t = seconds (looping micro-animation), P = scroll progress 0–1, B = zoom boost */
-    render: (t, P, B) => story.dyn(t, P, B),
-    /** chapter index used by the step label: 0 overview, 1 sourcing, 2 scoring, 3 selection, 4 overview */
-    chapter: (P) => (P < .12 ? 0 : P < .37 ? 1 : P < .63 ? 2 : P < .88 ? 3 : 4),
+    /** advance one frame: t = seconds (looping micro-animation), P = scroll progress 0–1, B = zoom boost for stages, reduced = prefers-reduced-motion */
+    render: (t, P, B, reduced, intro) => story.dyn(t, P, B, reduced, intro),
+    /** chapter: 0 overview, 1 sourcing, 2 scoring, 3 selection (switches mid-transition) */
+    chapter: story.chapter,
+    /** notes: { id, text, x, y, w } in SVG units — the page renders the text */
+    notes: story.notes,
+    /** measured text boxes { id: [l, t, r, b] } in SVG units; leaders start from them */
+    setRects: (r) => story.setRects(r),
+    /** ids of the callouts visible at P (I = intro progress) */
+    visible: (P, I) => story.visible(P, I),
   };
 }

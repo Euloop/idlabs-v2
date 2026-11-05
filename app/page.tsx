@@ -42,11 +42,12 @@ export default function Home() {
 
   return (
     <>
-    {/* Fixed page material: dark paper over white. --theme (0 → 1) fades it out on scroll. */}
+    {/* Fixed page material: dark paper, with the light page wiped over it on the theme switch. */}
     <div className="backdrop" aria-hidden="true">
       <div className="backdrop-dark"><div className="texture" /></div>
+      <div className="backdrop-light" />
     </div>
-    <div className="frame rails" aria-hidden="true" />
+    <div className="frame rails" aria-hidden="true"><span className="rails-light" /></div>
 
     <div className="hero">
 

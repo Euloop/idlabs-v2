@@ -53,11 +53,17 @@ a:focus-visible { outline: 1px solid var(--ink); outline-offset: 4px; border-rad
 ::selection { background: var(--accent); color: #fff; }
 
 /* ───────── Surface ───────── */
-/* Fixed page material behind everything: white base, dark paper on top whose opacity
-   follows --theme (0 = dark hero, 1 = white section 2), set from scroll in SectionTwo. */
-.backdrop { position: fixed; inset: 0; z-index: -1; background: #fff; pointer-events: none; }
-.backdrop-dark { position: absolute; inset: 0; background: var(--bg); isolation: isolate; opacity: calc(1 - var(--theme, 0)); }
-.hero { position: relative; min-height: 100svh; overflow: clip; opacity: var(--hero-fade, 1); }
+/* Fixed page material behind everything: dark paper, and the light page above it.
+   Theme switch (html[data-theme], flipped from SectionTwo once ~half the hero has scrolled
+   away) is the lights coming up, as on departuremono.com: one CSS flip (no scroll scrub),
+   then the whole screen eases dark → light in one 400ms `ease` — their exact transition —
+   with the hero content fading on the same curve. Same in reverse when scrolling back. */
+.backdrop { position: fixed; inset: 0; z-index: -1; background: var(--bg); pointer-events: none; }
+.backdrop-dark { position: absolute; inset: 0; background: var(--bg); isolation: isolate; }
+.backdrop-light { position: absolute; inset: 0; background: #fff; opacity: 0; transition: opacity 400ms ease; }
+html[data-theme='light'] .backdrop-light { opacity: 1; }
+.hero { position: relative; min-height: 100svh; overflow: clip; transition: opacity 400ms ease; }
+html[data-theme='light'] .hero { opacity: 0; }
 .texture {
   position: absolute; inset: 0; z-index: 0; pointer-events: none;
   /* Figma's render of layer 109:727 (alpha 0.48 baked in), color-burned onto the ground. */
@@ -77,14 +83,20 @@ a:focus-visible { outline: 1px solid var(--ink); outline-offset: 4px; border-rad
   --px: max(1px, calc(100cqw / 1008));
 }
 /* The two frame rules: one fixed pair for the whole page, so they run unbroken from
-   the hero into section 2 and change colour with --theme instead of switching. */
+   the hero into section 2. Their light colour comes up with the page (same 400ms ease). */
 .frame.rails { position: fixed; top: 0; bottom: 0; left: 50%; translate: -50% 0; z-index: 0; min-height: 0; padding: 0; pointer-events: none; }
 .rails::before, .rails::after {
   content: ''; position: absolute; top: 0; bottom: 0; width: 1px;
-  background: color-mix(in srgb, #e0e0e0 calc(var(--theme, 0) * 100%), rgb(130 130 130 / 0.15));
+  background: rgb(130 130 130 / 0.15);
   transform-origin: top; animation: draw-y 1400ms var(--ease-out) both;
 }
 .rails::before { left: 0; }
+/* light rules: a second pair on the frame's own box, switched on with the page */
+.frame.rails > .rails-light { position: absolute; inset: 0; opacity: 0; transition: opacity 400ms ease; }
+.frame.rails > .rails-light::before, .frame.rails > .rails-light::after { content: ''; position: absolute; top: 0; bottom: 0; width: 1px; background: #e0e0e0; }
+.frame.rails > .rails-light::before { left: 0; }
+.frame.rails > .rails-light::after { right: 0; }
+html[data-theme='light'] .frame.rails > .rails-light { opacity: 1; }
 .rails::after { right: 0; }
 
 /* 12px markers sitting on the frame rules */
@@ -243,10 +255,9 @@ a:focus-visible { outline: 1px solid var(--ink); outline-offset: 4px; border-rad
 .s2-menu { padding-top: calc(6 * var(--px)); font-family: var(--sans); font-weight: 450; font-size: 12px; line-height: 1.4; color: #737373; transition: color 160ms var(--ease-out); }
 .s2-menu:hover { color: #1f1f1f; }
 
-/* Band between header and footer; parts 1 and 2 are stacked in a track that moves 1:1 with scroll. */
-.s2-window { grid-row: 2; min-height: 0; overflow: clip; position: relative; }
-.s2-track { height: 200%; display: grid; grid-template-rows: 1fr 1fr; will-change: transform; }
-.s2-part1, .s2-part2 { min-height: 0; }
+/* Band between header and footer; parts 1–3 share one grid cell and swap in place (pinned). */
+.s2-window { grid-row: 2; min-height: 0; overflow: clip; position: relative; display: grid; }
+.s2-part1, .s2-part2, .s2-part3 { grid-area: 1 / 1; min-height: 0; }
 .s2-part1 {
   align-self: center; justify-self: center;
   display: flex; flex-direction: column; gap: 20px;
@@ -254,11 +265,19 @@ a:focus-visible { outline: 1px solid var(--ink); outline-offset: 4px; border-rad
   font-family: var(--mono); font-size: 12px; line-height: 1.5;
   text-transform: uppercase; text-align: center; color: #1f1f1f; text-wrap: pretty;
 }
-.s2-part2 { position: relative; display: grid; grid-template-rows: auto 1fr; }
+/* Part 3: glitches in after the diagram fades (see SectionTwo.tsx). */
+.s2-part3 {
+  align-self: center; justify-self: center; margin: 0;
+  width: min(100%, 448px);
+  font-family: var(--mono); font-size: 12px; line-height: 1.4;
+  text-transform: uppercase; text-align: center; color: #1f1f1f; text-wrap: pretty;
+}
+.s2-part2 { position: relative; display: grid; }
 .s2-part2 .pipe { align-self: center; position: relative; }
 .s2-part2 svg { display: block; width: 100%; height: auto; aspect-ratio: 1200 / 560; overflow: hidden; }
 
-/* Step label: the current step glitches out and the next one glitches in. */
+/* Step label, top left: the current step glitches out and the next one glitches in. */
+.s2-part2 { grid-template-rows: auto 1fr; }
 .s2-steps {
   display: flex; gap: 6px; align-items: flex-start;
   padding-top: calc(28 * var(--px)); min-height: calc((28 + 36) * var(--px));
@@ -267,6 +286,14 @@ a:focus-visible { outline: 1px solid var(--ink); outline-offset: 4px; border-rad
   text-transform: uppercase; color: #1f1f1f; text-wrap: pretty;
 }
 .s2-num { flex: none; min-width: 12px; }
+
+/* Notes over the diagram (positions in SVG units, from pipeline/engine.js). */
+.s2-notes { position: absolute; inset: 0; pointer-events: none; }
+.s2-note {
+  position: absolute;
+  font-family: var(--mono); font-size: 12px; line-height: 1.4;
+  text-transform: uppercase; color: #4a4a4a; text-wrap: pretty;
+}
 
 /* Glitch text states (see components/Glitch.tsx) */
 .glitch .g-h { color: transparent; }
@@ -292,6 +319,7 @@ a:focus-visible { outline: 1px solid var(--ink); outline-offset: 4px; border-rad
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .backdrop-light, .frame.rails > .rails-light, .hero { transition: none; }
   *, *::before, *::after { animation: none !important; }
   .roll-track { transition: none; }
 }
