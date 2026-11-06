@@ -58,7 +58,7 @@ function v7Sourcing(){
   /* highlighted post (scrubbed, q 0 → 1): appears on the globe, goes out of network via
      Phoenix, lands in grid cell HI, is hydrated and survives the filter */
   const HI=21,HP0=[390,345],HC=[488,418];
-  const anchors={post:HP0,live:HP0,phoenix:[SX+14,PY+24],node:[ca.n[HI].x,ca.n[HI].y]};
+  const anchors={post:HP0,live:HP0,thunder:[SX+26,TY-16],phoenix:[SX+14,PY+24],node:[ca.n[HI].x,ca.n[HI].y]};
   return {st:S,anchors,dyn:(t,q)=>{const SCRUB=q!==undefined,ph=SCRUB?q*.86:((t%L)+L)%L/L,f=clamp(ph*2.6),fillN=Math.floor(f*48),a=ang(t),PP=P.map(p=>pj(p,a)),flow=ph<.4;let s='';
     PP.forEach((q,i)=>{if(capOf[i]>=0){if(q.f>0)s+=XP(q.x,q.y,2.2,'xs');}else s+=DOT(q.x,q.y,q.f>0?1.1:.8,q.f>0?'tg':'dt');});
     CAP.forEach((c,k)=>{const q=pj(c,a);if(q.f<=.05)return;const cc=[(q.x+TIN[0])/2,Math.min(q.y,TIN[1])-40];
@@ -136,7 +136,7 @@ function v17Select(){
   let S=LN(500,AY,590,AY,'pl')+'<path class="pl" d="M585 '+(AY-4)+'L590 '+AY+'L585 '+(AY+4)+'"/>';
   S+=LN(G1,200,G1,380,'gt')+LN(G2,200,G2,380,'gt')+LN(730,AY,800,AY,'pl')+'<path class="pl" d="M795 '+(AY-4)+'L800 '+AY+'L795 '+(AY+4)+'"/>';
   for(let j=0;j<K-1;j++){const p=slot(j);S+=RC(p[0],p[1],FW,SH,3,'xg');}
-  S+=TT(270,476,'TOP-K BY SCORE','cp')+TT((G1+G2)/2,476,'VISIBILITY FILTER','cp')+TT(FX+FW/2,476,'FEED','cp');
+  S+=TT(270,476,'SELECTION','cp')+TT((G1+G2)/2,476,'POST-SELECTION FILTERS','cp')+TT(FX+FW/2,476,'FEED','cp');
   const L=9;
   /* scrubbed (q 0 → 1): rank HR is the highlighted post — above the cut, through the gate, into slot 2 */
   const HR=1,anchors={bar:[bx(HR)+BW/2,base-H[HR]],gate:[(G1+G2)/2,200],slot:[FX+FW,slot(HR)[1]+SH/2]};
@@ -193,7 +193,7 @@ function v31Story(){
   const slotC=j=>wS(895,229+j*28);
   let SCREEN='<path class="gs" d="M'+SL+' '+R1(sy(SL)[0])+'L'+SR+' '+R1(sy(SR)[0])+'L'+SR+' '+R1(sy(SR)[1])+'L'+SL+' '+R1(sy(SL)[1])+'Z"/>',SLOTS='';
   for(let j=0;j<5;j++){const p=wS(840,220+j*28);SLOTS+=RC(p[0],p[1],110/ZO,18/ZO,3/ZO,'xg');}
-  const LABELS=TT(GX,425,'ALL POSTS','cp')+TT((X0+XS)/2,425,'01  SOURCING','cp')+TT(XW,425,'02  SCORING','cp')+TT((XE+X1)/2,425,'03  SELECTION','cp')+TT((SL+SR)/2,425,'FEED','cp');
+  const LABELS=TT(GX,425,'ALL POSTS','cp')+TT((X0+XS)/2,425,'SOURCING','cp')+TT(XW,425,'SCORING','cp')+TT((XE+X1)/2,425,'SELECTION','cp')+TT((SL+SR)/2,425,'FEED','cp');
   const GROUND='<path class="gl" d="M150 392Q600 418 1050 386"/>';
 
   /* ---- the overview as pen strokes ----
@@ -251,31 +251,47 @@ function v31Story(){
      In each story window the highlighted post is scrubbed through the stage (q 0 → 1). */
   const TR=[[.05,.18],[.38,.45],[.65,.72]],HW=[[.18,.38],[.45,.65],[.72,.95]];
   const chapter=P=>P<.115?0:P<.415?1:P<.685?2:3;
+
+  /* ---- stage clocks ----
+     Scroll picks the stage and drives the camera (zoom, slide between stages); inside a stage
+     the story (highlighted post, notes, leaders) runs on its own clock and loops: a short rest,
+     the story over LOOP[j] seconds, a hold on the end state, then again. A stage is live once
+     its incoming transition has finished and until the outgoing one starts; while not live its
+     story is frozen (0 before it, last value after). Reduced motion: scrubbed by scroll instead. */
+  const LOOP=[8.5,6.8,6.4],REST=.6,HOLDE=2;
+  const LQ=[0,0,0],T0=[0,0,0],ACT=[false,false,false],QS=[0,0,0];
+  const stageQ=(t,P,RM)=>{for(let j=0;j<3;j++){
+    if(RM){QS[j]=seg(P,HW[j][0],HW[j][1]);ACT[j]=P>=HW[j][0]-.005&&(j===2||P<=HW[j][1]+.005);continue;}
+    const act=P>=TR[j][1]-.004&&(j===2||P<=TR[j+1][0]+.004);
+    if(act&&!ACT[j])T0[j]=t;
+    let q;if(act){const per=REST+LOOP[j]+HOLDE,e=((t-T0[j])%per+per)%per;q=clamp((e-REST)/LOOP[j]);}
+    else q=P<TR[j][1]?0:LQ[j];
+    LQ[j]=q;QS[j]=q;ACT[j]=act;}};
   const OUT=u=>1-seg(u,0,.55),IN=u=>seg(u,.45,1),EDGE=140;
 
   /* ---- notes ----
      Short explanations, shown one at a time as the highlighted post reaches each point.
-     Text is HTML over the SVG (SectionTwo.tsx, glitch); the page measures where each text
+     Text is HTML over the SVG (SectionTwo.tsx, typewriter); the page measures where each text
      actually sits (setRects) and the leader is drawn from the text edge facing the anchor:
      a short horizontal stub towards the anchor, then straight to it, ending in a dot.
-     Coordinates are SVG units. Copy is draft. */
+     Coordinates are SVG units. Copy is the step names of the client's pipeline figure, one short line each; one note at a time. */
   const AN=(j,a)=>[SC[j].anchors[a][0]+OFF[j],SC[j].anchors[a][1]];
   const NOTE=(id,st,text,a,x,y,w,win)=>({id,st,text,a,x,y,w,win});
   const NOTES=[
-    NOTE('n1a',1,'Your post \u2014 one of ~500M posted every day',()=>AN(0,'live'),486,462,190,[.02,.3]),
-    NOTE('n1b',1,'Phoenix finds it for people who don\u2019t follow you',AN(0,'phoenix'),712,402,156,[.3,.5]),
-    NOTE('n1c',1,'Hydrated with features \u2014 it survives the filters',AN(0,'node'),1016,300,170,[.5,1]),
-    NOTE('n2a',2,'One of ~1,500 candidates for each viewer',AN(1,'post'),176,92,210,[0,.46]),
-    NOTE('n2b',2,'A model predicts each action: like, reply, repost, click',AN(1,'heads'),650,512,260,[.46,.66]),
-    NOTE('n2c',2,'Weighted into one score \u2014 replies count far more than likes',AN(1,'sigma'),866,170,230,[.66,.82]),
-    NOTE('n2d',2,'Repeat authors are discounted',AN(1,'div'),1004,186,170,[.82,1]),
-    NOTE('n3a',3,'Ranked by score \u2014 only the top few clear the cut',AN(2,'bar'),300,70,230,[.28,.5]),
-    NOTE('n3b',3,'Spam and unsafe posts are filtered out',AN(2,'gate'),806,110,200,[.5,.7]),
-    NOTE('n3c',3,'Lands in slot 2 of the feed',AN(2,'slot'),1084,300,110,[.7,1]),
+    NOTE('n1a',1,'Candidate sources',()=>AN(0,'live'),486,462,200,[.02,.14]),
+    NOTE('n1t',1,'In-network',AN(0,'thunder'),700,96,160,[.14,.26]),
+    NOTE('n1b',1,'Out-of-network',AN(0,'phoenix'),700,494,200,[.26,.46]),
+    NOTE('n1c',1,'Candidate hydration',AN(0,'node'),1050,250,150,[.46,.77]),
+    NOTE('n1d',1,'Pre-scoring filters',AN(0,'node'),1050,250,150,[.77,1]),
+    NOTE('n2b',2,'Scoring',AN(1,'heads'),640,500,200,[.3,.62]),
+    NOTE('n2c',2,'Weighted sum',AN(1,'sigma'),866,170,200,[.62,1]),
+    NOTE('n3a',3,'Selection',AN(2,'bar'),300,70,200,[.28,.5]),
+    NOTE('n3b',3,'Post-selection filters',AN(2,'gate'),806,110,200,[.5,.7]),
+    NOTE('n3c',3,'Ranked For You timeline',AN(2,'slot'),1084,300,110,[.7,1]),
   ];
   const visible=(P,I)=>{const on=new Set();if(I<1)return on;const c=chapter(P);if(!c)return on;
-    if(P<HW[c-1][0]-.005||(c<3&&P>HW[c-1][1]+.005))return on;
-    const q=seg(P,HW[c-1][0],HW[c-1][1]);
+    if(!ACT[c-1])return on;
+    const q=QS[c-1];
     NOTES.forEach(n=>{if(n.st===c&&(q>=n.win[0]&&q<n.win[1]||(n.win[1]===1&&q>=1)))on.add(n.id);});return on;};
   /* rects: { id: [left, top, right, bottom] } in SVG units, measured by the page */
   let RECTS={},LDR={};
@@ -306,6 +322,7 @@ function v31Story(){
     if(!E||!E.w.isConnected){const q=id=>svg.querySelector('#'+id);
       E={w:q('wG'),l:q('wL'),q:q('wQ'),f:q('wF'),e:q('wE'),gl:q('wGl'),ov:q('ovG'),mg:q('mgg'),
          sg:[0,1,2].map(k=>q('sg'+k)),sd:[0,1,2].map(k=>q('sd'+k))};}
+    stageQ(t,P,RM);
     const u=TR.map(r=>seg(P,r[0],r[1])),e=u.map(EIO),M=RM?0:1,v=u[0];
     const inWorld=P<TR[0][1];
     const setG=(g,a,b)=>{g.setAttribute('x1',R1(a));g.setAttribute('x2',R1(b));};
@@ -344,7 +361,7 @@ function v31Story(){
     frame++;
     if(frame%2===0){
       if(inWorld&&I>0){E.gl.innerHTML=globe(t,Z);if(aux>.01){E.q.innerHTML=posts(t,false);E.e.innerHTML=posts(t,true);}}
-      SC.forEach((S,j)=>{if(op[j]>.001)E.sd[j].innerHTML=S.dyn(t+j*3.1,seg(P,HW[j][0],HW[j][1]));});}
+      SC.forEach((S,j)=>{if(op[j]>.001)E.sd[j].innerHTML=S.dyn(t+j*3.1,QS[j]);});}
     const h=I>=1&&P<.04?(1-P/.04):0,hs=(h>.01?'<text class="cp" x="'+CX+'" y="476" text-anchor="middle" opacity="'+h.toFixed(2)+'">SCROLL TO LOOK INSIDE</text>':'')+leaders(visible(P,I),t,RM);
     if(hs!==lastHint){E.ov.innerHTML=hs;lastHint=hs;}
     return '';}};

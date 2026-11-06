@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import Glitch from './Glitch';
+import TokenText from './TokenText';
 import { createPipeline } from './pipeline/engine';
 import './pipeline/pipeline.css';
 
@@ -10,31 +10,32 @@ import './pipeline/pipeline.css';
    Transition from the hero: this section starts one viewport early (pulled up under
    the hero) so its stage is already pinned while the hero scrolls away above it.
    The page switches dark → white (a ~280ms eased switch when the hero's bottom edge crosses
-   mid-screen); then the chrome and part 1 glitch in, so there is never an empty
+   mid-screen); then the chrome and part 1 stream in, so there is never an empty
    screen and nothing slides in from below.
    Everything after that is pinned; header and footer stay put and the parts swap in the
    band between them. Scroll budget, after the hero has left:
-     0.7 viewport   part 1 holds in the centre (it glitched in on arrival)
-     1 viewport     part 1 glitches out; after it has finished, the diagram draws itself in, line by line
-     9.5 viewports  diagram scrubbed: overview → zoom into the globe → sourcing → scoring →
-                    selection (held). In each stage the highlighted post is scrubbed through it
+     1.5 viewport   part 1 holds in the centre (it types in on arrival)
+     1.2 viewport   part 1 fades out; after it has finished, the diagram draws itself in, line by line
+     9 viewports    diagram (scroll drives the camera; each stage's story loops on its own): overview → zoom into the globe → sourcing → scoring →
+                    selection (held). In each stage the highlighted post runs through it on a loop
                     and callouts (heading + bracket, then notes with leaders) appear in turn
-     0.6 viewport   selection fades out, its step label glitches out, part 3 glitches in
-     0.6 viewport   hold, then the pin releases                                            */
-const HOLD = 0.7;
-const INTRO = 1;
-const DIAGRAM = 9.5;
+     0.6 viewport   selection fades out, its step label fades, part 3 types in
+     1.4 viewport   hold, then the pin releases                                            */
+const HOLD = 1.5;
+const INTRO = 1.2;
+const DIAGRAM = 9;
 const OUTRO = 0.6;
-const TAIL = 0.6;
+const TAIL = 1.4;
 
-/* Step label, top left. Index 0 is the overview (no number). Step 1 copy is from Figma;
-   the overview line and steps 2 and 3 are draft. Notes over the diagram (copy and positions)
-   live in pipeline/engine.js (NOTES) and are draft. */
+/* Step label, top centre above the diagram, indexed by chapter (0 overview, 1 sourcing,
+   2 scoring, 3 selection). Copy is the client's (Notion) word for word — do not edit.
+   Scoring and selection are both the Ranking module, so they share one line. Notes over
+   the diagram use the wording of the client's pipeline figure (pipeline/engine.js NOTES). */
 const STEPS = [
-  'Every post passes through three modules before it reaches a feed',
-  'The Sourcing module determines how many people see your post',
-  'The Scoring module predicts how each person will engage with your post',
-  'The Selection module decides where your post lands in the feed',
+  'The algorithm passes every post on X and LinkedIn through the same pipeline, scoring it on thousands of signals.',
+  '1) The Sourcing module determines how many people see your post',
+  '2) The Ranking module then decides your post’s position in each feed',
+  '2) The Ranking module then decides your post’s position in each feed',
 ];
 
 type Note = { id: string; text: string; x: number; y: number; w: number };
@@ -71,13 +72,10 @@ export default function SectionTwo() {
 
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
     const start = performance.now();
-    let smoothed = 0;
     let last: View = { chrome: false, part1: false, part2: false, part3: false, step: 0, notes: '' };
     let lastOutro = -1;
     let isLight = false;
     let lightAt = 0;
-    let hiddenAt = -1; // when part 1 started glitching out (ms)
-    let introShown = 0;
     let raf = 0;
     let running = false;
 
@@ -107,35 +105,32 @@ export default function SectionTwo() {
       const arrived = pinned && lit;
       const chromeIn = arrived;
 
-      // Part 1 glitches out when the hold is used up. The diagram starts drawing 0.25 viewport
-      // later, and never before part 1's glitch-out has finished (~420ms), even on a fast
-      // scroll — then it eases to where the scroll says it should be.
+      // Everything here follows the scroll directly (Lenis already smooths it); only the
+      // stage stories inside the diagram run on their own clocks (pipeline/engine.js).
+      // Part 1 fades out when its hold is used up; the diagram draws itself in over the next
+      // viewport, starting 0.25 viewport later so the two never overlap.
       const part1On = arrived && s < HOLD * vh;
-      if (!part1On && s >= HOLD * vh) { if (hiddenAt < 0) hiddenAt = now; } else hiddenAt = -1;
       const introTarget = clamp((s - (HOLD + 0.25) * vh) / ((INTRO - 0.25) * vh));
-      const gateOpen = introTarget <= 0 || (hiddenAt >= 0 && now - hiddenAt > 450) || reduce.matches;
-      introShown = gateOpen ? introShown + (introTarget - introShown) * 0.25 : 0;
-      if (Math.abs(introTarget - introShown) < 0.001) introShown = gateOpen ? introTarget : 0;
-      const intro = introShown;
+      const intro = introTarget;
       const target = clamp((s - (HOLD + INTRO) * vh) / (DIAGRAM * vh));
-      smoothed += (target - smoothed) * 0.14; // a soft follow, so the highlighted post never jumps ahead of its notes
-      if (Math.abs(target - smoothed) < 0.0005) smoothed = target;
       const outro = clamp((s - (HOLD + INTRO + DIAGRAM) * vh) / (OUTRO * vh));
 
-      // Outro: the diagram fades out (scrubbed), the step label glitches out, part 3 glitches in.
+      // Outro: the diagram fades out (scrubbed), the step label fades, part 3 types in.
       if (outro !== lastOutro) {
         lastOutro = outro;
         part2.style.opacity = clamp(1 - outro / 0.6).toFixed(3);
       }
+
+      const part3On = arrived && outro >= 0.5;
 
       const shown = arrived && intro >= 0.5 && outro < 0.3;
       const next: View = {
         chrome: chromeIn,
         part1: part1On,
         part2: shown,
-        part3: arrived && outro >= 0.5,
-        step: pipe.chapter(smoothed),
-        notes: shown ? [...pipe.visible(smoothed, intro)].join(' ') : '',
+        part3: part3On,
+        step: pipe.chapter(target),
+        notes: shown ? [...pipe.visible(target, intro)].join(' ') : '',
       };
       if (next.chrome !== last.chrome || next.part1 !== last.part1 || next.part2 !== last.part2 || next.part3 !== last.part3 || next.step !== last.step || next.notes !== last.notes) {
         last = next;
@@ -145,7 +140,7 @@ export default function SectionTwo() {
       if (intro > 0 && outro < 1) {
         // Narrow screens: zoom the camera in inside each stage so labels stay legible.
         const boost = Math.max(1, 760 / Math.max(1, svg.clientWidth));
-        pipe.render(reduce.matches ? 0 : (now - start) / 1000, smoothed, boost, reduce.matches, intro);
+        pipe.render(reduce.matches ? 0 : (now - start) / 1000, target, boost, reduce.matches, intro);
       }
     };
 
@@ -168,6 +163,7 @@ export default function SectionTwo() {
     window.addEventListener('resize', onScroll);
     update(performance.now());
 
+
     return () => {
       io.disconnect();
       stopLoop();
@@ -177,7 +173,7 @@ export default function SectionTwo() {
   }, []);
 
   // Measure where each note's text really sits (it wraps differently per width) so the
-  // leaders start from the text edge. Glitch keeps the layout of hidden text, so this is
+  // leaders start from the text edge. TokenText keeps the layout of unshown text, so this is
   // stable whether or not a note is showing.
   useEffect(() => {
     const box = notesRef.current;
@@ -188,7 +184,7 @@ export default function SectionTwo() {
       const k = 1200 / b.width;
       const rects: Record<string, number[]> = {};
       box.querySelectorAll<HTMLElement>('[data-note]').forEach((el) => {
-        const t = el.querySelector('.glitch')?.getBoundingClientRect();
+        const t = el.querySelector('.tw')?.getBoundingClientRect();
         if (t) rects[el.dataset.note!] = [(t.left - b.left) * k, (t.top - b.top) * k, (t.right - b.left) * k, (t.bottom - b.top) * k];
       });
       pipeRef.current?.setRects(rects);
@@ -220,7 +216,7 @@ export default function SectionTwo() {
               <em>Labs</em>
             </a>
             <a className="s2-menu" href="#" aria-label="Menu">
-              <Glitch as="span" text="[M]" show={chrome} delay={120} />
+              <TokenText as="span" text="[M]" show={chrome} delay={120} fade />
             </a>
             <span className="tick tick-l" aria-hidden="true" />
             <span className="tick tick-r" aria-hidden="true" />
@@ -229,18 +225,12 @@ export default function SectionTwo() {
           {/* Parts 1–3 share the band between header and footer; they swap in place. */}
           <div className="s2-window">
             <div className="s2-part1">
-              <Glitch text="Virality is not luck, it’s engineering." show={part1} delay={80} />
-              <Glitch text="The algorithm passes every post on X and LinkedIn through the same pipeline, scoring it on thousands of signals." show={part1} delay={240} />
+              <TokenText text="Virality is not luck, it’s engineering." show={part1} delay={200} probs />
             </div>
 
             <div className="s2-part2" ref={part2Ref}>
               <div className="s2-steps" aria-live="polite">
-                {step > 0 && (
-                  <span className="s2-num">
-                    <Glitch as="span" text={`${step}.`} show={part2} />
-                  </span>
-                )}
-                <Glitch as="span" className="s2-step" text={STEPS[step]} show={part2} delay={60} />
+                <TokenText as="span" className="s2-step" text={STEPS[step]} show={part2} delay={120} probs />
               </div>
               <div className="pipe">
                 <svg
@@ -259,7 +249,7 @@ export default function SectionTwo() {
                       className="s2-note"
                       style={{ left: `${(n.x / 1200) * 100}%`, top: `${(n.y / 560) * 100}%`, width: `${(n.w / 1200) * 100}%` }}
                     >
-                      <Glitch as="span" text={n.text} show={on.has(n.id)} delay={120} />
+                      <TokenText as="span" text={n.text} show={on.has(n.id)} delay={160} />
                     </div>
                   ))}
                 </div>
@@ -267,13 +257,13 @@ export default function SectionTwo() {
             </div>
 
             <div className="s2-part3">
-              <Glitch text={PART3} show={part3} delay={80} />
+              <TokenText text={PART3} show={part3} delay={160} probs />
             </div>
           </div>
 
           <footer className="s2-foot">
-            <Glitch as="span" text="/Algorithm Research" show={chrome} delay={200} />
-            <Glitch as="span" text="/Our Tech" show={chrome} delay={260} />
+            <TokenText as="span" text="/Algorithm Research" show={chrome} delay={200} fade />
+            <TokenText as="span" text="/Our Tech" show={chrome} delay={260} fade />
             <span className="tick tick-l" aria-hidden="true" />
             <span className="tick tick-r" aria-hidden="true" />
           </footer>

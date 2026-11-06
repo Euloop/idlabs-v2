@@ -248,7 +248,7 @@ html[data-theme='light'] .frame.rails > .rails-light { opacity: 1; }
 .s2-stage { position: sticky; top: 0; height: 100svh; overflow: clip; }
 /* All section 2 text is a fixed 12px (wordmark excepted — it is the logo). */
 .s2-frame { --rule: #e0e0e0; display: grid; grid-template-rows: auto 1fr auto; height: 100svh; min-height: 0; margin-inline: auto; }
-/* Chrome stays hidden until the stage has pinned, then glitches / fades in place. */
+/* Chrome stays hidden until the stage has pinned, then fades in place. */
 .s2-frame .tick { background: #d9d9d9; animation: none; opacity: 0; transition: opacity 400ms var(--ease-out); }
 .s2-header .wordmark { color: #4a4a4a; animation: none; opacity: 0; transition: opacity 500ms var(--ease-out); }
 .s2[data-chrome] .s2-frame .tick, .s2[data-chrome] .s2-header .wordmark { opacity: 1; }
@@ -265,40 +265,49 @@ html[data-theme='light'] .frame.rails > .rails-light { opacity: 1; }
   font-family: var(--mono); font-size: 12px; line-height: 1.5;
   text-transform: uppercase; text-align: center; color: #1f1f1f; text-wrap: pretty;
 }
-/* Part 3: glitches in after the diagram fades (see SectionTwo.tsx). */
+/* Part 3: streams in after the diagram fades (see SectionTwo.tsx). */
 .s2-part3 {
   align-self: center; justify-self: center; margin: 0;
   width: min(100%, 448px);
-  font-family: var(--mono); font-size: 12px; line-height: 1.4;
+  font-family: var(--mono); font-size: 12px; line-height: 1.85;
   text-transform: uppercase; text-align: center; color: #1f1f1f; text-wrap: pretty;
 }
 .s2-part2 { position: relative; display: grid; }
-.s2-part2 .pipe { align-self: center; position: relative; }
+.s2-part2 .pipe { position: relative; }
 .s2-part2 svg { display: block; width: 100%; height: auto; aspect-ratio: 1200 / 560; overflow: hidden; }
 
-/* Step label, top left: the current step glitches out and the next one glitches in. */
-.s2-part2 { grid-template-rows: auto 1fr; }
+/* Step label, top centre above the diagram: the current step fades and the next one streams in.
+   Room for two lines is reserved so the diagram never moves. */
+.s2-part2 { grid-template-rows: auto auto; align-content: center; row-gap: calc(8 * var(--px)); }
 .s2-steps {
-  display: flex; gap: 6px; align-items: flex-start;
-  padding-top: calc(28 * var(--px)); min-height: calc((28 + 36) * var(--px));
-  width: min(100%, 300px);
-  font-family: var(--mono); font-size: 12px; line-height: 1.5;
-  text-transform: uppercase; color: #1f1f1f; text-wrap: pretty;
+  justify-self: center; align-self: end;
+  min-height: 44px; display: flex; align-items: flex-end; justify-content: center;
+  width: min(100%, 512px);
+  font-family: var(--mono); font-size: 12px; line-height: 1.85;
+  text-transform: uppercase; text-align: center; color: #1f1f1f; text-wrap: balance;
 }
-.s2-num { flex: none; min-width: 12px; }
 
 /* Notes over the diagram (positions in SVG units, from pipeline/engine.js). */
 .s2-notes { position: absolute; inset: 0; pointer-events: none; }
 .s2-note {
   position: absolute;
   font-family: var(--mono); font-size: 12px; line-height: 1.4;
-  text-transform: uppercase; color: #4a4a4a; text-wrap: pretty;
+  text-transform: uppercase; color: #1f1f1f; text-wrap: balance;
 }
 
-/* Glitch text states (see components/Glitch.tsx) */
-.glitch .g-h { color: transparent; }
-.glitch .g-s { color: #a4a49f; }
-.glitch .g-b { color: #2f6bff; }
+/* Token stream (components/TokenText.tsx): unshown tokens keep their layout; each token
+   eases from pale grey to ink; a faint probability can sit under the newest token. */
+.tw { transition: opacity 200ms ease; }
+.tw.tk-out { opacity: 0; }
+.tc { opacity: 0; color: #b4b4af; transition: opacity 120ms linear, color 500ms ease; }
+.tc.on { opacity: 1; color: inherit; }
+.tw-w { position: relative; }
+.tk-p {
+  position: absolute; left: 0; top: 100%; margin-top: 1px;
+  font-size: 9px; line-height: 1; letter-spacing: 0.02em; color: #a4a49f; white-space: nowrap;
+  animation: tk-p 650ms ease forwards; pointer-events: none;
+}
+@keyframes tk-p { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: 0; } }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
 .s2-foot {
