@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import TokenText from './TokenText';
+import ScrollText, { type ScrollTextHandle } from './ScrollText';
 import { createPipeline } from './pipeline/engine';
 import './pipeline/pipeline.css';
 
@@ -9,17 +10,18 @@ import './pipeline/pipeline.css';
 
    Transition from the hero: this section starts one viewport early (pulled up under
    the hero) so its stage is already pinned while the hero scrolls away above it.
-   The page switches dark → white (a ~280ms eased switch when the hero's bottom edge crosses
-   mid-screen); then the chrome and part 1 stream in, so there is never an empty
-   screen and nothing slides in from below.
+   The page switches dark → white (a 400ms eased switch when about half the hero has gone);
+   the chrome fades in. Everything else in this section is driven by the scroll position:
+   text types in letter by letter as you scroll (and un-types as you scroll back), the
+   diagram draws in, zooms, and each stage's story is scrubbed by the scroll.
    Everything after that is pinned; header and footer stay put and the parts swap in the
    band between them. Scroll budget, after the hero has left:
-     1.5 viewport   part 1 holds in the centre (it types in on arrival)
-     1.2 viewport   part 1 fades out; after it has finished, the diagram draws itself in, line by line
-     9 viewports    diagram (scroll drives the camera; each stage's story loops on its own): overview → zoom into the globe → sourcing → scoring →
-                    selection (held). In each stage the highlighted post runs through it on a loop
-                    and callouts (heading + bracket, then notes with leaders) appear in turn
-     0.6 viewport   selection fades out, its step label fades, part 3 types in
+     1.5 viewport   part 1 types in (from just before the hero has gone), holds, types out
+     1.2 viewport   the diagram draws itself in, line by line; its line above types in
+     9 viewports    diagram: overview → zoom into the globe → sourcing → scoring → selection.
+                    In each stage the highlighted post is scrubbed through it and the notes
+                    (leader first, then text) write in and out as it passes
+     0.6 viewport   selection fades out, its step label types out, part 3 types in
      1.4 viewport   hold, then the pin releases                                            */
 const HOLD = 1.5;
 const INTRO = 1.2;
@@ -27,7 +29,7 @@ const DIAGRAM = 9;
 const OUTRO = 0.6;
 const TAIL = 1.4;
 
-/* Step label, top centre above the diagram, indexed by chapter (0 overview, 1 sourcing,
+/* Step label, centred below the diagram, indexed by chapter (0 overview, 1 sourcing,
    2 scoring, 3 selection). Copy is the client's (Notion) word for word — do not edit.
    Scoring and selection are both the Ranking module, so they share one line. Notes over
    the diagram use the wording of the client's pipeline figure (pipeline/engine.js NOTES). */
@@ -45,7 +47,6 @@ const PART3 =
 
 const clamp = (v: number, a = 0, b = 1) => Math.max(a, Math.min(b, v));
 
-type View = { chrome: boolean; part1: boolean; part2: boolean; part3: boolean; step: number; notes: string };
 
 export default function SectionTwo() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -53,7 +54,11 @@ export default function SectionTwo() {
   const part2Ref = useRef<HTMLDivElement>(null);
   const notesRef = useRef<HTMLDivElement>(null);
   const pipeRef = useRef<ReturnType<typeof createPipeline> | null>(null);
-  const [view, setView] = useState<View>({ chrome: false, part1: false, part2: false, part3: false, step: 0, notes: '' });
+  const [chrome, setChrome] = useState(false);
+  const part1Ref = useRef<ScrollTextHandle>(null);
+  const stepRef = useRef<ScrollTextHandle>(null);
+  const part3Ref = useRef<ScrollTextHandle>(null);
+  const noteRefs = useRef<Record<string, ScrollTextHandle | null>>({});
   const [notes, setNotes] = useState<Note[]>([]);
 
   useEffect(() => {
@@ -72,7 +77,7 @@ export default function SectionTwo() {
 
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
     const start = performance.now();
-    let last: View = { chrome: false, part1: false, part2: false, part3: false, step: 0, notes: '' };
+    let lastChrome = false;
     let lastOutro = -1;
     let isLight = false;
     let lightAt = 0;
@@ -94,24 +99,22 @@ export default function SectionTwo() {
         root.dataset.theme = light ? 'light' : 'dark';
         root.style.setProperty('--theme', light ? '1' : '0');
       }
-      // Section 2 text waits for the light to come up (~400ms).
+      // The chrome waits for the light to come up (~400ms).
       const lit = isLight && now - lightAt > 380;
 
       const r = section.getBoundingClientRect();
       // px scrolled since the hero fully left (negative while it is leaving).
       const s = -r.top - vh;
       const pinned = r.top <= 1 && r.bottom >= vh - 1;
-      // Section 2 text only appears once the light has settled.
-      const arrived = pinned && lit;
-      const chromeIn = arrived;
+      const chromeIn = pinned && lit;
+      const V = (x: number) => x * vh; // viewports → px
+      const sg = (v: number, a: number, b: number) => clamp((v - a) / (b - a));
 
-      // Everything here follows the scroll directly (Lenis already smooths it); only the
-      // stage stories inside the diagram run on their own clocks (pipeline/engine.js).
-      // Part 1 fades out when its hold is used up; the diagram draws itself in over the next
-      // viewport, starting 0.25 viewport later so the two never overlap.
-      const part1On = arrived && s < HOLD * vh;
-      const introTarget = clamp((s - (HOLD + 0.25) * vh) / ((INTRO - 0.25) * vh));
-      const intro = introTarget;
+      // Part 1 types in from just before the hero has gone, holds, and types out at the end
+      // of its hold; the diagram then draws itself in over the next viewport.
+      const p1 = isLight ? Math.min(sg(s, V(-0.45), V(0.35)), 1 - sg(s, V(HOLD - 0.45), V(HOLD))) : 0;
+      part1Ref.current?.set(p1);
+      const intro = clamp((s - (HOLD + 0.25) * vh) / ((INTRO - 0.25) * vh));
       const target = clamp((s - (HOLD + INTRO) * vh) / (DIAGRAM * vh));
       const outro = clamp((s - (HOLD + INTRO + DIAGRAM) * vh) / (OUTRO * vh));
 
@@ -121,21 +124,23 @@ export default function SectionTwo() {
         part2.style.opacity = clamp(1 - outro / 0.6).toFixed(3);
       }
 
-      const part3On = arrived && outro >= 0.5;
+      // Step label (below the diagram): overview line, then 1) Sourcing, then 2) Ranking (scoring and
+      // selection). Each types in as its chapter starts and out as it ends.
+      const P = target;
+      const label = P < 0.113 ? 0 : P < 0.413 ? 1 : 2;
+      const pl = label === 0 ? Math.min(sg(intro, 0.55, 1), 1 - sg(P, 0.07, 0.11))
+        : label === 1 ? Math.min(sg(P, 0.115, 0.16), 1 - sg(P, 0.37, 0.41))
+        : Math.min(sg(P, 0.415, 0.46), 1 - sg(outro, 0, 0.4));
+      stepRef.current?.set(pl, STEPS[label]);
 
-      const shown = arrived && intro >= 0.5 && outro < 0.3;
-      const next: View = {
-        chrome: chromeIn,
-        part1: part1On,
-        part2: shown,
-        part3: part3On,
-        step: pipe.chapter(target),
-        notes: shown ? [...pipe.visible(target, intro)].join(' ') : '',
-      };
-      if (next.chrome !== last.chrome || next.part1 !== last.part1 || next.part2 !== last.part2 || next.part3 !== last.part3 || next.step !== last.step || next.notes !== last.notes) {
-        last = next;
-        setView(next);
-      }
+      // Notes: leader over the first part of each note's progress, then its text types.
+      const np = pipe.noteProgress(P, intro) as Record<string, number>;
+      for (const id in noteRefs.current) noteRefs.current[id]?.set(outro > 0 ? 0 : sg(np[id] || 0, 0.3, 1));
+
+      // Part 3 types in as the diagram leaves.
+      part3Ref.current?.set(sg(s, V(HOLD + INTRO + DIAGRAM + OUTRO * 0.4), V(HOLD + INTRO + DIAGRAM + OUTRO + 0.7)));
+
+      if (chromeIn !== lastChrome) { lastChrome = chromeIn; setChrome(chromeIn); }
 
       if (intro > 0 && outro < 1) {
         // Narrow screens: zoom the camera in inside each stage so labels stay legible.
@@ -173,7 +178,7 @@ export default function SectionTwo() {
   }, []);
 
   // Measure where each note's text really sits (it wraps differently per width) so the
-  // leaders start from the text edge. TokenText keeps the layout of unshown text, so this is
+  // leaders start from the text edge. ScrollText keeps the layout of untyped text, so this is
   // stable whether or not a note is showing.
   useEffect(() => {
     const box = notesRef.current;
@@ -196,8 +201,6 @@ export default function SectionTwo() {
     return () => ro.disconnect();
   }, [notes]);
 
-  const { chrome, part1, part2, part3, step } = view;
-  const on = new Set(view.notes.split(' '));
 
   return (
     <section
@@ -225,12 +228,12 @@ export default function SectionTwo() {
           {/* Parts 1–3 share the band between header and footer; they swap in place. */}
           <div className="s2-window">
             <div className="s2-part1">
-              <TokenText text="Virality is not luck, it’s engineering." show={part1} delay={200} probs />
+              <ScrollText ref={part1Ref} text="Virality is not luck, it’s engineering." probs />
             </div>
 
             <div className="s2-part2" ref={part2Ref}>
               <div className="s2-steps" aria-live="polite">
-                <TokenText as="span" className="s2-step" text={STEPS[step]} show={part2} delay={120} probs />
+                <ScrollText ref={stepRef} as="span" className="s2-step" text={STEPS[0]} probs />
               </div>
               <div className="pipe">
                 <svg
@@ -249,7 +252,7 @@ export default function SectionTwo() {
                       className="s2-note"
                       style={{ left: `${(n.x / 1200) * 100}%`, top: `${(n.y / 560) * 100}%`, width: `${(n.w / 1200) * 100}%` }}
                     >
-                      <TokenText as="span" text={n.text} show={on.has(n.id)} delay={160} />
+                      <ScrollText ref={(h) => { noteRefs.current[n.id] = h; }} as="span" text={n.text} />
                     </div>
                   ))}
                 </div>
@@ -257,7 +260,7 @@ export default function SectionTwo() {
             </div>
 
             <div className="s2-part3">
-              <TokenText text={PART3} show={part3} delay={160} probs />
+              <ScrollText ref={part3Ref} text={PART3} probs />
             </div>
           </div>
 

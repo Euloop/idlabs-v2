@@ -1,0 +1,91 @@
+
+/* ───────── Pipeline diagram (ported v26 styles, scoped to .xpipe) ───────── */
+.xpipe {
+  --bg: #fff; --ink: #111111; --muted: #8b8b86; --ghost: #d4d4d0; --guide: #a4a49f; --hi: #efefeb; --line: #ecece8;
+  --acc: #1fd655; --acct: #0fa93e; --thu: #2f6bff; --phx: #f2711c;
+  --sans: 'Inter', system-ui, sans-serif; --mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+.xpipe .pl { fill:none;stroke:var(--ink);stroke-opacity:.2;stroke-width:.8;stroke-linejoin:round }
+.xpipe .pl.on { stroke-opacity:.75 }
+.xpipe .x { fill:none;stroke:var(--ink);stroke-width:1.1 }
+.xpipe .xg { fill:none;stroke:var(--ghost);stroke-width:1 }
+.xpipe .e { fill:none;stroke:var(--ink);stroke-opacity:.075;stroke-width:.5 }
+.xpipe .e2 { fill:none;stroke:var(--ink);stroke-opacity:.3;stroke-width:.6 }
+.xpipe .tr { fill:none;stroke:var(--ink);stroke-opacity:.6;stroke-width:.9 }
+.xpipe .fn { fill:none;stroke:var(--ink);stroke-opacity:.18;stroke-width:.8;stroke-dasharray:2 4 }
+.xpipe .fns { fill:none;stroke:var(--ink);stroke-opacity:.38;stroke-width:.8 }
+.xpipe .dt { fill:var(--ghost) }
+.xpipe .gd { fill:var(--acc) }
+.xpipe .pu { fill:var(--ink);fill-opacity:.5 }
+.xpipe .tg { fill:var(--ink) }
+.xpipe .cp { font:500 9.5px var(--mono);letter-spacing:.14em;fill:var(--muted) }
+.xpipe .cp.on { fill:var(--ink) }
+.xpipe .rt { font:500 12px var(--mono);letter-spacing:.04em;fill:var(--ink) }
+.xpipe .rg { fill:var(--acct) }
+.xpipe .rk { font:400 10.5px var(--mono);fill:var(--muted) }
+.xpipe .rv { font:400 10.5px var(--mono);fill:var(--ink) }
+/* v5 source colours */
+.xpipe .tb { fill:var(--thu) }
+.xpipe .ob { fill:var(--phx) }
+.xpipe .xt { fill:none;stroke:var(--thu);stroke-width:1.2 }
+.xpipe .xo { fill:none;stroke:var(--phx);stroke-width:1.2 }
+.xpipe .xtl { fill:none;stroke:var(--thu);stroke-opacity:.35;stroke-width:.8 }
+.xpipe .et { fill:none;stroke:var(--thu);stroke-opacity:.16;stroke-width:.6 }
+.xpipe .eo { fill:none;stroke:var(--phx);stroke-opacity:.16;stroke-width:.6 }
+.xpipe .at { fill:none;stroke:var(--thu);stroke-opacity:.45;stroke-width:.8 }
+.xpipe .ao { fill:none;stroke:var(--phx);stroke-opacity:.45;stroke-width:.8 }
+.xpipe .cpl { fill:none;stroke:var(--thu);stroke-width:.9 }
+.xpipe .capf { fill:var(--thu);fill-opacity:.07;stroke:none }
+.xpipe .rvt { font:500 10.5px var(--mono);fill:var(--thu) }
+.xpipe .rvo { font:500 10.5px var(--mono);fill:var(--phx) }
+.xpipe .cpl2 { fill:none;stroke:var(--ink);stroke-opacity:.45;stroke-width:.8;stroke-dasharray:3 3 }
+.xpipe .xs { fill:none;stroke:var(--ink);stroke-width:.9 }
+.xpipe .e3 { fill:none;stroke:var(--ink);stroke-opacity:.13;stroke-width:.6 }
+.xpipe .trk { fill:none;stroke:var(--ink);stroke-opacity:.42;stroke-width:.7 }
+.xpipe .trk2 { fill:none;stroke:var(--ink);stroke-opacity:.16;stroke-width:.6 }
+.xpipe .oc { fill:var(--bg);stroke:var(--ink);stroke-width:1 }
+.xpipe .oc2 { fill:none;stroke:var(--ink);stroke-opacity:.22;stroke-width:.8 }
+.xpipe .hk { font:400 11px var(--mono);fill:var(--ink) }
+.xpipe .hv { font:500 11px var(--mono);fill:var(--ink) }
+.xpipe .sg { font:400 16px var(--sans);fill:var(--ink) }
+.xpipe .sv { font:500 11.5px var(--mono);fill:var(--ink) }
+.xpipe .e4 { fill:none;stroke:var(--ink);stroke-opacity:.05;stroke-width:.5 }
+.xpipe .gt { fill:none;stroke:var(--ink);stroke-opacity:.55;stroke-width:.9;stroke-dasharray:5 5 }
+.xpipe .sg2 { font:400 13px var(--sans);fill:var(--ink) }
+.xpipe .sv2 { font:500 10.5px var(--mono);fill:var(--ink) }
+.xpipe body.scrolly nav, .xpipe body.scrolly .ctrl { display:none }
+.xpipe body.scrolly .stage { position:sticky;top:env(safe-area-inset-top,0px);height:100vh;height:100svh;display:flex;align-items:center }
+.xpipe .mini text { display:none }
+.xpipe #gl { position:relative;flex:1;align-self:stretch;width:100%;height:100%;overflow:hidden }
+.xpipe #gl canvas { display:block;width:100%;height:100% }
+.xpipe #gl .ov { position:absolute;inset:0;pointer-events:none }
+.xpipe #gl .lab { position:absolute;left:0;top:0;font:500 10px var(--mono);letter-spacing:.14em;color:var(--muted);white-space:nowrap;opacity:0;will-change:transform }
+.xpipe #gl .lab.big { font:400 18px var(--sans);color:var(--ink);letter-spacing:0 }
+.xpipe #gl .lab.val { color:var(--ink);letter-spacing:.04em }
+.xpipe #gl .hud { left:max(16px,env(safe-area-inset-left,0px));top:22px;opacity:1;color:var(--ink);transform:none }
+.xpipe #gl .pd { left:auto;right:max(18px,env(safe-area-inset-right,0px));width:5px;height:5px;border-radius:50%;background:var(--ghost);opacity:1;transform:none }
+.xpipe #gl .pd.on { background:var(--ink) }
+.xpipe .fw { fill:var(--bg);stroke:none }
+.xpipe svg.cam path, .xpipe svg.cam ellipse, .xpipe svg.cam rect, .xpipe svg.cam circle { vector-effect:non-scaling-stroke }
+.xpipe .scn text { opacity:var(--to,1) }
+.xpipe svg#stage { transform-origin:50% 50% }
+.xpipe .fin { fill:#F3F3F0;stroke:none }
+.xpipe .fwx { fill:var(--bg);stroke:var(--ink);stroke-width:1 }
+.xpipe .gin { fill:none;stroke:url(#gIn);stroke-width:1 }
+.xpipe .gout { fill:none;stroke:url(#gOut);stroke-width:1 }
+.xpipe .mouth { fill:url(#gM);stroke:var(--ink);stroke-width:1 }
+.xpipe .endo { fill:url(#gE);stroke:var(--ink);stroke-width:1 }
+/* v27 ring funnel */
+.xpipe .rf { fill:none;stroke:var(--ink);stroke-opacity:.3;stroke-width:.6 }
+.xpipe .rb { fill:none;stroke:var(--ink);stroke-opacity:.16;stroke-width:.5 }
+.xpipe .rw { fill:none;stroke:var(--thu);stroke-opacity:.55;stroke-width:.8 }
+.xpipe .rw.rwb { stroke-opacity:.18 }
+.xpipe .gs { fill:none;stroke:var(--ink);stroke-opacity:.4;stroke-width:.8;stroke-dasharray:3 4 }
+.xpipe .gl { fill:none;stroke:var(--ink);stroke-opacity:.18;stroke-width:.7;stroke-dasharray:3 5 }
+.xpipe .pf { fill:none;stroke:var(--ink);stroke-opacity:.55;stroke-width:.8 }
+/* highlighted post (accent blue) and callout leaders */
+.xpipe .hb { fill:var(--thu) }
+.xpipe .xb { fill:none;stroke:var(--thu);stroke-width:1.5 }
+.xpipe .hr { fill:none;stroke:var(--thu);stroke-opacity:.45;stroke-width:.8 }
+.xpipe .ld { fill:none;stroke:var(--ink);stroke-opacity:.32;stroke-width:.7 }
+.xpipe .ldd { fill:var(--ink);fill-opacity:.5 }

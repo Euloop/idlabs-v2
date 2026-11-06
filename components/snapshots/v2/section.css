@@ -1,0 +1,78 @@
+/* SNAPSHOT v2 (frozen 2026-11-06, commit 295dae8) — Section 2 styles copied from app/globals.css, classes renamed s2v2-*. */
+/* ───────── Section 2 · Algorithm research (white, pinned) ─────────
+   Figma 110:920 / 110:898. Same frame system as the hero, light palette. */
+/* Pulled up one viewport so the stage is pinned beneath the hero while it leaves.
+   The hero (transparent) paints above it. */
+.s2v2 { position: relative; z-index: 1; margin-top: 0; } /* standalone page: no hero above it */
+.s2v2-stage { position: sticky; top: 0; height: 100svh; overflow: clip; }
+/* All section 2 text is a fixed 12px (wordmark excepted — it is the logo). */
+.s2v2-frame { --rule: #e0e0e0; display: grid; grid-template-rows: auto 1fr auto; height: 100svh; min-height: 0; margin-inline: auto; }
+/* Chrome stays hidden until the stage has pinned, then fades in place. */
+.s2v2-frame .tick { background: #d9d9d9; animation: none; opacity: 0; transition: opacity 400ms var(--ease-out); }
+.s2v2-header .wordmark { color: #4a4a4a; animation: none; opacity: 0; transition: opacity 500ms var(--ease-out); }
+.s2v2[data-chrome] .s2v2-frame .tick, .s2v2[data-chrome] .s2v2-header .wordmark { opacity: 1; }
+.s2v2-menu { padding-top: calc(6 * var(--px)); font-family: var(--sans); font-weight: 450; font-size: 12px; line-height: 1.4; color: #737373; transition: color 160ms var(--ease-out); }
+.s2v2-menu:hover { color: #1f1f1f; }
+
+/* Band between header and footer; parts 1–3 share one grid cell and swap in place (pinned). */
+.s2v2-window { grid-row: 2; min-height: 0; overflow: clip; position: relative; display: grid; }
+.s2v2-part1, .s2v2-part2, .s2v2-part3 { grid-area: 1 / 1; min-height: 0; }
+.s2v2-part1 {
+  align-self: center; justify-self: center;
+  display: flex; flex-direction: column; gap: 20px;
+  width: min(100%, 512px);
+  font-family: var(--mono); font-size: 12px; line-height: 1.5;
+  text-transform: uppercase; text-align: center; color: #1f1f1f; text-wrap: pretty;
+}
+/* Part 3: streams in after the diagram fades (see SectionTwo.tsx). */
+.s2v2-part3 {
+  align-self: center; justify-self: center; margin: 0;
+  width: min(100%, 448px);
+  font-family: var(--mono); font-size: 12px; line-height: 1.85;
+  text-transform: uppercase; text-align: center; color: #1f1f1f; text-wrap: pretty;
+}
+.s2v2-part2 { position: relative; display: grid; }
+.s2v2-part2 .pipe-v2 { position: relative; }
+.s2v2-part2 svg { display: block; width: 100%; height: auto; aspect-ratio: 1200 / 560; overflow: hidden; }
+
+/* Step label, top centre above the diagram: the current step fades and the next one streams in.
+   Room for two lines is reserved so the diagram never moves. */
+.s2v2-part2 { grid-template-rows: auto auto; align-content: center; row-gap: calc(8 * var(--px)); }
+.s2v2-steps {
+  justify-self: center; align-self: end;
+  min-height: 44px; display: flex; align-items: flex-end; justify-content: center;
+  width: min(100%, 512px);
+  font-family: var(--mono); font-size: 12px; line-height: 1.85;
+  text-transform: uppercase; text-align: center; color: #1f1f1f; text-wrap: balance;
+}
+
+/* Notes over the diagram (positions in SVG units, from pipeline/engine.js). */
+.s2v2-notes { position: absolute; inset: 0; pointer-events: none; }
+.s2v2-note {
+  position: absolute;
+  font-family: var(--mono); font-size: 12px; line-height: 1.4;
+  text-transform: uppercase; color: #1f1f1f; text-wrap: balance;
+}
+
+/* Token stream (components/TokenText.tsx): unshown tokens keep their layout; each token
+   eases from pale grey to ink; a faint probability can sit under the newest token. */
+.v2tw { transition: opacity 200ms ease; }
+.v2tw.v2tk-out { opacity: 0; }
+.v2tc { opacity: 0; color: #b4b4af; transition: opacity 120ms linear, color 500ms ease; }
+.v2tc.on { opacity: 1; color: inherit; }
+.v2tw-w { position: relative; }
+.v2tk-p {
+  position: absolute; left: 0; top: 100%; margin-top: 1px;
+  font-size: 9px; line-height: 1; letter-spacing: 0.02em; color: #a4a49f; white-space: nowrap;
+  animation: v2tk-p 650ms ease forwards; pointer-events: none;
+}
+@keyframes v2tk-p { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: 0; } }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+.s2v2-foot {
+  position: relative; display: flex; justify-content: space-between;
+  padding-bottom: calc(55 * var(--px));
+  font-family: var(--mono); font-size: 12px; line-height: normal; color: #4a4a4a;
+  --tick-y: calc(100% - 26 * var(--px));
+}
+

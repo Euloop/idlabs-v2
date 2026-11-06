@@ -165,7 +165,14 @@ function v17Select(){
 function v31Story(){
   const src0=v7Sourcing(),src={st:src0.st,anchors:src0.anchors,dyn:(t,q)=>{const s=src0.dyn(t,q),i=s.indexOf('<text class="rt"');return i>=0?s.slice(0,i):s;}};
   const SC=[src,v10Scoring(),v17Select()];
-  const OFF=[15,-20,95],CX=600,CY=280,D=110;
+  const CX=600,CY=280,D=110;
+  /* Every view fills the same horizontal span (SPAN, viewBox units): the overview drawing
+     (globe left edge → feed right edge, x 212–990) is scaled by OV about the centre, and
+     each stage's drawing extent EXT[j] (local units, labels included) by SS[j], centred. */
+  const SPAN=[170,1030],EXT=[[149,1003],[105,1110],[70,950]];
+  const OV=(SPAN[1]-SPAN[0])/(990-212);
+  const SS=EXT.map(e=>(SPAN[1]-SPAN[0])/(e[1]-e[0]));
+  const OFF=EXT.map((e,j)=>((SPAN[0]+SPAN[1])/2-CX)/SS[j]+CX-(e[0]+e[1])/2);
 
   /* Emil's strong ease-in-out, cubic-bezier(0.77, 0, 0.175, 1) — stage-to-stage slides. */
   const bez=(x1,y1,x2,y2)=>{const A=(a,b)=>1-3*b+3*a,Bq=(a,b)=>3*b-6*a,C=a=>3*a,
@@ -252,21 +259,12 @@ function v31Story(){
   const TR=[[.05,.18],[.38,.45],[.65,.72]],HW=[[.18,.38],[.45,.65],[.72,.95]];
   const chapter=P=>P<.115?0:P<.415?1:P<.685?2:3;
 
-  /* ---- stage clocks ----
-     Scroll picks the stage and drives the camera (zoom, slide between stages); inside a stage
-     the story (highlighted post, notes, leaders) runs on its own clock and loops: a short rest,
-     the story over LOOP[j] seconds, a hold on the end state, then again. A stage is live once
-     its incoming transition has finished and until the outgoing one starts; while not live its
-     story is frozen (0 before it, last value after). Reduced motion: scrubbed by scroll instead. */
-  const LOOP=[8.5,6.8,6.4],REST=.6,HOLDE=2;
-  const LQ=[0,0,0],T0=[0,0,0],ACT=[false,false,false],QS=[0,0,0];
-  const stageQ=(t,P,RM)=>{for(let j=0;j<3;j++){
-    if(RM){QS[j]=seg(P,HW[j][0],HW[j][1]);ACT[j]=P>=HW[j][0]-.005&&(j===2||P<=HW[j][1]+.005);continue;}
-    const act=P>=TR[j][1]-.004&&(j===2||P<=TR[j+1][0]+.004);
-    if(act&&!ACT[j])T0[j]=t;
-    let q;if(act){const per=REST+LOOP[j]+HOLDE,e=((t-T0[j])%per+per)%per;q=clamp((e-REST)/LOOP[j]);}
-    else q=P<TR[j][1]?0:LQ[j];
-    LQ[j]=q;QS[j]=q;ACT[j]=act;}};
+  /* ---- stage progress ----
+     Each stage's story (highlighted post, notes, leaders) is scrubbed by the scroll: q 0 → 1
+     across its window HW[j]. ACT: the stage's notes may show (window plus a short tail in
+     which notes that run to the end of the stage write themselves out). */
+  const QS=[0,0,0],ACT=[false,false,false],TAILP=.03;
+  const stageQ=P=>{for(let j=0;j<3;j++){QS[j]=seg(P,HW[j][0],HW[j][1]);ACT[j]=P>=HW[j][0]-.005&&(j===2||P<=HW[j][1]+TAILP);}};
   const OUT=u=>1-seg(u,0,.55),IN=u=>seg(u,.45,1),EDGE=140;
 
   /* ---- notes ----
@@ -275,7 +273,7 @@ function v31Story(){
      actually sits (setRects) and the leader is drawn from the text edge facing the anchor:
      a short horizontal stub towards the anchor, then straight to it, ending in a dot.
      Coordinates are SVG units. Copy is the step names of the client's pipeline figure, one short line each; one note at a time. */
-  const AN=(j,a)=>[SC[j].anchors[a][0]+OFF[j],SC[j].anchors[a][1]];
+  const AN=(j,a)=>{const p=SC[j].anchors[a];return [CX+(p[0]-(CX-OFF[j]))*SS[j],CY+(p[1]-CY)*SS[j]];};
   const NOTE=(id,st,text,a,x,y,w,win)=>({id,st,text,a,x,y,w,win});
   const NOTES=[
     NOTE('n1a',1,'Candidate sources',()=>AN(0,'live'),486,462,200,[.02,.14]),
@@ -289,10 +287,14 @@ function v31Story(){
     NOTE('n3b',3,'Post-selection filters',AN(2,'gate'),806,110,200,[.5,.7]),
     NOTE('n3c',3,'Ranked For You timeline',AN(2,'slot'),1084,300,110,[.7,1]),
   ];
-  const visible=(P,I)=>{const on=new Set();if(I<1)return on;const c=chapter(P);if(!c)return on;
-    if(!ACT[c-1])return on;
-    const q=QS[c-1];
-    NOTES.forEach(n=>{if(n.st===c&&(q>=n.win[0]&&q<n.win[1]||(n.win[1]===1&&q>=1)))on.add(n.id);});return on;};
+  /* note progress 0 → 1 by scroll: writes in over the start of its window, out over the end
+     (a note that runs to the end of its stage writes out in the stage's tail instead) */
+  const noteProg=(P,I)=>{const out={};if(I<1)return out;const c=chapter(P);if(!c)return out;const j=c-1;if(!ACT[j])return out;stageQ(P);const q=QS[j];
+    NOTES.forEach(n=>{if(n.st!==c)return;const w0=n.win[0],w1=n.win[1],len=w1-w0;
+      const a=seg(q,w0,w0+Math.min(.12,len*.45));
+      const b=w1<1?1-seg(q,w1-Math.min(.05,len*.2),w1):(j<2?1-seg(P,HW[j][1],HW[j][1]+TAILP):1);
+      const p=Math.min(a,b);if(p>0)out[n.id]=p;});return out;};
+  const visible=(P,I)=>new Set(Object.keys(noteProg(P,I)));
   /* rects: { id: [left, top, right, bottom] } in SVG units, measured by the page */
   let RECTS={},LDR={};
   const anc=n=>typeof n.a==='function'?n.a():n.a;
@@ -301,9 +303,9 @@ function v31Story(){
     const sx=right?r[2]+10:r[0]-10,room=Math.abs(a[0]-sx),stub=Math.min(18,room*.45)*(right?1:-1);
     return poly([[sx,y],[sx+stub,y],a],'ld',0,1,'');};
   const setRects=R=>{RECTS=R||{};LDR={};};
-  const LP={};let lastT=null;
-  const leaders=(on,t,RM)=>{const dt=lastT===null?0:Math.max(0,Math.min(.1,t-lastT));lastT=t;let s='';
-    NOTES.forEach(n=>{const tg=on.has(n.id)?1:0;let l=LP[n.id]||0;l=RM?tg:tg>l?Math.min(1,l+dt/.35):Math.max(0,l-dt/.25);LP[n.id]=l;if(l<=0)return;
+  /* leaders draw with the note's progress: the line over its first 45%, then the text types */
+  const leaders=prog=>{let s='';
+    NOTES.forEach(n=>{const p=prog[n.id]||0;if(p<=0)return;const l=seg(p,0,.45);
       const live=typeof n.a==='function',L=live?leaderOf(n):LDR[n.id]||(LDR[n.id]=leaderOf(n)),e=ease(l),a=anc(n);
       s+='<path class="ld" d="'+cut(L,0,e)+'"/>';if(e>=1)s+=DOT(a[0],a[1],1.8,'ldd');});
     return s;};
@@ -318,11 +320,11 @@ function v31Story(){
 
   let E=null,frame=0,lastHint='',lastF='';
   /* I = the diagram drawing itself in (0 → 1) before the scroll story starts */
-  return {st:ST,notes:NOTES.map(n=>({id:n.id,text:n.text,x:n.x,y:n.y,w:n.w})),visible,chapter,setRects,dyn:(t,P,B,RM,I)=>{P=P||0;B=B||1;I=I===undefined?1:I;
+  return {st:ST,notes:NOTES.map(n=>({id:n.id,text:n.text,x:n.x,y:n.y,w:n.w})),visible,noteProg,chapter,setRects,dyn:(t,P,B,RM,I)=>{P=P||0;B=B||1;I=I===undefined?1:I;
     if(!E||!E.w.isConnected){const q=id=>svg.querySelector('#'+id);
       E={w:q('wG'),l:q('wL'),q:q('wQ'),f:q('wF'),e:q('wE'),gl:q('wGl'),ov:q('ovG'),mg:q('mgg'),
          sg:[0,1,2].map(k=>q('sg'+k)),sd:[0,1,2].map(k=>q('sd'+k))};}
-    stageQ(t,P,RM);
+    stageQ(P);
     const u=TR.map(r=>seg(P,r[0],r[1])),e=u.map(EIO),M=RM?0:1,v=u[0];
     const inWorld=P<TR[0][1];
     const setG=(g,a,b)=>{g.setAttribute('x1',R1(a));g.setAttribute('x2',R1(b));};
@@ -330,9 +332,10 @@ function v31Story(){
     /* camera on the zoom: the globe's screen position eases from the overview to where the
        stage globe sits, while Z grows exponentially to the radius ratio — so the overview
        globe becomes the Sourcing globe */
-    let Z=1,cx=CX,cy=CY,sx=A0.w;
-    const S0=[CX+(A0.l[0]-(CX-OFF[0]))*B,CY+(A0.l[1]-CY)*B],Zend=A0.r*B;
-    if(inWorld&&!RM){const zc=ease(v);Z=Math.exp(lerp(0,Math.log(Zend),zc));sx=[lerp(A0.w[0],S0[0],zc),lerp(A0.w[1],S0[1],zc)];cx=A0.w[0]-(sx[0]-CX)/Z;cy=A0.w[1]-(sx[1]-CY)/Z;}
+    const W0=[CX+(A0.w[0]-CX)*OV,CY+(A0.w[1]-CY)*OV]; /* overview globe on screen at rest */
+    let Z=OV,cx=CX,cy=CY,sx=W0;
+    const S0=[CX+(A0.l[0]-(CX-OFF[0]))*B*SS[0],CY+(A0.l[1]-CY)*B*SS[0]],Zend=A0.r*B*SS[0];
+    if(inWorld&&!RM){const zc=ease(v);Z=Math.exp(lerp(Math.log(OV),Math.log(Zend),zc));sx=[lerp(W0[0],S0[0],zc),lerp(W0[1],S0[1],zc)];cx=A0.w[0]-(sx[0]-CX)/Z;cy=A0.w[1]-(sx[1]-CY)/Z;}
 
     /* pen progress: draw in during the intro; on the zoom the fill goes first, then the lines erase */
     const drawn=RM?1:I,erased=RM?0:seg(v,.1,.85),solid=I<1?seg(I,.88,1):1-seg(v,0,.15);
@@ -356,13 +359,13 @@ function v31Story(){
         g.setAttribute('transform','translate('+R1(sx[0])+' '+R1(sx[1])+') scale('+sc.toFixed(4)+') translate('+(-A0.l[0])+' '+(-A0.l[1])+')');
         setG(E.mg,fl,fl+EDGE);g.setAttribute('mask','url(#mg)');}
       else{g.removeAttribute('mask');
-        g.setAttribute('transform','translate('+R1(CX+dx[j]*M)+' '+CY+') scale('+B.toFixed(4)+') translate('+(-(CX-OFF[j]))+' '+(-CY)+')');}});
+        g.setAttribute('transform','translate('+R1(CX+dx[j]*M)+' '+CY+') scale('+(B*SS[j]).toFixed(4)+') translate('+R1(-(CX-OFF[j]))+' '+(-CY)+')');}});
 
     frame++;
     if(frame%2===0){
       if(inWorld&&I>0){E.gl.innerHTML=globe(t,Z);if(aux>.01){E.q.innerHTML=posts(t,false);E.e.innerHTML=posts(t,true);}}
       SC.forEach((S,j)=>{if(op[j]>.001)E.sd[j].innerHTML=S.dyn(t+j*3.1,QS[j]);});}
-    const h=I>=1&&P<.04?(1-P/.04):0,hs=(h>.01?'<text class="cp" x="'+CX+'" y="476" text-anchor="middle" opacity="'+h.toFixed(2)+'">SCROLL TO LOOK INSIDE</text>':'')+leaders(visible(P,I),t,RM);
+    const h=I>=1&&P<.04?(1-P/.04):0,hs=(h>.01?'<text class="cp" x="'+CX+'" y="476" text-anchor="middle" opacity="'+h.toFixed(2)+'">SCROLL TO LOOK INSIDE</text>':'')+leaders(noteProg(P,I));
     if(hs!==lastHint){E.ov.innerHTML=hs;lastHint=hs;}
     return '';}};
 }
@@ -380,5 +383,7 @@ function v31Story(){
     setRects: (r) => story.setRects(r),
     /** ids of the callouts visible at P (I = intro progress) */
     visible: (P, I) => story.visible(P, I),
+    /** { id: progress 0–1 } of the callouts at P: leader over the first 45%, text after */
+    noteProgress: (P, I) => story.noteProg(P, I),
   };
 }

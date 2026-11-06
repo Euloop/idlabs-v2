@@ -273,15 +273,15 @@ html[data-theme='light'] .frame.rails > .rails-light { opacity: 1; }
   text-transform: uppercase; text-align: center; color: #1f1f1f; text-wrap: pretty;
 }
 .s2-part2 { position: relative; display: grid; }
-.s2-part2 .pipe { position: relative; }
+.s2-part2 .pipe { grid-row: 1; position: relative; }
 .s2-part2 svg { display: block; width: 100%; height: auto; aspect-ratio: 1200 / 560; overflow: hidden; }
 
-/* Step label, top centre above the diagram: the current step fades and the next one streams in.
+/* Step label, centred below the diagram: the current step fades and the next one streams in.
    Room for two lines is reserved so the diagram never moves. */
 .s2-part2 { grid-template-rows: auto auto; align-content: center; row-gap: calc(8 * var(--px)); }
 .s2-steps {
-  justify-self: center; align-self: end;
-  min-height: 44px; display: flex; align-items: flex-end; justify-content: center;
+  grid-row: 2; justify-self: center; align-self: start;
+  min-height: 44px; display: flex; align-items: flex-start; justify-content: center;
   width: min(100%, 512px);
   font-family: var(--mono); font-size: 12px; line-height: 1.85;
   text-transform: uppercase; text-align: center; color: #1f1f1f; text-wrap: balance;
@@ -308,6 +308,8 @@ html[data-theme='light'] .frame.rails > .rails-light { opacity: 1; }
   animation: tk-p 650ms ease forwards; pointer-events: none;
 }
 @keyframes tk-p { 0% { opacity: 0; } 20% { opacity: 1; } 100% { opacity: 0; } }
+/* scroll-typed text (components/ScrollText.tsx): the number stays while its word is written */
+.tk-p.tk-s { animation: none; opacity: 1; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
 .s2-foot {

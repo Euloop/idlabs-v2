@@ -1,0 +1,162 @@
+/* ───────── Shared chrome for the light sections (SiteChrome.tsx) ─────────
+   One fixed layer over sections 2–4: header, footer, frame markers. Uses Section 2's
+   header/footer styles (.s2-header, .s2-foot, .s2-frame); hidden in the hero. */
+.chrome { position: fixed; inset: 0; z-index: 6; pointer-events: none; }
+.chrome-frame { height: 100svh; }
+.chrome .s2-header .wordmark { pointer-events: none; }
+.chrome[data-on] .s2-header .wordmark, .chrome[data-on] .tick { opacity: 1; }
+.chrome[data-on] a { pointer-events: auto; }
+
+/* ───────── Section 3 · Research paper (Figma 130:3569) ───────── */
+/* Sticky stage + soft pin (softPin.ts): 1 stage + 0.8 hold + 1 leave. */
+.s3 { position: relative; z-index: 1; height: 280svh; pointer-events: none; }
+.s3-pin { position: sticky; top: 0; height: 100svh; display: grid; align-items: center; }
+.s3-frame { margin-inline: auto; }
+.s3-inner { display: flex; flex-direction: column; will-change: transform; }
+.s3-read, .pp { pointer-events: auto; }
+/* Figma: two lines at the column's left edge, 31px above the grid */
+.s3-read {
+  align-self: flex-start; width: max-content; margin-left: calc(-6 * var(--px));
+  font-family: var(--mono); font-size: 12px; line-height: 1.4; color: #4a4a4a; white-space: pre-line;
+}
+.s3-read:hover { color: #1f1f1f; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+/* The grid band runs rule to rule (Figma y 203–685) */
+.s3-band {
+  margin-top: calc(31 * var(--px)); margin-inline: calc(-1 * var(--pad));
+  height: calc(482 * var(--px));
+  display: grid; place-items: center;
+  --cell: calc(16.47 * var(--px));
+  background-image:
+    linear-gradient(to right, #ececec 1px, transparent 1px),
+    linear-gradient(to bottom, #ececec 1px, transparent 1px);
+  background-size: var(--cell) var(--cell);
+  background-position: calc(50% + 0.5px) calc(50% + 0.5px);
+  border-block: 1px solid #ececec;
+}
+.s3-papers { display: flex; gap: calc(55 * var(--px)); transform: translateX(calc(-2 * var(--px))); }
+
+/* Paper (after /experiment): drawn in the experiment's units (one Figma px of the 127:3334
+   paper), scaled to Figma 130:3569 (×1.123) and the page unit: --k. */
+.pp { --k: calc(1.123 * var(--px)); display: block; width: calc(310.25 * var(--k)); height: calc(347 * var(--k)); }
+.pp-box { position: relative; display: block; width: 100%; height: 100%; }
+.pp-page { position: absolute; display: block; width: calc(276.1 * var(--k)); height: calc(336.979 * var(--k)); overflow: clip; }
+.pp-back { left: calc(4.357 * var(--k)); top: calc(6.471 * var(--k)); rotate: -1.5deg; }
+.pp-front { left: calc(20.49 * var(--k)); top: 0; background: #000; box-shadow: calc(-3.43 * var(--k)) calc(3.43 * var(--k)) calc(11.233 * var(--k)) rgba(0, 0, 0, 0.15); }
+.pp-abs { position: absolute; display: block; }
+.pp-page > img.pp-abs { width: calc(var(--iw) * var(--k)); height: calc(var(--ih) * var(--k)); left: calc(var(--il) * var(--k)); top: calc(var(--it) * var(--k)); }
+.pp-title {
+  position: absolute; left: calc(31.73 * var(--k)); top: calc(228.08 * var(--k)); width: calc(187.782 * var(--k));
+  font-family: var(--mono); font-size: calc(10.162 * var(--k)); line-height: normal; color: #1f1f1f;
+}
+.pp-meta {
+  position: absolute; left: calc(31.73 * var(--k)); top: calc(315.54 * var(--k)); width: calc(228.083 * var(--k));
+  display: flex; justify-content: space-between; align-items: flex-start;
+  font-family: var(--mono); font-size: calc(6.097 * var(--k)); line-height: normal; color: #4a4a4a; white-space: nowrap;
+}
+.pp-fig { overflow: hidden; }
+.pp-fig img { width: 100%; height: 100%; object-fit: cover; }
+.pp-bf1 { left: calc(66.616 * var(--k)); top: calc(132.46 * var(--k)); width: calc(29.874 * var(--k)); height: calc(42.24 * var(--k)); rotate: -1.61deg; mix-blend-mode: multiply; overflow: visible; }
+.pp-bf1 img { object-fit: fill; }
+.pp-bf2 { left: calc(96.89 * var(--k)); top: calc(39.45 * var(--k)); width: calc(48.875 * var(--k)); height: calc(67.739 * var(--k)); opacity: .75; }
+.pp-bf2 img { position: absolute; left: -0.05%; top: 0; width: 107.11%; height: 106.33%; }
+.pp-bf3 { left: calc(139.76 * var(--k)); top: calc(75.45 * var(--k)); width: calc(78.881 * var(--k)); height: calc(114.048 * var(--k)); opacity: .75; }
+.pp-ff1 { left: calc(53.56 * var(--k)); top: calc(37.84 * var(--k)); width: calc(85.897 * var(--k)); height: calc(98.434 * var(--k)); }
+.pp-ff2 { left: calc(114.44 * var(--k)); top: calc(77.89 * var(--k)); width: calc(106.108 * var(--k)); height: calc(121.147 * var(--k)); }
+.pp-ff2 img { position: absolute; left: -34.51%; top: -0.04%; width: 166.8%; height: 100.07%; }
+.pp-ff3 { left: calc(181.264 * var(--k)); top: calc(66.2 * var(--k)); width: calc(51.535 * var(--k)); height: calc(66.566 * var(--k)); rotate: 11.14deg; }
+.pp-lf1 { left: calc(62.96 * var(--k)); top: calc(90.74 * var(--k)); width: calc(85.504 * var(--k)); height: calc(91.061 * var(--k)); }
+.pp-lf2 { left: calc(175.71 * var(--k)); top: calc(117.12 * var(--k)); width: calc(41.041 * var(--k)); height: calc(50.742 * var(--k)); }
+.pp-lf3 { left: calc(125.89 * var(--k)); top: calc(41.08 * var(--k)); width: calc(73.297 * var(--k)); height: calc(91.052 * var(--k)); }
+/* Hover (pointer devices): the front page lifts, the back page fans out from under it.
+   Strong ease-out, 300ms; press settles the stack a touch. */
+@media (hover: hover) and (pointer: fine) {
+  .pp-back, .pp-front {
+    transition: rotate 300ms cubic-bezier(0.23, 1, 0.32, 1), translate 300ms cubic-bezier(0.23, 1, 0.32, 1), box-shadow 300ms cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  .pp:hover .pp-front { translate: 0 calc(-6 * var(--k)); box-shadow: calc(-6 * var(--k)) calc(10 * var(--k)) calc(22 * var(--k)) rgba(0, 0, 0, 0.14); }
+  .pp:hover .pp-back { rotate: -4deg; translate: calc(-7 * var(--k)) calc(3 * var(--k)); }
+}
+.pp:focus-visible .pp-front { translate: 0 calc(-6 * var(--k)); }
+.pp:focus-visible .pp-back { rotate: -4deg; translate: calc(-7 * var(--k)) calc(3 * var(--k)); }
+.pp-box { transition: scale 160ms cubic-bezier(0.23, 1, 0.32, 1); }
+.pp:active .pp-box { scale: 0.98; }
+
+/* ───────── Section 4 · Analytical tools (Figma 130:4097) ───────── */
+/* Sticky stage + soft pin, last section: 1 stage + 1 hold (no leave). */
+.s4 { position: relative; z-index: 1; height: 200svh; }
+.s4-pin { position: sticky; top: 0; height: 100svh; display: grid; align-items: center; }
+.s4-frame { margin-inline: auto; }
+.s4-inner { position: relative; display: flex; flex-direction: column; align-items: center; will-change: transform; }
+/* Figma: card centred at y 372, screenshots around it (y 188–572), tabs at y 638 */
+.s4-stage { position: relative; isolation: isolate; width: min(calc(700 * var(--px)), 100%); height: calc(430 * var(--px)); }
+.s4-shots { position: absolute; inset: 0; pointer-events: none; }
+.s4-set { position: absolute; inset: 0; }
+.s4-shot {
+  position: absolute;
+  left: calc(50% + var(--x) * var(--px)); top: calc(50% + var(--y) * var(--px));
+  width: calc(var(--w) * var(--px)); height: calc(var(--h) * var(--px));
+  border: 1px solid #ebebeb; border-radius: 4px; object-fit: cover; background: #fff;
+  opacity: 0;
+  transform: translate(calc(var(--dx) * var(--px)), calc(var(--dy) * var(--px))) scale(0.5);
+  transition: opacity 180ms var(--ease-out), transform 0s linear 180ms;
+}
+.s4-set[data-on] .s4-shot {
+  opacity: 1; transform: none;
+  transition:
+    opacity 300ms var(--ease-out) calc(240ms + var(--i) * 40ms),
+    transform 800ms cubic-bezier(0.23, 1, 0.32, 1) calc(240ms + var(--i) * 40ms);
+}
+.s4-card {
+  position: absolute; left: 50%; top: 50%; translate: -50% -50%; z-index: 1;
+  width: min(312px, 100%);
+  display: flex; flex-direction: column; gap: 20px; padding: 20px;
+  background: #2d2d2d; color: #ebebeb;
+  transform-origin: 50% 0; animation: s4-fold 550ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+@keyframes s4-fold {
+  from { clip-path: inset(0 0 100% 0); transform: perspective(900px) rotateX(-28deg); }
+  to { clip-path: inset(0 0 0 0); transform: perspective(900px) rotateX(0deg); }
+}
+.s4-card[data-leave] { animation: s4-fold-up 260ms cubic-bezier(0.23, 1, 0.32, 1) both; }
+@keyframes s4-fold-up {
+  from { clip-path: inset(0 0 0 0); transform: perspective(900px) rotateX(0deg); }
+  to { clip-path: inset(0 0 100% 0); transform: perspective(900px) rotateX(-28deg); }
+}
+.s4-card-head { display: flex; align-items: center; gap: 12px; }
+.s4-card-head img { flex: none; width: 24px; height: 24px; }
+.s4-card-title { margin: 0; font-family: var(--wordmark); font-weight: 400; font-size: 20px; line-height: 1.3; letter-spacing: -0.04em; color: #ebebeb; }
+.s4-card-body { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+.s4-card-text { padding-block: 6px; font-family: var(--mono); font-size: 12px; line-height: 1.5; text-transform: uppercase; text-wrap: pretty; }
+.s4-try {
+  display: inline-flex; padding: 4px 16px; background: #ebebeb; color: #4a4a4a;
+  font-family: var(--sans); font-weight: 450; font-size: 12px; line-height: 1.4; white-space: nowrap;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+.s4-try:hover { background: #fff; color: #1f1f1f; }
+.s4-tabs { margin-top: calc(48 * var(--px)); display: flex; justify-content: center; gap: 40px; }
+.s4-tab {
+  position: relative; padding: 6px 0; border: 0; background: none; cursor: pointer;
+  font-family: var(--mono); font-size: 8px; line-height: 1.5; letter-spacing: 0.64px; text-transform: uppercase; color: #999;
+  transition: color 150ms ease;
+}
+.s4-tab:hover, .s4-tab[aria-selected='true'] { color: #1f1f1f; }
+.s4-tab:focus-visible { outline: 1px solid #1f1f1f; outline-offset: 4px; }
+.s4-tab-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: #1f1f1f; transform: scaleX(0); transform-origin: 0 50%; }
+.s4-tab-bar:not([data-run]) { transform: none; }
+.s4-tab-bar[data-run] { animation: s4-tab-run 7000ms linear forwards; }
+@keyframes s4-tab-run { to { transform: scaleX(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .pp-back, .pp-front, .pp-box { transition: none; }
+  .s4-shot, .s4-set[data-on] .s4-shot { transform: none; transition: opacity 200ms linear; }
+  .s4-card { animation: fade 200ms linear both; }
+}
+
+/* Narrow screens: papers stack, tools show the card and tabs only. */
+@media (max-width: 759px) {
+  .s3-papers { flex-direction: column; gap: 24px; transform: none; }
+  .s3-band { height: auto; padding-block: 32px; }
+  .s4-stage { height: auto; min-height: 280px; }
+  .s4-shots { display: none; }
+  .s4-tabs { flex-wrap: wrap; gap: 8px 24px; }
+}
