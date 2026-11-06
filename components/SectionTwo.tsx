@@ -57,7 +57,7 @@ export default function SectionTwo() {
   const [chrome, setChrome] = useState(false);
   const part1Ref = useRef<ScrollTextHandle>(null);
   const stepRef = useRef<ScrollTextHandle>(null);
-  const part3Ref = useRef<ScrollTextHandle>(null);
+  const part3ElRef = useRef<HTMLParagraphElement>(null);
   const noteRefs = useRef<Record<string, ScrollTextHandle | null>>({});
   const [notes, setNotes] = useState<Note[]>([]);
 
@@ -65,6 +65,7 @@ export default function SectionTwo() {
     const section = sectionRef.current;
     const svg = svgRef.current;
     const part2 = part2Ref.current;
+    const part3El = part3ElRef.current;
     if (!section || !svg || !part2) return;
 
     const root = document.documentElement;
@@ -126,10 +127,14 @@ export default function SectionTwo() {
       const target = clamp((s - (HOLD + INTRO) * vh) / (DIAGRAM * vh));
       const outro = clamp((s - (HOLD + INTRO + DIAGRAM) * vh) / (OUTRO * vh));
 
-      // Outro: the diagram fades out (scrubbed), the step label fades, part 3 types in.
-      if (outro !== lastOutro) {
-        lastOutro = outro;
-        part2.style.opacity = clamp(1 - outro / 0.6).toFixed(3);
+      // The diagram layer is hidden until its intro starts: the engine only redraws while the
+      // intro runs, so scrolling back up would otherwise leave its last frame (the globe) showing
+      // under part 1 and through the hero. Outro: it fades out (scrubbed), part 3 fades in.
+      const p2 = intro > 0 ? clamp(1 - outro / 0.6) : 0;
+      if (p2 !== lastOutro) {
+        lastOutro = p2;
+        part2.style.opacity = p2.toFixed(3);
+        part2.style.visibility = p2 > 0 ? 'visible' : 'hidden';
       }
 
       // Step label (below the diagram): overview line, then 1) Sourcing, then 2) Ranking (scoring and
@@ -145,8 +150,8 @@ export default function SectionTwo() {
       const np = pipe.noteProgress(P, intro) as Record<string, number>;
       for (const id in noteRefs.current) noteRefs.current[id]?.set(outro > 0 ? 0 : sg(np[id] || 0, 0.3, 1));
 
-      // Part 3 types in as the diagram leaves.
-      part3Ref.current?.set(sg(s, V(HOLD + INTRO + DIAGRAM + OUTRO * 0.4), V(HOLD + INTRO + DIAGRAM + OUTRO + 0.7)));
+      // Part 3 (no typing): fades in as the diagram leaves.
+      if (part3El) part3El.style.opacity = sg(s, V(HOLD + INTRO + DIAGRAM + OUTRO * 0.4), V(HOLD + INTRO + DIAGRAM + OUTRO)).toFixed(3);
 
       if (chromeIn !== lastChrome) { lastChrome = chromeIn; setChrome(chromeIn); }
 
@@ -269,9 +274,7 @@ export default function SectionTwo() {
               </div>
             </div>
 
-            <div className="s2-part3">
-              <ScrollText ref={part3Ref} text={PART3} probs />
-            </div>
+            <p className="s2-part3" ref={part3ElRef} style={{ opacity: 0 }}>{PART3}</p>
           </div>
 
           <footer className="s2-foot s2-spacer" aria-hidden="true">

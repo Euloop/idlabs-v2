@@ -24,6 +24,7 @@ type PaperProps = { title: string; figs: Fig[]; href?: string };
 const PAPERS: PaperProps[] = [
   {
     title: X_TITLE,
+    href: 'https://assets.ctfassets.net/xsgwjwcuxltx/2D7hwss9WnXBNLD3T8e7mK/8a276a95b9f7b0f2f1c0d1d6b14b450e/How_the_X_Algorithm_Works_2026.pdf',
     figs: [
       { src: `${A}front-fig-1.webp`, className: 'pp-ff1' },
       { src: `${A}front-fig-2.webp`, className: 'pp-ff2' },
@@ -32,6 +33,7 @@ const PAPERS: PaperProps[] = [
   },
   {
     title: 'How the LinkedIn Algorithm Works: Two-Pass Retrieval, Multi-Objective Ranking, and the Determinants of Reach.',
+    href: 'https://assets.ctfassets.net/xsgwjwcuxltx/7ydGxl5W28i2QZued6Z4N7/3ef2f08644ca45b23820e3b6aa6bc9ca/How_the_LinkedIn_Algorithm_Works_2026.pdf',
     figs: [
       { src: `${A}linkedin-fig-1.webp`, className: 'pp-lf1' },
       { src: `${A}linkedin-fig-2.webp`, className: 'pp-lf2' },
@@ -42,7 +44,7 @@ const PAPERS: PaperProps[] = [
 
 function Paper({ title, figs, href = '#' }: PaperProps) {
   return (
-    <a className="pp" href={href} aria-label={`${title} ${AUTHORS}, ${LAB}`}>
+    <a className="pp" href={href} target="_blank" rel="noopener noreferrer" aria-label={`${title} ${AUTHORS}, ${LAB} (PDF, opens in a new tab)`}>
       <span className="pp-box" aria-hidden="true">
         {/* back page (the same under both papers) */}
         <span className="pp-page pp-back">

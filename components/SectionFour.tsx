@@ -66,18 +66,22 @@ const SETS = SHOTS.map((set) => {
 const TOOLS = [
   {
     name: 'Engagement Classifier',
+    href: 'https://graphs-seven-pi.vercel.app/tools/classifier',
     text: 'A post is only fast or slow compared to itself. The classifier takes a post’s engagement rate in its first 15 minutes as a baseline and measures its performance after against it. This lets us predict how far a post will go within 30 minutes.',
   },
   {
     name: 'Weighted Engagement Scoring',
+    href: 'https://graphs-seven-pi.vercel.app/tools/scoring',
     text: 'A 100 likes from a 100 strangers is not the same as 1 quote from someone important. Weighted Engagement scores each interaction by who performed it -their influence, their cluster, the kind of action.',
   },
   {
     name: 'Post Velocity',
+    href: 'https://graphs-seven-pi.vercel.app/tools/velocity',
     text: 'Tracks how fast engagement is accelerating in real time. A steep curve in the first 6 hours is the strongest predictor of a breakout. Combined with the Classifier, it tells us how a launch/post will perform within its first 30 minutes.',
   },
   {
     name: 'Cluster Penetration',
+    href: 'https://graphs-seven-pi.vercel.app/tools/clusters',
     text: 'Measures how deep a post travelled within a niche. When a post goes out, we can see which clusters it reached and how much of each it covered.',
   },
 ];
@@ -200,7 +204,7 @@ export default function SectionFour() {
                   </div>
                   <div className="s4-card-body">
                     <p className="s4-card-text">{tool.text}</p>
-                    <a className="s4-try" href="#" tabIndex={open ? 0 : -1}>[Try it →]</a>
+                    <a className="s4-try" href={tool.href} target="_blank" rel="noopener noreferrer" tabIndex={open ? 0 : -1} aria-label={`Try ${tool.name} (opens in a new tab)`}>[Try it →]</a>
                   </div>
                 </div>
               </div>
