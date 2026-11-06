@@ -1,6 +1,10 @@
 import { Fragment, type CSSProperties } from 'react';
 import ClientLogos from '../components/ClientLogos';
 import SectionTwo from '../components/SectionTwo';
+import SectionThree from '../components/SectionThree';
+import ToolsIntro from '../components/ToolsIntro';
+import SectionFour from '../components/SectionFour';
+import SiteChrome from '../components/SiteChrome';
 
 /* Identity Labs hero — Figma "Zoomcast" 109:897 / frame 109:715.
 
@@ -26,17 +30,6 @@ function Ticks() {
   );
 }
 
-function NavLink({ href, label }: { href: string; label: string }) {
-  return (
-    <a href={href} className="roll" aria-label={label}>
-      <span className="roll-track" aria-hidden="true">
-        <span>{label}</span>
-        <span>{label}</span>
-      </span>
-    </a>
-  );
-}
-
 export default function Home() {
   const words = HEADLINE.split(' ');
 
@@ -53,15 +46,7 @@ export default function Home() {
 
       <div className="frame">
         <header className="site-header">
-          <a className="wordmark" href="/" aria-label="Identity Labs home">
-            <span>Identity</span>
-            <span className="wm-space"> </span>
-            <em>Labs</em>
-          </a>
-          <nav className="nav" aria-label="Primary">
-            <NavLink href="#" label="Manifesto" />
-            <NavLink href="#" label="Careers" />
-          </nav>
+          {/* Wordmark and nav are the fixed header in SiteChrome.tsx, on screen everywhere. */}
           <Ticks />
         </header>
 
@@ -123,6 +108,10 @@ export default function Home() {
     </div>
 
     <SectionTwo />
+    <SectionThree />
+    <ToolsIntro />
+    <SectionFour />
+    <SiteChrome />
     </>
   );
 }

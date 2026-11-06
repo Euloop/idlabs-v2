@@ -80,6 +80,7 @@ export default function SectionTwo() {
     let lastChrome = false;
     let lastOutro = -1;
     let isLight = false;
+    let night = false;
     let lightAt = 0;
     let raf = 0;
     let running = false;
@@ -92,11 +93,18 @@ export default function SectionTwo() {
       // whole screen to light in 400ms (globals.css); scrolling back reverses it.
       // Hysteresis (55% / 65%) so it can't flicker at the threshold itself.
       const heroBottom = hero ? hero.getBoundingClientRect().bottom : 0;
-      const light = isLight ? heroBottom < 0.65 * vh : heroBottom < 0.55 * vh;
+      // Later the lights go down again ('night'): once the tools intro (ToolsIntro.tsx) has
+      // held in place for a moment (~0.35 viewport into its hold), through Section 4.
+      // Same 400ms ease, hysteresis. Section 3 (research papers) stays light.
+      const ti = document.querySelector<HTMLElement>('.ti');
+      const tiTop = ti ? ti.getBoundingClientRect().top : Infinity;
+      night = night ? tiTop < -0.25 * vh : tiTop < -0.35 * vh;
+      const light = !night && (isLight ? heroBottom < 0.65 * vh : heroBottom < 0.55 * vh);
+      const theme = night ? 'night' : light ? 'light' : 'dark';
+      if (root.dataset.theme !== theme) root.dataset.theme = theme;
       if (light !== isLight) {
         isLight = light;
         lightAt = now;
-        root.dataset.theme = light ? 'light' : 'dark';
         root.style.setProperty('--theme', light ? '1' : '0');
       }
       // The chrome waits for the light to come up (~400ms).
@@ -207,12 +215,14 @@ export default function SectionTwo() {
       ref={sectionRef}
       className="s2"
       aria-label="Algorithm research"
+      data-foot="/Algorithm Research"
       data-chrome={chrome || undefined}
       style={{ height: `${(2 + HOLD + INTRO + DIAGRAM + OUTRO + TAIL) * 100}svh` }}
     >
       <div className="s2-stage">
         <div className="frame s2-frame">
-          <header className="site-header s2-header">
+          {/* Layout only: the visible header and footer are the shared fixed chrome (SiteChrome.tsx). */}
+          <header className="site-header s2-header s2-spacer" aria-hidden="true">
             <a className="wordmark" href="/" aria-label="Identity Labs home">
               <span>Identity</span>
               <span className="wm-space"> </span>
@@ -264,7 +274,7 @@ export default function SectionTwo() {
             </div>
           </div>
 
-          <footer className="s2-foot">
+          <footer className="s2-foot s2-spacer" aria-hidden="true">
             <TokenText as="span" text="/Algorithm Research" show={chrome} delay={200} fade />
             <TokenText as="span" text="/Our Tech" show={chrome} delay={260} fade />
             <span className="tick tick-l" aria-hidden="true" />

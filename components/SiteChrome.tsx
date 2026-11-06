@@ -19,9 +19,10 @@ export default function SiteChrome() {
     let timer = 0;
     const sync = () => {
       clearTimeout(timer);
-      const light = root.dataset.theme === 'light';
-      // wait for the light to come up (~400ms) before the chrome appears
-      if (light) timer = window.setTimeout(() => setOn(true), 380);
+      const t = root.dataset.theme;
+      // wait for the light to come up (~400ms) before the chrome appears; it stays through
+      // the night theme (sections 3–4)
+      if (t === 'light' || t === 'night') timer = window.setTimeout(() => setOn(true), 380);
       else setOn(false);
     };
     sync();
@@ -32,12 +33,16 @@ export default function SiteChrome() {
 
   useEffect(() => {
     let raf = 0;
+    const root = document.documentElement;
     const measure = () => {
       raf = 0;
       const mid = window.innerHeight * 0.5;
       let label = '';
       document.querySelectorAll<HTMLElement>('[data-foot]').forEach((el) => {
-        if (el.getBoundingClientRect().top <= mid) label = el.dataset.foot || label;
+        if (el.getBoundingClientRect().top <= mid) {
+          const night = document.documentElement.dataset.theme === 'night';
+          label = (night && el.dataset.footNight) || el.dataset.foot || label;
+        }
       });
       if (label) setFoot(label);
     };
@@ -45,7 +50,11 @@ export default function SiteChrome() {
     measure();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
+    // the label can depend on the theme (data-foot-night)
+    const mo = new MutationObserver(onScroll);
+    mo.observe(root, { attributes: true, attributeFilter: ['data-theme'] });
     return () => {
+      mo.disconnect();
       cancelAnimationFrame(raf);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
@@ -56,14 +65,21 @@ export default function SiteChrome() {
     <div className="chrome" data-on={on || undefined}>
       <div className="frame s2-frame chrome-frame">
         <header className="site-header s2-header">
-          <a className="wordmark" href="/" aria-label="Identity Labs home" tabIndex={on ? 0 : -1}>
+          <a className="wordmark" href="/" aria-label="Identity Labs home">
             <span>Identity</span>
             <span className="wm-space"> </span>
             <em>Labs</em>
           </a>
-          <a className="s2-menu" href="#" aria-label="Menu" tabIndex={on ? 0 : -1}>
-            <TokenText as="span" text="[M]" show={on} delay={120} fade />
-          </a>
+          {/* The nav: one fixed copy for the whole page (hero included), always on screen, no
+              background. Same links in light and dark; only the colour follows the theme. */}
+          <nav className="chrome-nav" aria-label="Primary">
+            <a href="#" className="roll" aria-label="Manifesto">
+              <span className="roll-track" aria-hidden="true"><span>Manifesto</span><span>Manifesto</span></span>
+            </a>
+            <a href="#" className="roll" aria-label="Careers">
+              <span className="roll-track" aria-hidden="true"><span>Careers</span><span>Careers</span></span>
+            </a>
+          </nav>
           <span className="tick tick-l" aria-hidden="true" />
           <span className="tick tick-r" aria-hidden="true" />
         </header>

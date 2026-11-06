@@ -1,8 +1,7 @@
 'use client';
 
-import { useCallback, useRef } from 'react';
+import { useEffect, useRef, type CSSProperties } from 'react';
 import ScrollText, { type ScrollTextHandle } from './ScrollText';
-import { useSoftPin, type SoftPinState } from './softPin';
 import './sections.css';
 
 /* Section 3 · Research paper. Figma 130:3569 (layout, our style); the paper build and its
@@ -10,9 +9,9 @@ import './sections.css';
    a back page turned -1.5° and the front page with its own title and cover figures, built
    at the experiment's size and scaled to Figma's (×1.123) with the page unit.
    Hover (pointer devices): the front page lifts a little and the back page fans out.
-   Soft pin (softPin.ts): the block rises in and comes to rest in the centre, holds, and
-   eases back into the normal scroll. "Read our published findings" types in with the scroll
-   as the block arrives (and un-types as it leaves). */
+   Normal scroll: Section 2's part 3 scrolls away and this section follows at scroll speed;
+   its stage holds once it reaches the top, then scrolls on. Always light. "Read our published findings" types in with the scroll
+   as the block arrives (and un-types going back). */
 
 const AUTHORS = 'Jajoo R, Husain (2026)';
 const LAB = 'Identity Labs Research';
@@ -47,8 +46,8 @@ function Paper({ title, figs, href = '#' }: PaperProps) {
       <span className="pp-box" aria-hidden="true">
         {/* back page (the same under both papers) */}
         <span className="pp-page pp-back">
-          <img className="pp-abs" src={`${A}paper-back.svg`} width={276.097} height={337.388} alt="" style={{ left: 0, top: 0 }} />
-          <img className="pp-abs" src={`${A}grid-back.svg`} width={228.939} height={190.356} alt="" style={{ left: 31.28, top: 19.28 }} />
+          <img className="pp-abs" src={`${A}paper-back.svg`} alt="" style={{ '--iw': 276.097, '--ih': 337.388, '--il': 0, '--it': 0 } as CSSProperties} />
+          <img className="pp-abs" src={`${A}grid-back.svg`} alt="" style={{ '--iw': 228.939, '--ih': 190.356, '--il': 31.28, '--it': 19.28 } as CSSProperties} />
           <span className="pp-title">{X_TITLE}</span>
           <span className="pp-meta"><span>{AUTHORS}</span><span>{LAB}</span></span>
           <span className="pp-abs pp-fig pp-bf1"><img src={`${A}back-fig-1.webp`} alt="" /></span>
@@ -57,8 +56,8 @@ function Paper({ title, figs, href = '#' }: PaperProps) {
         </span>
         {/* front page */}
         <span className="pp-page pp-front">
-          <img className="pp-abs" src={`${A}paper-front.svg`} width={276.097} height={337.388} alt="" style={{ left: 0.01, top: 0 }} />
-          <img className="pp-abs" src={`${A}grid-front.svg`} width={228.083} height={189.497} alt="" style={{ left: 31.73, top: 19.72 }} />
+          <img className="pp-abs" src={`${A}paper-front.svg`} alt="" style={{ '--iw': 276.097, '--ih': 337.388, '--il': 0.01, '--it': 0 } as CSSProperties} />
+          <img className="pp-abs" src={`${A}grid-front.svg`} alt="" style={{ '--iw': 228.083, '--ih': 189.497, '--il': 31.73, '--it': 19.72 } as CSSProperties} />
           <span className="pp-title">{title}</span>
           <span className="pp-meta"><span>{AUTHORS}</span><span>{LAB}</span></span>
           {figs.map((f) => (
@@ -72,21 +71,30 @@ function Paper({ title, figs, href = '#' }: PaperProps) {
 
 export default function SectionThree() {
   const sectionRef = useRef<HTMLElement>(null);
-  const innerRef = useRef<HTMLDivElement>(null);
   const readRef = useRef<ScrollTextHandle>(null);
-  const onFrame = useCallback((s: SoftPinState) => {
-    const sg = (v: number, a: number, b: number) => Math.max(0, Math.min(1, (v - a) / (b - a)));
-    readRef.current?.set(Math.min(sg(s.arrive, 0.45, 1), 1 - sg(s.leave, 0.1, 0.6)));
+  useEffect(() => {
+    const sec = sectionRef.current;
+    if (!sec) return;
+    let raf = 0;
+    const apply = () => {
+      raf = 0;
+      const arrive = Math.max(0, Math.min(1, 1 - sec.getBoundingClientRect().top / window.innerHeight));
+      readRef.current?.set(Math.max(0, Math.min(1, (arrive - 0.45) / 0.55)));
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(apply); };
+    apply();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); };
   }, []);
-  useSoftPin(sectionRef, innerRef, true, onFrame);
 
   return (
     <section ref={sectionRef} className="s3" data-foot="/Research paper" aria-label="Research papers">
       <div className="s3-pin">
         <div className="frame s3-frame">
-          <div className="s3-inner" ref={innerRef}>
+          <div className="s3-inner">
             <a className="s3-read" href="#">
-              <ScrollText as="span" text={'Read our\npublished findings'} />
+              <ScrollText ref={readRef} as="span" text={'Read our\npublished findings'} />
             </a>
             <div className="s3-band">
               <div className="s3-papers">

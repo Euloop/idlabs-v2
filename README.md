@@ -35,6 +35,14 @@ Rules draw down, spiral reveals outward from its eye, headline words rise throug
 - Copy is fixed by the client — do not reword. Part 1, the step lines (`STEPS` in `SectionTwo.tsx`) and part 3 are the Notion copy word for word; part 1 shows only the headline because its second sentence is the overview step line. Notes use the step names from the client's pipeline figure, kept short (Candidate sources, In-network, Out-of-network, Candidate hydration, Pre-scoring filters, Scoring, Weighted sum, Selection, Post-selection filters, Ranked For You timeline).
 - In dev, open http://localhost:3000 (Next 16 blocks dev scripts on 127.0.0.1).
 
+## Sections 3–4 · Research papers, tools intro, analytical tools
+- Shared fixed chrome (`components/SiteChrome.tsx`): wordmark + nav (Manifesto, Careers; 12px IBM Plex Mono caps) on screen everywhere, hero included, colour follows the theme; footer label from the section in view (`data-foot`, `data-foot-night`).
+- Themes: `html[data-theme]` = dark (hero) → light (Section 2–3) → `night` (the hero's dark material again) from ~0.35 viewport into the tools intro's hold, through Section 4. Driven from `SectionTwo.tsx`.
+- Section 3 (`SectionThree.tsx`, Figma 130:3569): two papers on a grid, always light; normal scroll, holds 1 viewport.
+- Tools intro (`ToolsIntro.tsx`, Figma 135:5393 / 135:5409): one line typed in with the scroll; holds; the page goes to night.
+- Section 4 (`SectionFour.tsx`, Figma 132:4683 / 135:5972): dark screenshots (`public/assets/tools/*-d-*.webp`) with the frosted info card over them; tools cycle every 7s, click a name to select, cycling pauses while reading the card.
+- `pullUp.ts` tucks a section under the previous one's hold to keep gaps short, never so far that it locks while the previous content is still on screen.
+
 ## Performance
 Texture and tile glow are WebP (2.6 MB PNG → 105 KB), texture is preloaded with high priority, fonts preloaded and self-hosted.
 

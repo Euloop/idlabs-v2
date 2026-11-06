@@ -1,58 +1,58 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
-import { useSoftPin, type SoftPinState } from './softPin';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { usePullUp } from './pullUp';
 import './sections.css';
 
-/* Section 4 · Analytical tools. Figma 130:4097 (layout, our style); the tool views are the
-   Figma sections Engagement Classifier, Weighted Engagement, Post Velocity and Cluster
-   Penetration. Behaviour from the /experiment page: the four tools as tabs along the
-   bottom; the dark card in the middle describes the selected one, over its screenshots.
-   The active tab has a slim line underneath that fills up; when it completes the next tool
-   takes over (a click jumps to that tool and carries on from there). Runs only once the
-   section has come to rest on screen.
-   On a tool change the card folds away upwards while its screenshots fade; the next card
-   folds out top to bottom, and once it is (nearly) open its screenshots spread out from the
-   centre to their places, growing to full size. Copy is the client's.
-   Last section: it eases into the centre (soft pin) and stays. */
+/* Section 4 · Analytical tools. Figma 130:4097 / 132:4683 (dark); tool views from the Figma
+   sections Engagement Classifier, Weighted Engagement, Post Velocity and Cluster Penetration.
+   The four tools are listed down the left; the selected tool's screenshots and the frosted
+   info card over them are on screen together. The tools cycle on their own: the active name
+   has a slim line that fills up, then the next tool's screenshots spread out from the centre
+   and its card folds out. Clicking (or focusing) a name selects that tool. Cycling pauses
+   while the pointer or focus is on the card (someone is reading it). Scrolls in at normal
+   speed and holds (last section). */
 
-/* [file, x, y, w, h] in Figma px, from each tool's Figma section */
+/* [file, x, y, w, h] in Figma px: the dark screenshots (Figma, the second group in each tool's
+   section: 134:5363–66, 134:5349–52, 134:5353–57). Weighted Engagement uses the arrangement of
+   Figma 135:5972 (overlapping; listed in layer order, later on top). Order of sets = TOOLS. */
 type Shot = [string, number, number, number, number];
 const SHOTS: Shot[][] = [
   [
-    ['classifier-1', 135, 182, 205, 141],
-    ['classifier-2', 366, 206, 205, 117],
-    ['classifier-3', 135, 348, 205, 321],
-    ['classifier-4', 366, 348, 577, 457],
+    ['classifier-d-1', 633, 561, 133, 91],
+    ['classifier-d-2', 783, 445, 133, 207],
+    ['classifier-d-3', 633, 669, 133, 76],
+    ['classifier-d-4', 783, 669, 398, 270],
   ],
   [
-    ['weighted-score', 292, 300, 309.81, 103.382],
-    ['weighted-contributors', 668, 329, 241.394, 100.246],
-    ['weighted-post', 300, 483, 173.348, 147.827],
-    ['weighted-curve', 603, 521, 306.18, 163.478],
+    ['weighted-d-contributors', 622, 217, 386, 160],
+    ['weighted-d-clusters', 376, 341, 667, 53],
+    ['weighted-d-curve', 563, 396, 476, 254],
+    ['weighted-d-score', 322, 177, 493, 164],
+    ['weighted-d-post', 319, 394, 273, 232],
   ],
   [
-    ['velocity-1', 277, 344, 332, 124],
-    ['velocity-2', 626, 414, 151, 54],
-    ['velocity-3', 793, 414, 152, 54],
-    ['velocity-4', 277, 485, 152, 54],
-    ['velocity-5', 445, 485, 461, 186],
+    ['velocity-d-1', 171, 597, 164, 59],
+    ['velocity-d-2', 352, 597, 164, 59],
+    ['velocity-d-3', 534, 597, 163, 59],
+    ['velocity-d-4', 171, 674, 359, 134],
+    ['velocity-d-5', 548, 674, 499, 201],
   ],
   [
-    ['cluster-1', 286, 385, 136, 68],
-    ['cluster-2', 436, 318, 414, 135],
-    ['cluster-3', 286, 468, 414, 192],
-    ['cluster-4', 714, 468, 136, 68],
+    ['cluster-d-1', 161, 596, 457, 150],
+    ['cluster-d-2', 634, 534, 457, 212],
+    ['cluster-d-3', 161, 763, 150, 75],
+    ['cluster-d-4', 327, 762, 150, 76],
   ],
 ];
-/* Each set is centred on the card and scaled to fit the stage (the classifier set is large). */
-const FIT_W = 640;
-const FIT_H = 400;
+/* Each set is centred on the stage and scaled to fill the same box, so all four read the same size. */
+const FIT_W = 780;
+const FIT_H = 480;
 const SETS = SHOTS.map((set) => {
   const x0 = Math.min(...set.map((s) => s[1])), y0 = Math.min(...set.map((s) => s[2]));
   const x1 = Math.max(...set.map((s) => s[1] + s[3])), y1 = Math.max(...set.map((s) => s[2] + s[4]));
   const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2;
-  const k = Math.min(1, FIT_W / (x1 - x0), FIT_H / (y1 - y0));
+  const k = Math.min(FIT_W / (x1 - x0), FIT_H / (y1 - y0));
   return set.map(([f, x, y, w, h]) => ({
     f,
     style: {
@@ -86,41 +86,85 @@ const CYCLE_MS = 7000;
 
 export default function SectionFour() {
   const sectionRef = useRef<HTMLElement>(null);
-  const innerRef = useRef<HTMLDivElement>(null);
   const [atRest, setAtRest] = useState(false);
   const [active, setActive] = useState(1); // Figma shows Weighted Engagement Scoring
   const [reduce, setReduce] = useState(false);
+  const [reading, setReading] = useState(false); // pointer or focus on the card
+  const open = atRest;
 
-  const onFrame = useCallback((s: SoftPinState) => setAtRest(s.arrive > 0.85), []);
-  useSoftPin(sectionRef, innerRef, false, onFrame);
-
-  useEffect(() => setReduce(window.matchMedia('(prefers-reduced-motion: reduce)').matches), []);
-
-  // The active tab's line fills over CYCLE_MS; when it completes, the next tab takes over.
+  // Normal scroll in: the stage rises at scroll speed and holds once it reaches the top;
+  // the screenshots come in once it is halfway up the screen.
   useEffect(() => {
-    if (!atRest || reduce) return;
+    const s = sectionRef.current;
+    if (!s) return;
+    let raf = 0;
+    const measure = () => { raf = 0; setAtRest(s.getBoundingClientRect().top < window.innerHeight * 0.5); };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(measure); };
+    measure();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); };
+  }, []);
+
+  usePullUp(sectionRef, { prevContent: '.ti-text', prevPin: '.ti-pin', content: '.s4-inner', pin: '.s4-pin' }, 200);
+
+  useEffect(() => {
+    setReduce(window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }, []);
+
+  // The active name's line fills over CYCLE_MS; then the next tool takes over. Paused while
+  // the card is open (someone is reading).
+  const cycling = atRest && !reduce && !reading;
+  useEffect(() => {
+    if (!cycling) return;
     const id = window.setTimeout(() => setActive((a) => (a + 1) % TOOLS.length), CYCLE_MS);
     return () => clearTimeout(id);
-  }, [atRest, reduce, active]);
+  }, [cycling, active]);
 
-  // The card shows `shown`, which trails `active`: on a change the current card folds up
-  // (data-leave, ~260ms); when that ends the next one mounts and folds out top to bottom.
-  const [shown, setShown] = useState(active);
-  const leaving = shown !== active;
-  useEffect(() => {
-    if (leaving && reduce) setShown(active);
-  }, [leaving, reduce, active]);
-  const tool = TOOLS[shown];
+
+  const tool = TOOLS[active];
 
   return (
     <section ref={sectionRef} className="s4" data-foot="/Analytical Tools" aria-label="Analytical tools">
       <div className="s4-pin">
         <div className="frame s4-frame">
-          <div className="s4-inner" ref={innerRef} data-on={atRest || undefined}>
+          <div className="s4-inner" data-on={atRest || undefined}>
+            <div
+              className="s4-tabs"
+              role="tablist"
+              aria-label="Tools"
+              aria-orientation="vertical"
+            >
+              {TOOLS.map((t, i) => (
+                <button
+                  key={t.name}
+                  id={`s4-tab-${i}`}
+                  role="tab"
+                  type="button"
+                  aria-selected={i === active}
+                  aria-controls="s4-tool-panel"
+                  className="s4-tab"
+                  onFocus={() => setActive(i)}
+                  onClick={() => setActive(i)}
+                >
+                  {t.name}
+                  {i === active && (
+                    <span
+                      key={active}
+                      className="s4-tab-bar"
+                      aria-hidden="true"
+                      data-run={atRest && !reduce ? '' : undefined}
+                      data-paused={!cycling || undefined}
+                    />
+                  )}
+                </button>
+              ))}
+            </div>
+
             <div className="s4-stage">
               <div className="s4-shots" aria-hidden="true">
                 {SETS.map((set, t) => (
-                  <div key={t} className="s4-set" data-on={atRest && t === shown && !leaving ? '' : undefined}>
+                  <div key={t} className="s4-set" data-on={atRest && t === active ? '' : undefined}>
                     {set.map((s, i) => (
                       <img
                         key={s.f}
@@ -135,46 +179,31 @@ export default function SectionFour() {
                 ))}
               </div>
 
-              {atRest && (
-                <div
-                  key={shown}
-                  className="s4-card"
-                  role="tabpanel"
-                  id="s4-tool-panel"
-                  aria-labelledby={`s4-tab-${shown}`}
-                  data-leave={leaving ? '' : undefined}
-                  onAnimationEnd={(e) => { if (leaving && e.target === e.currentTarget) setShown(active); }}
-                >
+              {/* keyed by tool: switching tools while it is open folds the new card out again */}
+              <div
+                key={open ? active : 'closed'}
+                className="s4-card"
+                role="tabpanel"
+                id="s4-tool-panel"
+                aria-labelledby={`s4-tab-${active}`}
+                aria-hidden={!open || undefined}
+                data-open={open || undefined}
+                onPointerEnter={() => setReading(true)}
+                onPointerLeave={() => setReading(false)}
+                onFocus={() => setReading(true)}
+                onBlur={() => setReading(false)}
+              >
+                <div className="s4-card-in">
                   <div className="s4-card-head">
                     <img src="/assets/tools/tool-icon.svg" width={24} height={24} alt="" />
                     <h3 className="s4-card-title">{tool.name}</h3>
                   </div>
                   <div className="s4-card-body">
                     <p className="s4-card-text">{tool.text}</p>
-                    <a className="s4-try" href="#">[Try it →]</a>
+                    <a className="s4-try" href="#" tabIndex={open ? 0 : -1}>[Try it →]</a>
                   </div>
                 </div>
-              )}
-            </div>
-
-            <div className="s4-tabs" role="tablist" aria-label="Tools">
-              {TOOLS.map((t, i) => (
-                <button
-                  key={t.name}
-                  id={`s4-tab-${i}`}
-                  role="tab"
-                  type="button"
-                  aria-selected={i === active}
-                  aria-controls="s4-tool-panel"
-                  className="s4-tab"
-                  onClick={() => setActive(i)}
-                >
-                  {t.name}
-                  {i === active && (
-                    <span key={active} className="s4-tab-bar" aria-hidden="true" data-run={atRest && !reduce ? '' : undefined} />
-                  )}
-                </button>
-              ))}
+              </div>
             </div>
           </div>
         </div>
