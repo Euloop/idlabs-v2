@@ -1,0 +1,100 @@
+/* Flowchart (Section 2, /home-2). IL line language: hairline ink on white, IBM Plex Mono for
+   labels, Inter for titles, one accent (the post, same blue as the current diagram).
+   --sw / --swd / --dash are set per frame in screen px, so lines stay hairlines at any zoom.
+   Node state per box: --r revealed (draw-in), --a post has arrived, --d post has left. */
+.s2-part2 svg.fl {
+  display: block; width: 100%;
+  height: clamp(270px, 58svh, 600px); aspect-ratio: auto;
+  overflow: hidden;
+  --ink: #1f1f1f; --muted: #8b8b86; --acc: #2f6bff;
+  --sw: 1; --swd: 1.5; --dash: 0 4.5;
+}
+
+.fl text { font-family: var(--mono); }
+
+/* Groups: the client's panels, barely there. Module outlines: hairline, drawn in their turn.
+   --m module level (1 highlighted, dims once the story moves on), --ml its label. */
+.fl-panel rect { fill: var(--ink); fill-opacity: .016; }
+.fl-panel text, .fl-module text {
+  font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase; fill: var(--muted);
+}
+.fl-module { --m: 1; --ml: 0; }
+.fl-module-line {
+  fill: none; stroke: var(--ink); stroke-width: var(--sw);
+  stroke-opacity: calc(.06 + .14 * var(--m));
+}
+.fl-module-label { opacity: calc(var(--ml) * (.35 + .65 * var(--m))); }
+.fl-module .fl-module-bg { fill: #fff; }
+.fl-module text { fill: #6f6f6b; font-size: 10px; }
+
+/* Connectors */
+.fl-ghost path, .fl-trav path, .fl-note-line {
+  fill: none; stroke: var(--ink); stroke-width: var(--swd); stroke-linecap: round; stroke-dasharray: var(--dash);
+}
+.fl-ghost path { stroke-opacity: .26; }
+.fl-trav path { stroke-opacity: .8; }
+.fl .fl-head {
+  fill: none; stroke: var(--ink); stroke-width: var(--sw); stroke-dasharray: none;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.fl-ghost .fl-head { stroke-opacity: .26; }
+.fl-trav .fl-head { stroke-opacity: .8; }
+
+/* Notes */
+.fl-note { transform-box: view-box; }
+.fl-note text { font-size: 10px; fill: #6f6f6b; }
+.fl-note-line { stroke-opacity: .45; }
+.fl-note .fl-head { stroke-opacity: .45; }
+
+/* The post */
+.fl-dot circle { fill: var(--acc); }
+.fl-dot .fl-dot-halo { fill-opacity: .14; }
+
+/* Boxes */
+.fl-node { --a: 0; --d: 0; --r: 0; }
+.fl-fill { fill: #fff; opacity: var(--r); }
+.fl-outline {
+  fill: none; stroke: var(--ink); stroke-width: var(--sw);
+  stroke-opacity: calc(.18 + .7 * var(--a) - .4 * var(--d));
+}
+.fl-label { opacity: calc(var(--r) * (.34 + .66 * var(--a) - .2 * var(--d))); }
+.fl-title { font-family: var(--sans) !important; font-size: 15px; fill: var(--ink); }
+.fl-sub { font-size: 10px; fill: var(--muted); }
+
+/* Feed: the dark tile, filled in when the post lands. */
+.fl-feed .fl-tint { fill: var(--ink); opacity: var(--a); }
+.fl-feed .fl-title { fill: color-mix(in srgb, #fff calc(var(--a) * 100%), var(--ink)); }
+.fl-feed .fl-sub { fill: color-mix(in srgb, #c9c9c4 calc(var(--a) * 100%), var(--muted)); }
+.fl-feed .fl-label { opacity: calc(var(--r) * (.34 + .66 * var(--a))); }
+
+/* Your post */
+.fl-post rect { fill: var(--ink); }
+.fl-post path { stroke: #fff; stroke-opacity: .85; stroke-width: 1.4; stroke-linecap: round; }
+.fl-post-title { font-family: var(--sans) !important; font-size: 13px; fill: var(--ink); }
+.fl-post-sub { font-size: 9.5px; fill: var(--muted); }
+
+/* Header, footer and frame markers (/home-2 only, via .s2-flow). Tighter chrome than the live
+   page: header 80 → 56 (Figma px, wordmark/nav 27 → 20 from the top), footer bottom padding
+   55 → 24. Markers 12 → 9px and paler; the top pair sits at the header base and the bottom pair
+   mirrors it (56 above the bottom edge), where the content band ends. Applies to the fixed chrome
+   and to Section 2's hidden spacers, so the diagram band grows into the freed space. */
+body:has(.s2-flow) .s2-header { height: calc(56 * var(--px)); padding-top: calc(20 * var(--px)); }
+body:has(.s2-flow) .chrome-nav { top: calc(20 * var(--px)); }
+body:has(.s2-flow) .s2-foot { padding-bottom: calc(24 * var(--px)); --tick-y: calc(100% - 56 * var(--px)); }
+body:has(.s2-flow) .chrome .tick { width: 9px; height: 9px; background: #e6e6e6; }
+html[data-theme='night'] body:has(.s2-flow) .chrome .tick { background: #35363b; } /* solid, as in the hero */
+
+/* Hero, same treatment (/home-2 only): header 80 → 56 to match the fixed wordmark/nav above,
+   markers 12 → 9px. The logo strip's bottom markers sit 26 below the logos — the same gap as
+   between the header markers and the golden construction — with less dead space under them. */
+body:has(.s2-flow) .hero .site-header { height: calc(56 * var(--px)); padding-top: calc(20 * var(--px)); }
+/* Solid colours (= --rule, 15% #828282, over the #2a2c31 paper) so the frame rule can't show
+   through the marker. */
+body:has(.s2-flow) .hero .tick { width: 9px; height: 9px; background: #37393d; }
+body:has(.s2-flow) .hero .clients { padding-bottom: calc(40 * var(--px)); --tick-y: calc(100% - 14 * var(--px)); }
+/* The tighter header and logo strip make the composition 803 units tall instead of 832, so the
+   height cap on the frame (globals.css, "Fit to viewport height") loosens to match: on tall
+   windows the hero grows to fill the screen instead of leaving dead space under the logos. */
+@media (min-width: 960px) {
+  body:has(.s2-flow) .frame { width: max(880px, min(var(--frame-max), 100% - 2 * var(--gutter), 100svh * 1008 / 803 + 2 * var(--pad))); }
+}

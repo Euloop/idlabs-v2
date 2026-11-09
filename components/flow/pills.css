@@ -1,0 +1,44 @@
+/* Minimal tree version (FlowPills.tsx). After a user-flow map, flat (no shadows, no glows): hairlines, small white pills with
+   black handle dots, outlined branch pills; Inter for labels, IBM Plex Mono for captions/tags.
+   Per main pill: --r revealed, --a post arrived, --d post left. Per branch group: --b shown. */
+.s2-part2 svg.fp {
+  display: block; width: 100%;
+  height: clamp(270px, 58svh, 600px); aspect-ratio: auto;
+  overflow: hidden;
+  --ink: #1f1f1f; --muted: #8b8b86; --acc: #2f6bff; --sw: 1;
+}
+.fp text { font-family: var(--sans); }
+
+/* Spine */
+.fp-ghost path, .fp-trav path { fill: none; stroke-width: var(--sw); }
+.fp-ghost path { stroke: #d6d6d3; }
+.fp-trav path { stroke: var(--ink); stroke-opacity: .7; }
+
+/* Main pills */
+.fp-pill { --a: 0; --d: 0; --r: 0; opacity: calc(var(--r) * (.4 + .6 * var(--a))); }
+.fp-body {
+  fill: #fff;
+  stroke: var(--ink); stroke-width: var(--sw); stroke-opacity: calc(.22 + .4 * var(--a) * (1 - var(--d)));
+}
+.fp-title { font-size: 13px; fill: var(--ink); }
+.fp-sub { font-family: var(--mono) !important; font-size: 9.5px; fill: var(--muted); }
+.fp-handle { fill: color-mix(in srgb, var(--ink) calc(var(--a) * 100%), #cfcfcc); }
+.fp-dark .fp-body { fill: color-mix(in srgb, var(--ink) calc(var(--a) * 100%), #fff); }
+.fp-dark .fp-title { fill: color-mix(in srgb, #fff calc(var(--a) * 100%), var(--ink)); }
+
+/* Branches */
+.fp-branches { --b: 0; }
+.fp-branch-line { fill: none; stroke: var(--ink); stroke-opacity: .22; stroke-width: var(--sw); }
+.fp-branch { opacity: var(--b); }
+.fp-branch rect { fill: #fff; stroke: var(--ink); stroke-opacity: .3; stroke-width: var(--sw); }
+.fp-branch text { font-size: 11px; fill: #3a3a3a; }
+.fp-port { fill: #fff; stroke: var(--ink); stroke-opacity: .35; stroke-width: var(--sw); }
+
+/* The post */
+.fp-dot circle { fill: var(--acc); }
+
+/* Module tags */
+.fp-tag text {
+  font-family: var(--mono) !important; font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase;
+  fill: var(--muted);
+}

@@ -1,0 +1,127 @@
+/* ───────── Services (/home-2, Services.tsx) ─────────
+   Two copies: dark (night theme, pulled up under Section 4's hold) and light (the lights come
+   up as it arrives). One screen each, no hold; the content is centred in the band between the
+   fixed header and footer. The grid band runs rule to rule, like Section 3's. */
+.sv {
+  position: relative; z-index: 1; pointer-events: none;
+  /* dark tone */
+  --line: #363636;
+  /* three steps of emphasis: hi (one focus per diagram, titles), mid (supporting), low (structure) */
+  --ink-hi: #ebebeb; --ink-body: #8f8f8f; --ink-mute: #6a6a6a;
+  --num-line: #3f3f3f;
+  --d-ln: #ebebeb; --d-soft: #7d7d7d; --d-dim: #474747; --d-faint: #333; --d-box: #4d4d4d;
+  --d-lb: #5f5f5f; --d-lb-mid: #8f8f8f; --d-lb-hi: #ebebeb; --d-dot-mid: #7d7d7d; --d-lead: #6a6a6a; --d-paper: #232427; /* ≈ the textured night paper */
+  --btn-ink: #ebebeb; --btn-bg-hover: #ebebeb; --btn-ink-hover: #1f1f1f;
+}
+.sv[data-tone='light'] {
+  --line: #e0e0e0;
+  --ink-hi: #1f1f1f; --ink-body: #6b6b6b; --ink-mute: #a3a3a3;
+  --num-line: #e0e0e0;
+  --d-ln: #1f1f1f; --d-soft: #8f8f8f; --d-dim: #cdcdcd; --d-faint: #ececec; --d-box: #c6c6c6;
+  --d-lb: #b0b0b0; --d-lb-mid: #6b6b6b; --d-lb-hi: #1f1f1f; --d-dot-mid: #8f8f8f; --d-lead: #a8a8a8; --d-paper: #fff;
+  --btn-ink: #1f1f1f; --btn-bg-hover: #1f1f1f; --btn-ink-hover: #fff;
+}
+/* Sticky stage: the dark copy scrolls in, holds for 0.6 of a screen, then scrolls on; the
+   light copy (last on the page) just scrolls in and stays. */
+.sv[data-tone='dark'] { height: 160svh; }
+.sv-pin { position: sticky; top: 0; height: 100svh; display: grid; align-items: center; }
+/* Equal room above and below: header band (80) and footer band (~80) are the same height. */
+.sv-frame { margin-inline: auto; display: grid; align-content: center; padding-block: calc(96 * var(--px) + 5px) calc(96 * var(--px) - 5px); }
+.sv-inner { display: flex; flex-direction: column; transition: opacity 400ms ease; }
+/* Each copy shows only on its own page: when the lights come up for the light copy, the dark
+   copy fades out on the same 400ms ease (and the light copy is hidden until then). */
+html[data-theme='light'] .sv[data-tone='dark'] .sv-inner,
+html:not([data-theme='light']) .sv[data-tone='light'] .sv-inner { opacity: 0; }
+.sv a { pointer-events: auto; }
+
+.sv-head { display: flex; justify-content: space-between; align-items: center; padding-bottom: calc(24 * var(--px)); }
+/* Plain label, like the footer labels */
+.sv-tag {
+  margin: 0; color: var(--ink-body);
+  font-family: var(--mono); font-weight: 400; font-size: 12px; line-height: 1.4; text-transform: uppercase;
+}
+
+.sv-grid {
+  list-style: none; margin: 0 calc(-1 * var(--pad)); padding: 0;
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  border-block: 1px solid var(--line);
+}
+.sv-cell {
+  display: flex; flex-direction: column; align-items: flex-start;
+  padding: calc(28 * var(--px)) var(--pad) calc(28 * var(--px));
+}
+.sv-cell + .sv-cell { border-left: 1px solid var(--line); }
+
+.sv-fig { align-self: stretch; margin-bottom: calc(24 * var(--px)); }
+.sv-svg { display: block; width: 100%; height: auto; aspect-ratio: 300 / 180; overflow: visible; }
+
+.sv-num {
+  padding: 1px 10px; border: 1px solid var(--num-line);
+  font-family: var(--mono); font-size: 12px; line-height: 1.4; color: var(--ink-mute);
+}
+.sv-title {
+  margin: calc(18 * var(--px)) 0 0;
+  font-family: var(--wordmark); font-weight: 400; font-size: 20px; line-height: 1.3; letter-spacing: -0.04em;
+  color: var(--ink-hi); text-wrap: balance;
+}
+.sv-text {
+  margin-top: 10px;
+  font-family: var(--mono); font-size: 12px; line-height: 1.5; text-transform: uppercase;
+  color: var(--ink-body); text-wrap: pretty;
+}
+
+.sv-cta {
+  /* plain text at rest, on the tag's line, its text flush with the right edge of the content
+     (the padding hangs outside); hover fills it like the solid button */
+  display: inline-flex; padding: 6px 16px; margin: -6px -16px -6px 0; color: var(--btn-ink);
+  font-family: var(--mono); font-size: 12px; line-height: 1.4; text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap;
+  opacity: 0; transition: opacity 500ms var(--ease-out) 200ms, background-color 150ms ease, color 150ms ease;
+}
+.sv[data-on] .sv-cta { opacity: 1; }
+.sv-cta:hover, .sv-cta:focus-visible { background: var(--btn-bg-hover); color: var(--btn-ink-hover); }
+
+/* ── Diagram marks ──
+   Drawn as they are (no draw-in). Stroke widths in viewBox units (the drawing scales ~1–1.5×
+   with the frame); round ends and joins keep the line work soft. */
+.sv-svg path, .sv-svg circle, .sv-svg rect { stroke-linecap: round; stroke-linejoin: round; }
+.sv-svg .ln, .sv-svg .ln-soft, .sv-svg .ln-dim, .sv-svg .ln-faint, .sv-svg .ln-dash, .sv-svg .box { fill: none; stroke-width: 0.75; }
+.sv-svg .ln { stroke: var(--d-ln); stroke-width: 1; }
+.sv-svg .ln-soft { stroke: var(--d-soft); }
+.sv-svg .ln-dim { stroke: var(--d-dim); }
+.sv-svg .ln-faint { stroke: var(--d-faint); }
+.sv-svg .ln-dash { stroke: var(--d-dim); stroke-dasharray: 0.5 3; }
+.sv-svg .box { stroke: var(--d-box); fill: none; }
+.sv-svg .box-hi { stroke: var(--d-ln); }
+.sv-svg .box-fill { stroke: var(--d-box); fill: var(--d-paper); }
+.sv-svg .dot { fill: var(--d-ln); }
+.sv-svg .lead { fill: var(--d-lead); }
+.sv-svg .lb { font-family: var(--mono); font-size: 7.5px; letter-spacing: 0.04em; fill: var(--d-lb); }
+.sv-svg .lb-mid { fill: var(--d-lb-mid); }
+.sv-svg .lb-hi { fill: var(--d-lb-hi); }
+.sv-svg .dot-mid { fill: var(--d-dot-mid); }
+/* soft wash under the focus curve */
+.sv-svg .area { stroke: none; }
+.sv-svg .st-a { stop-color: var(--d-ln); stop-opacity: 0.09; }
+.sv-svg .st-b { stop-color: var(--d-ln); stop-opacity: 0; }
+.sv-svg .st-strong { stop-opacity: 0.12; }
+/* creators: hollow rings, not dots */
+.sv-svg .ring { fill: var(--d-paper); stroke: var(--d-soft); stroke-width: 0.9; }
+
+/* the focus marker breathes (ambient, not an entrance) */
+.sv-svg .pulse { fill: none; stroke: var(--d-ln); stroke-width: 0.75; opacity: 0; transform-box: fill-box; transform-origin: center; animation: sv-pulse 2600ms var(--ease-out) infinite; }
+@keyframes sv-pulse { 0% { opacity: 0.7; transform: scale(1); } 70%, 100% { opacity: 0; transform: scale(3.6); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .sv-cta { transition: none; }
+  .sv-svg .pulse { animation: none; }
+}
+
+/* Narrow: cells stack; the section grows past one screen */
+@media (max-width: 759px) {
+  .sv-grid { grid-template-columns: 1fr; }
+  .sv-cell + .sv-cell { border-left: 0; border-top: 1px solid var(--line); }
+  .sv-frame { padding-block: 96px 110px; }
+  /* taller than a screen here: no pin, plain scroll */
+  .sv[data-tone='dark'] { height: auto; }
+  .sv-pin { position: static; height: auto; min-height: 100svh; }
+}

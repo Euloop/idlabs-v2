@@ -13,6 +13,7 @@ import TokenText from './TokenText';
 export default function SiteChrome() {
   const [on, setOn] = useState(false);
   const [foot, setFoot] = useState('/Algorithm Research');
+  const [group, setGroup] = useState('/Our Tech');
 
   useEffect(() => {
     const root = document.documentElement;
@@ -38,13 +39,17 @@ export default function SiteChrome() {
       raf = 0;
       const mid = window.innerHeight * 0.5;
       let label = '';
+      let grp = '/Our Tech';
       document.querySelectorAll<HTMLElement>('[data-foot]').forEach((el) => {
         if (el.getBoundingClientRect().top <= mid) {
           const night = document.documentElement.dataset.theme === 'night';
           label = (night && el.dataset.footNight) || el.dataset.foot || label;
+          // right-hand label: the group the section belongs to (data-foot-group), else "/Our Tech"
+          grp = el.dataset.footGroup || '/Our Tech';
         }
       });
       if (label) setFoot(label);
+      setGroup(grp);
     };
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(measure); };
     measure();
@@ -86,7 +91,7 @@ export default function SiteChrome() {
         <div />
         <footer className="s2-foot">
           <TokenText as="span" text={foot} show={on} delay={200} fade />
-          <TokenText as="span" text="/Our Tech" show={on} delay={260} fade />
+          <TokenText as="span" text={group} show={on} delay={260} fade />
           <span className="tick tick-l" aria-hidden="true" />
           <span className="tick tick-r" aria-hidden="true" />
         </footer>

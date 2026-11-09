@@ -1,0 +1,67 @@
+/* Card version of the pipeline (FlowCards.tsx). Node-editor language kept quiet: a faint dotted
+   canvas that fades out at the band's edges, white cards with a hairline edge and a soft shadow,
+   pale-grey rows, Inter throughout, connectors pale until the post passes, then solid ink.
+   --sw / --sw2 are screen px per unit (set per frame). Per card: --r revealed, --a post arrived,
+   --d post left. Per port: --on. */
+.s2-part2 svg.fc {
+  display: block; width: 100%;
+  height: clamp(270px, 58svh, 600px); aspect-ratio: auto;
+  overflow: hidden;
+  --ink: #1f1f1f; --muted: #8b8b86; --acc: #2f6bff;
+  --sw: 1; --sw2: 1.75;
+  /* Edge fades; the right one (--fr) eases away once the camera reaches Ranking, so it never
+     washes over the Feed card at the end. */
+  --fr: 4%;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 4%, #000 calc(100% - var(--fr)), rgb(0 0 0 / calc(1 - var(--fr) * 25))),
+    linear-gradient(to bottom, transparent, #000 10%, #000 90%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to right, transparent, #000 4%, #000 calc(100% - var(--fr)), rgb(0 0 0 / calc(1 - var(--fr) * 25))),
+    linear-gradient(to bottom, transparent, #000 10%, #000 90%, transparent);
+  mask-composite: intersect;
+}
+.fc text { font-family: var(--sans); }
+
+/* Canvas */
+#fc-dots circle { fill: #d9d9d6; }
+.fc-canvas { fill: url(#fc-dots); }
+
+/* Connectors */
+.fc-ghost path, .fc-trav path { fill: none; stroke-width: var(--sw2); stroke-linecap: round; }
+.fc-ghost path { stroke: #dcdcd9; }
+.fc-trav path { stroke: var(--ink); }
+
+/* Ports: hollow circles, grey until the post reaches them. */
+.fc-port { --on: 0; }
+.fc-port circle {
+  fill: #fff; stroke-width: var(--sw2);
+  stroke: color-mix(in srgb, var(--ink) calc(var(--on) * 100%), #cfcfcc);
+}
+
+/* The post */
+.fc-dot circle { fill: var(--acc); }
+.fc-dot .fc-dot-halo { fill-opacity: .14; }
+
+/* Cards */
+.fc-card { --a: 0; --d: 0; --r: 0; transform-box: view-box; opacity: calc(var(--r) * (.42 + .58 * var(--a))); }
+.fc-body { fill: #fff; filter: url(#fc-shadow); }
+.fc-edge {
+  fill: none; stroke: var(--ink); stroke-width: var(--sw);
+  stroke-opacity: calc(.08 + .42 * var(--a) * (1 - var(--d)));
+}
+.fc-title { font-size: 15px; font-weight: 500; fill: var(--ink); }
+.fc-more { fill: #b4b4b0; }
+.fc-row { fill: #f5f5f3; }
+.fc-sub { font-size: 13px; fill: #3a3a3a; }
+.fc-note { font-size: 12px; fill: var(--muted); }
+
+/* Feed: the dark card. */
+.fc-dark .fc-body { fill: var(--ink); }
+.fc-dark .fc-title { fill: #fff; }
+.fc-dark .fc-row { fill: #2f2f2f; }
+.fc-dark .fc-sub { fill: #d6d6d3; }
+.fc-dark .fc-more { fill: #6f6f6b; }
+
+/* Module tags (like the reference's "Start" pill). */
+.fc-tag { transform-box: view-box; }
+.fc-tag rect { fill: #fff; filter: url(#fc-shadow); }
+.fc-tag text { font-size: 13px; font-weight: 500; fill: var(--ink); }
