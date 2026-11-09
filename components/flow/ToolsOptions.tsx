@@ -27,7 +27,7 @@ export default function ToolsOptions() {
           { label: 'Tools layout', options: LAYOUTS, value: layout, onChange: (v) => pickLayout(v as Layout) },
           { label: 'Tools theme', options: THEMES, value: theme, onChange: (v) => pickTheme(v as Theme) },
         ]}
-        selector=".iso, .tg" label="Tools options" when={inView}
+        selector="section.iso, section.tg" label="Tools options" when={inView}
       />
     </>
   );

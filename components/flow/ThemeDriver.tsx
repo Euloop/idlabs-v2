@@ -7,13 +7,15 @@ import { useEffect } from 'react';
    and the light comes back the moment the section after it starts to come on screen. One writer only: this sets
    html[data-night-lock], and Section 2 (which writes the page theme as you scroll) honours it,
    so the two never fight (no flicker). It also writes the theme itself when the lock changes. */
-const DARK = '[data-lights-down], .sv[data-tone="dark"], .iso[data-mode="dark"]';
-const SECTIONS = '.hero, .s2, .s3, .tg, .iso, .sv, .lc';
+const DARK = 'section[data-lights-down], section.sv[data-tone="dark"], section.iso[data-mode="dark"]';
+// real sections only (the funnel diagram draws SVG circles with class "tg")
+const SECTIONS = '.hero, section.s2, section.s3, section.tg, section.iso, section.sv, section.lc';
 
 export default function ThemeDriver() {
   useEffect(() => {
     const root = document.documentElement;
     let down = false;
+    let held: HTMLElement | null = null;
     let raf = 0;
     const apply = () => {
       raf = 0;
@@ -22,12 +24,15 @@ export default function ThemeDriver() {
       // The page takes the theme of the section coming in: the last section whose top edge has
       // entered the screen (8% up from the bottom). So the switch happens as soon as the next
       // section shows, for both — no dark section lingering or vanishing on a light page.
+      // Hysteresis: the section in charge keeps it until its top is back below 96%, so the small
+      // moves of smooth scrolling at a boundary cannot flip the theme to and fro.
       let current: HTMLElement | null = null;
       let best = -Infinity;
       document.querySelectorAll<HTMLElement>(SECTIONS).forEach((el) => {
         const t = el.getBoundingClientRect().top;
-        if (t < 0.92 * vh && t > best) { best = t; current = el; }
+        if (t < (el === held ? 0.96 : 0.92) * vh && t > best) { best = t; current = el; }
       });
+      held = current;
       down = !!current && (current as HTMLElement).matches(DARK);
       if (down === was) return;
       root.toggleAttribute('data-night-lock', down);

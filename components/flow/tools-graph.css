@@ -1,13 +1,13 @@
 /* Analytical tools, Graph layout (ToolsGraph.tsx). Light page. One screen: the small network in
    the middle, the intro line at the bottom in the 512px column. Names 9.5px IBM Plex Mono caps
    (as in the design), hairline ink lines, one green hub; cards as the device's light cards. */
-.tg {
+section.tg {
   position: relative; z-index: 1; height: 160svh; /* holds on screen a little (pinned 0.6 of a screen) */
   /* light */
   --g-ink: #1f1f1f; --g-paper: #fff; --g-fill: #d9d9d6; --g-hub: #2f4a36; --g-ghost: #c8c8c4; --g-body: #6b6b6b; --g-mark: #e6e6e6;
   --g-card: rgb(255 255 255 / .86); --g-card-line: rgb(0 0 0 / .08); --g-shot-line: rgb(0 0 0 / .1); --g-shot-bg: #fff;
 }
-.tg[data-mode='dark'] {
+section.tg[data-mode='dark'] {
   --g-ink: #ebebeb; --g-paper: #232427; --g-fill: #4d4f53; --g-hub: #4f7a5a; --g-ghost: #4a4a4a; --g-body: #8f8f8f; --g-mark: #35363b;
   --g-card: rgb(255 255 255 / .08); --g-card-line: rgb(255 255 255 / .1); --g-shot-line: rgb(255 255 255 / .12); --g-shot-bg: #1c1c1c;
 }

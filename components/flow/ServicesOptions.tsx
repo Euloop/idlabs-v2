@@ -28,7 +28,7 @@ export default function ServicesOptions() {
           { label: 'Services layout', options: LAYOUTS, value: layout, onChange: (v) => pickLayout(v as Layout) },
           { label: 'Services theme', options: THEMES, value: theme, onChange: (v) => pickTheme(v as Theme) },
         ]}
-        selector=".sv" label="Services options" when={arrived}
+        selector="section.sv" label="Services options" when={arrived}
       />
     </>
   );

@@ -10,7 +10,7 @@ import { useEffect, useRef } from 'react';
    picture links to its X post. It never stops on hover; it pauses off screen, and is still with
    reduced motion. */
 
-type Launch = { client: string; what?: string; x?: string; reach?: string; li?: string };
+export type Launch = { client: string; what?: string; x?: string; reach?: string; li?: string };
 /* The client's list (post links without tracking parameters). Profound: link to come. */
 const LAUNCHES: Launch[] = [
   { client: 'Matic Robots', what: 'Launch', reach: '25M+', x: 'https://x.com/maticrobots/status/2087962897267990915', li: 'https://www.linkedin.com/posts/mehulnariyawala_introducing-matic-cues-a-new-way-to-control-activity-7493734976891465728-FqbX' },
@@ -53,7 +53,8 @@ const rnd = (i: number) => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453;
 // (golden-angle spacing, so they spread evenly), stays straight and has its own size; its distance
 // from the middle grows as it comes forward — far away they bunch up behind the word, near they fan out.
 const GOLDEN = Math.PI * (3 - Math.sqrt(5));
-const PICTURED = LAUNCHES.filter((l) => !NO_IMAGE.has(slug(l)));
+export const PICTURED = LAUNCHES.filter((l) => !NO_IMAGE.has(slug(l)));
+export const RATIO_OF = (l: Launch) => RATIO[slug(l)] ?? 16 / 9;
 const CARDS = Array.from({ length: PASSES }, () => PICTURED).flat().map((l, i, all) => ({
   ...l, key: i, file: slug(l),
   dx: Math.cos(i * GOLDEN), dy: Math.sin(i * GOLDEN),

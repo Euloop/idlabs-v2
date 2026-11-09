@@ -18,7 +18,7 @@ export default function Section2Options() {
   return (
     <>
       {style === 'diagram' ? <SectionTwo key="diagram" noOutro /> : <SectionTwoFlow key={style} variant={style} night={false} />}
-      <OptionTabs groups={[{ label: 'Diagram style', options: STYLES, value: style, onChange: (v) => pick(v as Style) }]} selector=".s2" label="Section 2 options" />
+      <OptionTabs groups={[{ label: 'Diagram style', options: STYLES, value: style, onChange: (v) => pick(v as Style) }]} selector="section.s2" label="Section 2 options" />
     </>
   );
 }

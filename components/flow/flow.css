@@ -215,11 +215,11 @@ body:has(.s2-flow) .sv .sv-inner { opacity: 1 !important; }
    clash: at the boundary both turn together. (A section's Light / Dark option only decides which
    theme it brings in.) */
 /* graph */
-html[data-theme='light'] body:has(.s2-flow) .tg {
+html[data-theme='light'] body:has(.s2-flow) section.tg {
   --g-ink: #1f1f1f; --g-paper: #fff; --g-fill: #d9d9d6; --g-hub: #2f4a36; --g-ghost: #c8c8c4; --g-body: #6b6b6b; --g-mark: #e6e6e6;
   --g-card: rgb(255 255 255 / .86); --g-card-line: rgb(0 0 0 / .08); --g-shot-line: rgb(0 0 0 / .1); --g-shot-bg: #fff;
 }
-html[data-theme='night'] body:has(.s2-flow) .tg {
+html[data-theme='night'] body:has(.s2-flow) section.tg {
   --g-ink: #ebebeb; --g-paper: #232427; --g-fill: #4d4f53; --g-hub: #4f7a5a; --g-ghost: #4a4a4a; --g-body: #8f8f8f; --g-mark: #35363b;
   --g-card: rgb(255 255 255 / .08); --g-card-line: rgb(255 255 255 / .1); --g-shot-line: rgb(255 255 255 / .12); --g-shot-bg: #1c1c1c;
 }
@@ -301,7 +301,7 @@ html[data-theme='night'] body:has(.s2-flow) .s3-lead { color: #ebebeb; }
 @property --btn-ink { syntax: '<color>'; inherits: true; initial-value: transparent; }
 @property --btn-bg-hover { syntax: '<color>'; inherits: true; initial-value: transparent; }
 @property --btn-ink-hover { syntax: '<color>'; inherits: true; initial-value: transparent; }
-body:has(.s2-flow) .tg { transition: --g-ink 400ms ease, --g-paper 400ms ease, --g-fill 400ms ease, --g-hub 400ms ease, --g-ghost 400ms ease, --g-body 400ms ease, --g-mark 400ms ease, --g-card 400ms ease, --g-card-line 400ms ease, --g-shot-line 400ms ease, --g-shot-bg 400ms ease; }
+body:has(.s2-flow) section.tg { transition: --g-ink 400ms ease, --g-paper 400ms ease, --g-fill 400ms ease, --g-hub 400ms ease, --g-ghost 400ms ease, --g-body 400ms ease, --g-mark 400ms ease, --g-card 400ms ease, --g-card-line 400ms ease, --g-shot-line 400ms ease, --g-shot-bg 400ms ease; }
 body:has(.s2-flow) .iso { transition: --i-paper 400ms ease, --i-hi 400ms ease, --i-body 400ms ease, --i-mute 400ms ease, --i-card 400ms ease, --i-card-line 400ms ease; }
 body:has(.s2-flow) .svf { transition: --f-ink 400ms ease, --f-label 400ms ease, --f-mute 400ms ease, --f-media 400ms ease, --f-paper 400ms ease; }
 body:has(.s2-flow) .sv:not(.svf) { transition: --line 400ms ease, --ink-hi 400ms ease, --ink-body 400ms ease, --ink-mute 400ms ease, --num-line 400ms ease, --d-ln 400ms ease, --d-soft 400ms ease, --d-dim 400ms ease, --d-faint 400ms ease, --d-box 400ms ease, --d-lb 400ms ease, --d-lb-mid 400ms ease, --d-lb-hi 400ms ease, --d-dot-mid 400ms ease, --d-lead 400ms ease, --d-paper 400ms ease, --btn-ink 400ms ease, --btn-bg-hover 400ms ease, --btn-ink-hover 400ms ease; }
@@ -337,3 +337,31 @@ html[data-theme='night'] body:has(.s2-flow) .lc-panel.lc-box { background: #2c2e
 }
 html[data-theme='night'] body:has(.s2-flow) .lcc { --lcc-bg: #26272b; --lcc-card: #2c2e33; --lcc-line: rgb(255 255 255 / .1); --lcc-ink: #ebebeb; --lcc-body: #8f8f8f; }
 @media (max-width: 759px) { .lcc-card { scale: .7; } }
+
+/* Launches grid (LaunchesGrid.tsx): an endless plane of pictures you drag; plain paper behind. */
+body:has(.s2-flow) .lc-panel.lc-gridp { background: transparent; }
+.lcg {
+  position: relative; width: 100%; height: 100%; overflow: hidden; cursor: grab; touch-action: none; user-select: none; pointer-events: auto;
+  /* faint dotted ground on the column / half-row grid; moves with the tiles */
+  background-image: radial-gradient(circle, var(--lcg-dot, #dcdcd8) 0.8px, transparent 1.2px);
+  background-size: 37.5px 52.5px;
+}
+/* soft fades at the top and bottom */
+.lcg::before, .lcg::after { content: ''; position: absolute; left: 0; right: 0; height: 18%; z-index: 1; pointer-events: none; }
+.lcg::before { top: 0; background: linear-gradient(var(--lcg-bg, #fff), transparent); }
+.lcg::after { bottom: 0; background: linear-gradient(transparent, var(--lcg-bg, #fff)); }
+html[data-theme='night'] body:has(.s2-flow) .lcg { --lcg-bg: #232427; --lcg-dot: #3a3b3f; }
+.lcg[data-dragging] { cursor: grabbing; }
+.lcg-plane { position: absolute; left: 0; top: 0; will-change: transform; }
+.lcg-tile { position: absolute; display: block; background: #eee; }
+.lcg-tile img { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+.lcg-tile:focus-visible { outline: 1px solid #1f1f1f; outline-offset: 2px; }
+html[data-theme='night'] body:has(.s2-flow) .lcg-tile { background: #2c2e33; }
+@media (max-width: 759px) { .lcg-plane { scale: .7; transform-origin: 0 0; } }
+
+/* the grid's line: small and quiet, in an opening of empty cells; it moves with the grid */
+.lcg-line {
+  position: absolute; translate: -50% -50%; margin: 0; white-space: nowrap; pointer-events: none;
+  font-family: var(--mono); font-size: 12px; line-height: 1.4; text-transform: uppercase; letter-spacing: .04em; color: var(--lcg-ink, #8f8f8f);
+}
+html[data-theme='night'] body:has(.s2-flow) .lcg { --lcg-ink: #8f8f8f; }
