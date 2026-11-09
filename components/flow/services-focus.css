@@ -2,12 +2,19 @@
    IBM Plex Mono caps except the statement (15px, −2% letter spacing, sentence case). Light
    page only. Spacing from the design: label → list 36, list → statement 32, statement →
    SERVICES 32, label → tags 16, tags → media 32, media → button 32. */
+.svf {
+  --f-ink: #1f1f1f; --f-label: #8f8f8f; --f-mute: #a3a3a3; --f-media: #ebebeb; --f-paper: #fff;
+}
+.svf[data-tone='dark'] {
+  --f-ink: #ebebeb; --f-label: #6a6a6a; --f-mute: #6a6a6a; --f-media: #2c2e33; --f-paper: #232427;
+  height: auto; /* not the grid's dark 160svh */
+}
 .svf .svf-col { width: min(100%, 512px); margin-inline: auto; align-items: stretch; }
 .svf-label {
   margin: 0; font-family: var(--mono); font-weight: 400; font-size: 12px; line-height: 1.4;
-  text-transform: uppercase; color: #8f8f8f;
+  text-transform: uppercase; color: var(--f-label);
 }
-.svf-ink { color: #1f1f1f; }
+.svf-ink { color: var(--f-ink); }
 
 .svf-list, .svf-tags { list-style: none; margin: 0; padding: 0; }
 .svf-list { margin-top: 36px; display: flex; flex-direction: column; gap: 6px; }
@@ -16,7 +23,7 @@
 }
 .svf-list button {
   display: inline-flex; align-items: center; gap: 10px; padding: 0; border: 0; background: none; cursor: pointer;
-  text-align: left; color: #a3a3a3; pointer-events: auto; transition: color 150ms ease;
+  text-align: left; color: var(--f-mute); pointer-events: auto; transition: color 150ms ease;
 }
 .svf-tags li::before { content: '•'; font-size: 9px; transform: translateY(-1px); }
 /* Minimal radio: a hairline ring; the selected service's ring holds a small ink dot. */
@@ -26,27 +33,27 @@
   transition: background-size 150ms var(--ease-out);
 }
 .svf-list button[aria-selected='true']::before { background-size: 100% 100%; }
-.svf-list button:hover, .svf-list button[aria-selected='true'] { color: #1f1f1f; }
-.svf-list button:focus-visible { outline: 1px solid #1f1f1f; outline-offset: 3px; }
+.svf-list button:hover, .svf-list button[aria-selected='true'] { color: var(--f-ink); }
+.svf-list button:focus-visible { outline: 1px solid var(--f-ink); outline-offset: 3px; }
 
 .svf-lead {
   margin: 32px 0 0; font-family: var(--mono); font-size: 15px; line-height: 1.5; letter-spacing: -0.02em;
-  color: #1f1f1f; text-wrap: pretty;
+  color: var(--f-ink); text-wrap: pretty;
   min-height: calc(5 * 1.5em); /* room for the longest statement (5 lines at 15px): switching never changes the height */
   animation: svf-in 360ms var(--ease-out) both;
 }
 @keyframes svf-in { from { opacity: 0; translate: 0 6px; } to { opacity: 1; translate: 0 0; } }
 .svf-panel > .svf-label { margin-top: 32px; }
-.svf-tags { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 2px 12px; color: #a3a3a3; animation: svf-in 360ms var(--ease-out) 60ms both; }
+.svf-tags { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 2px 12px; color: var(--f-mute); animation: svf-in 360ms var(--ease-out) 60ms both; }
 .svf-tags li { display: inline-flex; align-items: baseline; gap: 6px; }
-.svf-media { margin-top: 32px; aspect-ratio: 506 / 198; background: #ebebeb; }
+.svf-media { margin-top: 32px; aspect-ratio: 506 / 198; background: var(--f-media); }
 
 .svf-cta {
   align-self: flex-start; margin: 32px 0 0; padding: 4px 0; pointer-events: auto; /* the fill hugs the text: the brackets are the padding, nothing hangs outside the column */
   font-family: var(--mono); font-size: 12px; line-height: 1.4; text-transform: uppercase; letter-spacing: 0.04em;
-  color: #1f1f1f; white-space: nowrap; transition: background-color 150ms ease, color 150ms ease;
+  color: var(--f-ink); white-space: nowrap; transition: background-color 150ms ease, color 150ms ease;
 }
-.svf-cta:hover, .svf-cta:focus-visible { background: #1f1f1f; color: #fff; }
+.svf-cta:hover, .svf-cta:focus-visible { background: var(--f-ink); color: var(--f-paper); }
 
 @media (prefers-reduced-motion: reduce) { .svf-lead { animation: none; } }
 
@@ -58,3 +65,60 @@ body:has(.s2-flow) .svf .sv-frame {
   padding-block: calc(var(--box) + 48px) calc(var(--box) + 96px);
 }
 @media (max-width: 559px) { .svf-lead { min-height: calc(8 * 1.5em); } }
+
+
+/* ───────── Pick variants (data-pick) ───────── */
+/* cycle: no radios; the selected service has a hairline that fills over 7s */
+.svf[data-pick='cycle'] .svf-list button::before { content: none; }
+.svf[data-pick='cycle'] .svf-list { gap: 10px; }
+.svf[data-pick='cycle'] .svf-list button { position: relative; padding-bottom: 4px; }
+.svf-bar {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--f-ink);
+  transform: scaleX(1); transform-origin: 0 50%;
+}
+.svf-bar[data-run] { animation: svf-run 7000ms linear forwards; } /* duration from CYCLE_MS; its end selects the next service */
+.svf-bar[data-paused] { animation-play-state: paused; }
+@keyframes svf-run { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* echo: the selection repeated above its statement */
+.svf-echo {
+  margin: 32px 0 -16px; display: flex; gap: 10px;
+  font-family: var(--mono); font-size: 12px; line-height: 1.4; text-transform: uppercase; letter-spacing: .04em; color: var(--f-label);
+  animation: svf-in 300ms var(--ease-out) both;
+}
+.svf-echo span:last-child { color: var(--f-ink); }
+
+/* numbers: a boxed 1 · 2 · 3 tab control (as the bottom tabs), the name on its own line */
+.svf-nums {
+  margin-top: 28px; align-self: flex-start; display: inline-flex; align-items: center; gap: 10px; padding: 6px 14px;
+  outline: 1px solid color-mix(in srgb, var(--f-ink) 14%, transparent); outline-offset: -1px; pointer-events: auto;
+}
+.svf-nums-item { display: inline-flex; align-items: center; gap: 10px; }
+.svf-nums-sep { font-family: var(--mono); font-size: 12px; color: var(--f-mute); opacity: .6; }
+.svf-nums button {
+  padding: 0 2px; border: 0; background: none; cursor: pointer;
+  font-family: var(--mono); font-size: 12px; line-height: 1.4; letter-spacing: .04em; color: var(--f-mute);
+  transition: color 150ms ease;
+}
+.svf-nums button:hover, .svf-nums button[aria-selected='true'] { color: var(--f-ink); }
+.svf-nums button:focus-visible { outline: 1px solid var(--f-ink); outline-offset: 3px; }
+.svf-name {
+  margin: 20px 0 0; font-family: var(--mono); font-size: 12px; line-height: 1.4; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--f-ink); animation: svf-in 300ms var(--ease-out) both;
+}
+.svf[data-pick='numbers'] .svf-lead { margin-top: 20px; }
+@media (prefers-reduced-motion: reduce) { .svf-echo, .svf-name { animation: none; } }
+/* The Services section ignores the pointer except on its controls; the list and the panel need it
+   (hovering them pauses the cycle). */
+.svf .svf-list, .svf .svf-panel { pointer-events: auto; }
+
+/* names: the boxed tabs carry short service names (caps, as the bottom tabs), on one line; on
+   narrow screens they stack, without the separators */
+.svf-nums[data-names] { max-width: 100%; gap: 8px; padding-inline: 12px; }
+.svf-nums[data-names] .svf-nums-item { gap: 8px; }
+.svf-nums[data-names] button { text-transform: uppercase; white-space: nowrap; letter-spacing: 0; }
+@media (max-width: 559px) {
+  .svf-nums[data-names] { flex-direction: column; align-items: flex-start; gap: 6px; padding-block: 10px; }
+  .svf-nums[data-names] .svf-nums-sep { display: none; }
+}
+.svf[data-pick='names'] .svf-lead { margin-top: 20px; }

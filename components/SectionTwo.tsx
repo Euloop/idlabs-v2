@@ -48,7 +48,9 @@ const PART3 =
 const clamp = (v: number, a = 0, b = 1) => Math.max(a, Math.min(b, v));
 
 
-export default function SectionTwo() {
+/* noOutro (/home-2's Diagram option): no part 3 — after the diagram a short rest on its last
+   frame, then the pin releases into normal scrolling. The live page (/) keeps the outro. */
+export default function SectionTwo({ noOutro = false }: { noOutro?: boolean } = {}) {
   const sectionRef = useRef<HTMLElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const part2Ref = useRef<HTMLDivElement>(null);
@@ -101,7 +103,8 @@ export default function SectionTwo() {
       const tiTop = ti ? ti.getBoundingClientRect().top : Infinity;
       night = night ? tiTop < -0.25 * vh : tiTop < -0.35 * vh;
       const light = !night && (isLight ? heroBottom < 0.65 * vh : heroBottom < 0.55 * vh);
-      const theme = night ? 'night' : light ? 'light' : 'dark';
+      // html[data-night-lock] (set by /home-2's ThemeDriver while a dark section is on screen) wins.
+      const theme = root.hasAttribute('data-night-lock') ? 'night' : night ? 'night' : light ? 'light' : 'dark';
       if (root.dataset.theme !== theme) root.dataset.theme = theme;
       if (light !== isLight) {
         isLight = light;
@@ -125,7 +128,7 @@ export default function SectionTwo() {
       part1Ref.current?.set(p1);
       const intro = clamp((s - (HOLD + 0.25) * vh) / ((INTRO - 0.25) * vh));
       const target = clamp((s - (HOLD + INTRO) * vh) / (DIAGRAM * vh));
-      const outro = clamp((s - (HOLD + INTRO + DIAGRAM) * vh) / (OUTRO * vh));
+      const outro = noOutro ? 0 : clamp((s - (HOLD + INTRO + DIAGRAM) * vh) / (OUTRO * vh));
 
       // The diagram layer is hidden until its intro starts: the engine only redraws while the
       // intro runs, so scrolling back up would otherwise leave its last frame (the globe) showing
@@ -151,7 +154,7 @@ export default function SectionTwo() {
       for (const id in noteRefs.current) noteRefs.current[id]?.set(outro > 0 ? 0 : sg(np[id] || 0, 0.3, 1));
 
       // Part 3 (no typing): fades in as the diagram leaves.
-      if (part3El) part3El.style.opacity = sg(s, V(HOLD + INTRO + DIAGRAM + OUTRO * 0.4), V(HOLD + INTRO + DIAGRAM + OUTRO)).toFixed(3);
+      if (part3El && !noOutro) part3El.style.opacity = sg(s, V(HOLD + INTRO + DIAGRAM + OUTRO * 0.4), V(HOLD + INTRO + DIAGRAM + OUTRO)).toFixed(3);
 
       if (chromeIn !== lastChrome) { lastChrome = chromeIn; setChrome(chromeIn); }
 
@@ -188,7 +191,7 @@ export default function SectionTwo() {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
     };
-  }, []);
+  }, [noOutro]);
 
   // Measure where each note's text really sits (it wraps differently per width) so the
   // leaders start from the text edge. ScrollText keeps the layout of untyped text, so this is
@@ -222,7 +225,7 @@ export default function SectionTwo() {
       aria-label="Algorithm research"
       data-foot="/Algorithm Research"
       data-chrome={chrome || undefined}
-      style={{ height: `${(2 + HOLD + INTRO + DIAGRAM + OUTRO + TAIL) * 100}svh` }}
+      style={{ height: `${(2 + HOLD + INTRO + DIAGRAM + (noOutro ? 0.35 : OUTRO + TAIL)) * 100}svh` }}
     >
       <div className="s2-stage">
         <div className="frame s2-frame">
@@ -274,7 +277,7 @@ export default function SectionTwo() {
               </div>
             </div>
 
-            <p className="s2-part3" ref={part3ElRef} style={{ opacity: 0 }}>{PART3}</p>
+            {!noOutro && <p className="s2-part3" ref={part3ElRef} style={{ opacity: 0 }}>{PART3}</p>}
           </div>
 
           <footer className="s2-foot s2-spacer" aria-hidden="true">

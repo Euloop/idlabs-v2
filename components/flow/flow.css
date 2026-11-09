@@ -161,12 +161,12 @@ body:has(.s2-flow) .s3-frame { height: auto; padding-block: calc(var(--box) + 40
 body:has(.s2-flow) .s3-pin { height: auto; }
 
 /* Research section lead (/home-2): Section 2's closing line, in place of "Read our published
-   findings" — Section 2's part-3 type (12px mono caps), left-aligned in a 512px column centred on the page
+   findings" — Section 2's part-3 type (12px mono caps), centred, in a 512px column centred on the page
    (as the Services column). */
 .s3-lead {
   align-self: center; margin: 0 auto; width: min(100%, 512px);
   font-family: var(--mono); font-size: 12px; line-height: 1.6; text-transform: uppercase;
-  text-align: left; color: #1f1f1f; text-wrap: pretty; pointer-events: auto;
+  text-align: center; color: #1f1f1f; text-wrap: pretty; pointer-events: auto;
 }
 
 /* Services (/home-2): the heading centred on the page, "Work with us" moved below the cards,
@@ -201,3 +201,139 @@ body:has(.s2-flow) .lc-frame::after {
     linear-gradient(var(--box-mark), var(--box-mark)) left bottom / 9px 9px no-repeat,
     linear-gradient(var(--box-mark), var(--box-mark)) right bottom / 9px 9px no-repeat;
 }
+
+/* Night (a section shown dark): the corner squares in the night rule colour. */
+html[data-theme='night'] body:has(.s2-flow) :is(.s2-frame, .s3-frame, .iso-frame, .sv-frame, .lc-frame) { --box-mark: #35363b; }
+
+/* The page theme now follows the incoming section (ThemeDriver), so a section stays visible
+   whatever the theme is while it scrolls out (Services hides its copy for the other theme). */
+body:has(.s2-flow) .sv .sv-inner { opacity: 1 !important; }
+
+/* ───────── Sections follow the page theme (/home-2) ─────────
+   The page takes the theme of the section coming in (ThemeDriver); every section on screen then
+   wears that theme, whatever its own option — so a dark section and the light one after it never
+   clash: at the boundary both turn together. (A section's Light / Dark option only decides which
+   theme it brings in.) */
+/* graph */
+html[data-theme='light'] body:has(.s2-flow) .tg {
+  --g-ink: #1f1f1f; --g-paper: #fff; --g-fill: #d9d9d6; --g-hub: #2f4a36; --g-ghost: #c8c8c4; --g-body: #6b6b6b; --g-mark: #e6e6e6;
+  --g-card: rgb(255 255 255 / .86); --g-card-line: rgb(0 0 0 / .08); --g-shot-line: rgb(0 0 0 / .1); --g-shot-bg: #fff;
+}
+html[data-theme='night'] body:has(.s2-flow) .tg {
+  --g-ink: #ebebeb; --g-paper: #232427; --g-fill: #4d4f53; --g-hub: #4f7a5a; --g-ghost: #4a4a4a; --g-body: #8f8f8f; --g-mark: #35363b;
+  --g-card: rgb(255 255 255 / .08); --g-card-line: rgb(255 255 255 / .1); --g-shot-line: rgb(255 255 255 / .12); --g-shot-bg: #1c1c1c;
+}
+body:has(.s2-flow) .tg-shot-d { display: none; }
+html[data-theme='night'] body:has(.s2-flow) .tg-shot-d { display: block; }
+html[data-theme='night'] body:has(.s2-flow) .tg-shot-l { display: none; }
+/* device */
+html[data-theme='light'] body:has(.s2-flow) .iso {
+  --i-paper: #fff; --i-hi: #1f1f1f; --i-body: #6b6b6b; --i-mute: #a3a3a3;
+  --i-card: rgb(255 255 255 / 0.8); --i-card-line: rgb(0 0 0 / 0.08);
+}
+html[data-theme='night'] body:has(.s2-flow) .iso {
+  --i-paper: #232427; --i-hi: #ebebeb; --i-body: #8f8f8f; --i-mute: #6a6a6a;
+  --i-card: rgb(255 255 255 / 0.08); --i-card-line: rgb(255 255 255 / 0.1);
+}
+/* services, detail */
+html[data-theme='light'] body:has(.s2-flow) .svf { --f-ink: #1f1f1f; --f-label: #8f8f8f; --f-mute: #a3a3a3; --f-media: #ebebeb; --f-paper: #fff; }
+html[data-theme='night'] body:has(.s2-flow) .svf { --f-ink: #ebebeb; --f-label: #6a6a6a; --f-mute: #6a6a6a; --f-media: #2c2e33; --f-paper: #232427; }
+/* services, grid (the Services section's two tones, picked by the page theme) */
+html[data-theme='light'] body:has(.s2-flow) .sv:not(.svf) {
+  --line: #e0e0e0; --ink-hi: #1f1f1f; --ink-body: #6b6b6b; --ink-mute: #a3a3a3; --num-line: #e0e0e0;
+  --d-ln: #1f1f1f; --d-soft: #8f8f8f; --d-dim: #cdcdcd; --d-faint: #ececec; --d-box: #c6c6c6;
+  --d-lb: #b0b0b0; --d-lb-mid: #6b6b6b; --d-lb-hi: #1f1f1f; --d-dot-mid: #8f8f8f; --d-lead: #a8a8a8; --d-paper: #fff;
+  --btn-ink: #1f1f1f; --btn-bg-hover: #1f1f1f; --btn-ink-hover: #fff;
+}
+html[data-theme='night'] body:has(.s2-flow) .sv:not(.svf) {
+  --line: #363636; --ink-hi: #ebebeb; --ink-body: #8f8f8f; --ink-mute: #6a6a6a; --num-line: #3f3f3f;
+  --d-ln: #ebebeb; --d-soft: #7d7d7d; --d-dim: #474747; --d-faint: #333; --d-box: #4d4d4d;
+  --d-lb: #5f5f5f; --d-lb-mid: #8f8f8f; --d-lb-hi: #ebebeb; --d-dot-mid: #7d7d7d; --d-lead: #6a6a6a; --d-paper: #232427;
+  --btn-ink: #ebebeb; --btn-bg-hover: #ebebeb; --btn-ink-hover: #1f1f1f;
+}
+/* launches, research lead */
+html[data-theme='night'] body:has(.s2-flow) .lc-label { color: #ebebeb; }
+html[data-theme='night'] body:has(.s2-flow) .lc-panel { background: #2c2e33; }
+html[data-theme='night'] body:has(.s2-flow) .s3-lead { color: #ebebeb; }
+
+/* ───────── Smooth theme change (/home-2) ─────────
+   The page material, rules, header and nav keep their 400ms ease (globals / sections). The
+   sections' own colours come from custom properties; registered as colours, they can be
+   eased too — so a section crossfades with the page instead of snapping. */
+@property --g-ink { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --g-paper { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --g-fill { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --g-hub { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --g-ghost { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --g-body { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --g-mark { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --g-card { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --g-card-line { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --g-shot-line { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --g-shot-bg { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --i-paper { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --i-hi { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --i-body { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --i-mute { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --i-card { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --i-card-line { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --f-ink { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --f-label { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --f-mute { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --f-media { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --f-paper { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --line { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --ink-hi { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --ink-body { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --ink-mute { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --num-line { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --d-ln { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --d-soft { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --d-dim { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --d-faint { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --d-box { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --d-lb { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --d-lb-mid { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --d-lb-hi { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --d-dot-mid { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --d-lead { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --d-paper { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --btn-ink { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --btn-bg-hover { syntax: '<color>'; inherits: true; initial-value: transparent; }
+@property --btn-ink-hover { syntax: '<color>'; inherits: true; initial-value: transparent; }
+body:has(.s2-flow) .tg { transition: --g-ink 400ms ease, --g-paper 400ms ease, --g-fill 400ms ease, --g-hub 400ms ease, --g-ghost 400ms ease, --g-body 400ms ease, --g-mark 400ms ease, --g-card 400ms ease, --g-card-line 400ms ease, --g-shot-line 400ms ease, --g-shot-bg 400ms ease; }
+body:has(.s2-flow) .iso { transition: --i-paper 400ms ease, --i-hi 400ms ease, --i-body 400ms ease, --i-mute 400ms ease, --i-card 400ms ease, --i-card-line 400ms ease; }
+body:has(.s2-flow) .svf { transition: --f-ink 400ms ease, --f-label 400ms ease, --f-mute 400ms ease, --f-media 400ms ease, --f-paper 400ms ease; }
+body:has(.s2-flow) .sv:not(.svf) { transition: --line 400ms ease, --ink-hi 400ms ease, --ink-body 400ms ease, --ink-mute 400ms ease, --num-line 400ms ease, --d-ln 400ms ease, --d-soft 400ms ease, --d-dim 400ms ease, --d-faint 400ms ease, --d-box 400ms ease, --d-lb 400ms ease, --d-lb-mid 400ms ease, --d-lb-hi 400ms ease, --d-dot-mid 400ms ease, --d-lead 400ms ease, --d-paper 400ms ease, --btn-ink 400ms ease, --btn-bg-hover 400ms ease, --btn-ink-hover 400ms ease; }
+body:has(.s2-flow) :is(.lc-label, .s3-lead) { transition: color 400ms ease; }
+body:has(.s2-flow) .lc-panel { transition: background-color 400ms ease; }
+body:has(.s2-flow) :is(.s2-frame, .s3-frame, .iso-frame, .sv-frame, .lc-frame, .tg-frame) { transition: --box-mark 400ms ease; }
+@property --box-mark { syntax: '<color>'; inherits: true; initial-value: #e6e6e6; }
+body:has(.s2-flow) .opt-tabs, body:has(.s2-flow) .opt-tabs button { transition: opacity 250ms ease, translate 250ms var(--ease-out), background-color 400ms ease, color 400ms ease, outline-color 400ms ease; }
+
+/* Launches cloud (LaunchesCloud.tsx): type cards drifting toward the viewer around a large word
+   with a soft paper glow behind it. Fills the 16:9 panel; paper background (no grey block). */
+body:has(.s2-flow) .lc-panel { background: #fafaf9; overflow: hidden; } /* a very slight grey behind the cloud */
+html[data-theme='night'] body:has(.s2-flow) .lc-panel { background: #26272b; }
+body:has(.s2-flow) .lc-panel.lc-box { background: #f4f4f4; } /* the simple variant: the video placeholder */
+html[data-theme='night'] body:has(.s2-flow) .lc-panel.lc-box { background: #2c2e33; }
+.lcc { position: relative; width: 100%; height: 100%; overflow: hidden; perspective: 760px; perspective-origin: 50% 50%; pointer-events: auto; }
+.lcc-space { position: absolute; left: 50%; top: 50%; transform-style: preserve-3d; }
+.lcc-card {
+  position: absolute; left: 0; top: 0; translate: -50% -50%; display: block;
+  background: var(--lcc-line, #eee); will-change: transform, opacity; backface-visibility: hidden; pointer-events: auto;
+}
+.lcc-img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.lcc-card:focus-visible { outline: 1px solid var(--lcc-ink, #1f1f1f); outline-offset: 2px; }
+/* the glow takes the panel's own tone */
+.lcc { --lcc-bg: #fafaf9; }
+.lcc-glow {
+  position: absolute; left: 50%; top: 50%; width: 64%; height: 56%; translate: -50% -50%; pointer-events: none; z-index: 1000;
+  background: radial-gradient(closest-side, var(--lcc-bg, #fff) 30%, color-mix(in srgb, var(--lcc-bg, #fff) 72%, transparent) 58%, color-mix(in srgb, var(--lcc-bg, #fff) 25%, transparent) 82%, transparent 100%);
+}
+.lcc-word {
+  position: absolute; left: 50%; top: 50%; translate: -50% -52%; margin: 0; z-index: 1001; pointer-events: none;
+  font-family: var(--serif); font-weight: 400; font-size: clamp(44px, 7vw, 96px); line-height: 1; letter-spacing: -0.01em; color: var(--lcc-ink, #1f1f1f);
+}
+html[data-theme='night'] body:has(.s2-flow) .lcc { --lcc-bg: #26272b; --lcc-card: #2c2e33; --lcc-line: rgb(255 255 255 / .1); --lcc-ink: #ebebeb; --lcc-body: #8f8f8f; }
+@media (max-width: 759px) { .lcc-card { scale: .7; } }

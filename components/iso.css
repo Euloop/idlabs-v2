@@ -47,7 +47,7 @@
   /* centred without a half-pixel shift (whole-pixel placement keeps the glyphs crisp) */
   position: absolute; left: 0; right: 0; margin: 0 auto; width: min(100%, 512px); /* the 512px page column, as the research lead and Services */
   font-family: var(--mono); font-size: 12px; line-height: 1.5; text-transform: uppercase;
-  text-align: left; color: var(--i-hi); text-wrap: pretty; /* full 512px measure; pretty breaks avoid a short last line ("30 minutes." is kept together) */
+  text-align: center; color: var(--i-hi); text-wrap: pretty; /* full 512px measure; pretty breaks avoid a short last line ("30 minutes." is kept together) */
 }
 
 /* Names (as the Section 4 tool names: 12px mono caps) */

@@ -125,7 +125,8 @@ export default function SectionTwoFlow({ variant = 'line', follow = false, night
         const b = el.getBoundingClientRect();
         return b.top < (was ? 0.85 : 0.75) * vh && b.bottom > (was ? 0.15 : 0.25) * vh;
       });
-      const theme = lightsUp ? 'light' : night ? 'night' : light ? 'light' : 'dark';
+      // html[data-night-lock] (ThemeDriver: a section shown dark is on screen) wins.
+      const theme = root.hasAttribute('data-night-lock') ? 'night' : lightsUp ? 'light' : night ? 'night' : light ? 'light' : 'dark';
       if (root.dataset.theme !== theme) root.dataset.theme = theme;
       if (light !== isLight) {
         isLight = light;

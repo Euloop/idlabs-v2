@@ -5,7 +5,8 @@ import SectionThree from '../../components/SectionThree';
 import ToolsOptions from '../../components/flow/ToolsOptions';
 import SiteChrome from '../../components/SiteChrome';
 import ServicesOptions from '../../components/flow/ServicesOptions';
-import Launches from '../../components/flow/Launches';
+import LaunchesOptions from '../../components/flow/LaunchesOptions';
+import ThemeDriver from '../../components/flow/ThemeDriver';
 
 /* /home-2: the full home page with Section 2's funnel diagram replaced by the client's pipeline
    flowchart (components/flow/), in three styles the client can switch between (line, cards,
@@ -22,6 +23,8 @@ const RESEARCH_LEAD =
 export default function Home2() {
   return (
     <>
+      {/* page marker: the /home-2 styles key off body:has(.s2-flow), whichever Section 2 is shown */}
+      <span className="s2-flow" hidden />
       <Hero />
       {/* One Section 2 at a time, in the style picked with the switch at the bottom (or ?style=).
           The page stays light after the hero: the dark tools and services copies are hidden. */}
@@ -34,8 +37,10 @@ export default function Home2() {
       <ToolsOptions />
       {/* Services in one of two layouts (Detail · Grid tabs at the bottom, ?services=). */}
       <ServicesOptions />
-      <Launches />
+      {/* Launches as the cloud or the simple video box (Cloud · Box tabs at the bottom, ?launches=). */}
+      <LaunchesOptions />
       <SiteChrome />
+      <ThemeDriver />
     </>
   );
 }

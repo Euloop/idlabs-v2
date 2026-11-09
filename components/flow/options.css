@@ -10,7 +10,7 @@
   transition: none; /* vanishes at once when the section ends */
 }
 .opt-tabs[data-on] { opacity: 1; visibility: visible; pointer-events: auto; translate: -50% 0; transition: opacity 250ms ease, translate 250ms var(--ease-out), visibility 0s; }
-html:not([data-theme='light']) .opt-tabs[data-on] { opacity: 0; visibility: hidden; pointer-events: none; }
+html:not([data-theme]) .opt-tabs[data-on], html[data-theme='dark'] .opt-tabs[data-on] { opacity: 0; visibility: hidden; pointer-events: none; } /* not over the hero */
 .opt-tabs span { display: inline-flex; align-items: center; gap: 10px; }
 .opt-tabs button {
   padding: 0; border: 0; background: none; cursor: pointer; font: inherit; letter-spacing: inherit; text-transform: inherit;
@@ -19,3 +19,11 @@ html:not([data-theme='light']) .opt-tabs[data-on] { opacity: 0; visibility: hidd
 .opt-tabs button:hover, .opt-tabs button[aria-pressed='true'] { color: #1f1f1f; }
 .opt-tabs button:focus-visible { outline: 1px solid #1f1f1f; outline-offset: 3px; }
 .opt-tabs-sep { color: #cfcfcf; }
+.opt-tabs-group { display: inline-flex; align-items: center; gap: 10px; }
+.opt-tabs-rule { width: 1px; height: 12px; background: #e0e0e0; margin-inline: 4px; }
+/* on a dark section the bar goes dark too */
+html[data-theme='night'] .opt-tabs { background: #232427; outline-color: #3a3a3a; }
+html[data-theme='night'] .opt-tabs button { color: #6a6a6a; }
+html[data-theme='night'] .opt-tabs button:hover, html[data-theme='night'] .opt-tabs button[aria-pressed='true'] { color: #ebebeb; }
+html[data-theme='night'] .opt-tabs-sep { color: #4a4a4a; }
+html[data-theme='night'] .opt-tabs-rule { background: #3a3a3a; }

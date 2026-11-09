@@ -11,7 +11,11 @@ import './tools-graph.css';
    the hub breathes and turns a few degrees, the lines bend with them, and now and then a signal
    runs out from the hub along a line. Hover or focus a node: it lifts, the others fade, and its
    info card folds out beside it (hinged on the side facing the node). The tools intro line sits
-   at the bottom of the screen in the 512px column. Copy: the client's (as SectionFour.tsx). */
+   at the bottom of the screen in the 512px column. It holds on screen a little before scrolling on.
+   `light` false: the dark option — it brings the night down while it is the section coming in.
+   Its colours (and which screens show, light or dark) follow the page theme, so whichever
+   theme is on, every section on screen matches.
+   Copy: the client's (as SectionFour.tsx). */
 
 const INTRO =
   'We turned this research into software, built on 2B+ data points, that weights every engagement by the engager’s influence, measures engagement velocity in real time, and maps how deep a post penetrates each niche, to forecast its reach and shelf-life within the first 30 minutes.';
@@ -71,7 +75,7 @@ const hexPath = (r: number) => Array.from({ length: 6 }, (_, k) => {
   return `${k ? 'L' : 'M'}${(Math.cos(a) * r).toFixed(2)} ${(Math.sin(a) * r).toFixed(2)}`;
 }).join(' ') + ' Z';
 
-export default function ToolsGraph() {
+export default function ToolsGraph({ light = true }: { light?: boolean }) {
   const svgRef = useRef<SVGSVGElement>(null);
   const nodeRefs = useRef<(SVGGElement | null)[]>([]);
   const lineRefs = useRef<(SVGPathElement | null)[]>([]);
@@ -138,7 +142,7 @@ export default function ToolsGraph() {
   }, []);
 
   return (
-    <section className="tg" data-foot="/Analytical Tools" aria-label="Analytical tools">
+    <section className="tg" data-mode={light ? 'light' : 'dark'} data-lights-down={light ? undefined : ''} data-foot="/Analytical Tools" aria-label="Analytical tools">
       <div className="frame tg-frame">
         <div className="tg-stage" onPointerLeave={() => setHover(null)}>
           <svg ref={svgRef} className="tg-svg" viewBox={`0 0 ${VW} ${VH}`} role="img" aria-label="The analytical tools as one network around the Engagement Classifier">
@@ -191,15 +195,15 @@ export default function ToolsGraph() {
                 [n.side === 'r' ? 'left' : 'right']: `${((n.side === 'r' ? OPEN_R : VW - OPEN_L) / VW) * 100}%`,
               } as CSSProperties}>
               <div className="tg-shots" aria-hidden="true">
-                {n.shots?.map((f, k) => (
-                  <img key={f} className="tg-shot" src={`/assets/tools/${f}.webp`} alt="" decoding="async" loading="lazy"
+                {n.shots?.flatMap((f, k) => (['l', 'd'] as const).map((v) => (
+                  <img key={f + v} className={`tg-shot tg-shot-${v}`} src={`/assets/tools/${v === 'l' ? f : f.replace('-', '-d-')}.webp`} alt="" decoding="async" loading="lazy"
                     style={{
                       // mirrored on the left-side card (positions, not a transform, so a hovered
                       // screen can still come in front of the card)
                       [n.side === 'r' ? 'left' : 'right']: `${SCATTER[k][0]}%`, top: `${SCATTER[k][1]}%`, width: SCATTER[k][2],
                       '--tilt': `${n.side === 'r' ? SCATTER[k][3] : -SCATTER[k][3]}deg`, '--k': k,
                     } as CSSProperties} />
-                ))}
+                )))}
               </div>
               <div className="tg-card">
                 <h3 className="tg-card-title">{n.name.join(' ')}</h3>
