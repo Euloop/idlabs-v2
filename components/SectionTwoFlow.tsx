@@ -21,6 +21,7 @@ import { P_RANK, type FlowHandle } from './flow/timeline';
               'pills' — minimal tree: pills on a hairline spine, notes as branches (flow/FlowPills.tsx)
      follow   a further copy placed after another Section 2: not pulled up under the hero, does
               not drive the theme (the first copy does), and starts as it scrolls into view.
+     night    false: the lights never go down after Section 3 (the page stays light).
    Original notes for the shared parts follow.
 
    Section 2 — Algorithm research. Figma 110:920 (part 1) and 110:898 (part 2).
@@ -33,18 +34,18 @@ import { P_RANK, type FlowHandle } from './flow/timeline';
    diagram draws in, zooms, and each stage's story is scrubbed by the scroll.
    Everything after that is pinned; header and footer stay put and the parts swap in the
    band between them. Scroll budget, after the hero has left:
-     1.5 viewport   part 1 types in (from just before the hero has gone), holds, types out
-     1.2 viewport   the diagram draws itself in, line by line; its line above types in
-     7 viewports    diagram (flowchart): see the budget above.
+     1.3 viewport   part 1 types in (from just before the hero has gone), holds ~0.8 fully shown, types out
+     0.6 viewport   the diagram draws itself in; its line above types in
+     4.5 viewports  diagram (flowchart): Sourcing, then Ranking (T in flow/timeline.ts)
                     In each stage the highlighted post is scrubbed through it and the notes
                     (leader first, then text) write in and out as it passes
      0.6 viewport   selection fades out, its step label types out, part 3 types in
      1.4 viewport   hold, then the pin releases                                            */
-const HOLD = 1.5;
-const INTRO = 1.2;
-const DIAGRAM = 8;
-const OUTRO = 0.6;
-const TAIL = 1.4;
+const HOLD = 1.3;
+const INTRO = 0.6;
+const DIAGRAM = 4.5;
+// After the diagram: a short rest on the final frame, then the pin releases and the page scrolls on.
+const REST = 0.35;
 
 /* Step label, centred below the diagram, indexed by chapter (0 overview, 1 sourcing,
    2 scoring, 3 selection). Copy is the client's (Notion) word for word — do not edit.
@@ -58,25 +59,23 @@ const STEPS = [
 ];
 
 
-const PART3 =
-  'Our research lab backpropagates 500M posts/week to analyse how the algorithm treats each post as it goes through the sourcing and ranking stages. The dominant patterns that emerge fine-tune how we game ‘sourcing’ and ensure every post or launch we do goes consistently viral';
+/* Part 3 (the research lab line) is not part of this section on /home-2: it leads Section 3
+   there (SectionThree lead prop). */
 
 const clamp = (v: number, a = 0, b = 1) => Math.max(a, Math.min(b, v));
 
 
-export default function SectionTwoFlow({ variant = 'line', follow = false }: { variant?: 'line' | 'cards' | 'pills'; follow?: boolean }) {
+export default function SectionTwoFlow({ variant = 'line', follow = false, night: nightOn = true }: { variant?: 'line' | 'cards' | 'pills'; follow?: boolean; night?: boolean }) {
   const sectionRef = useRef<HTMLElement>(null);
   const flowRef = useRef<FlowHandle>(null);
   const part2Ref = useRef<HTMLDivElement>(null);
   const [chrome, setChrome] = useState(false);
   const part1Ref = useRef<ScrollTextHandle>(null);
   const stepRef = useRef<ScrollTextHandle>(null);
-  const part3ElRef = useRef<HTMLParagraphElement>(null);
 
   useEffect(() => {
     const section = sectionRef.current;
     const part2 = part2Ref.current;
-    const part3El = part3ElRef.current;
     if (!section || !part2) return;
 
     const root = document.documentElement;
@@ -111,7 +110,8 @@ export default function SectionTwoFlow({ variant = 'line', follow = false }: { v
       // Same 400ms ease, hysteresis. Section 3 (research papers) stays light.
       const ti = document.querySelector<HTMLElement>('.ti');
       const tiTop = ti ? ti.getBoundingClientRect().top : Infinity;
-      night = night ? tiTop < -0.25 * vh : tiTop < -0.35 * vh;
+      // night={false}: the page stays light after the hero (no dark tools section on it).
+      night = nightOn && (night ? tiTop < -0.25 * vh : tiTop < -0.35 * vh);
       const light = !night && (isLight ? heroBottom < 0.65 * vh : heroBottom < 0.55 * vh);
       // A section marked data-lights-up (the light Services copy, /home-2) brings the light back
       // as soon as it is a quarter of the way onto the screen, so it never shows on the dark
@@ -146,11 +146,12 @@ export default function SectionTwoFlow({ variant = 'line', follow = false }: { v
 
       // Part 1 types in from just before the hero has gone, holds, and types out at the end
       // of its hold; the diagram then draws itself in over the next viewport.
-      const p1 = isLight ? Math.min(sg(s, V(-0.45), V(0.35)), 1 - sg(s, V(HOLD - 0.45), V(HOLD))) : 0;
+      // Types in by 0.2 of a screen, then stays fully readable until HOLD − 0.3, then types out.
+      const p1 = isLight ? Math.min(sg(s, V(-0.45), V(0.2)), 1 - sg(s, V(HOLD - 0.3), V(HOLD))) : 0;
       part1Ref.current?.set(p1);
       const intro = clamp((s - (HOLD + 0.25) * vh) / ((INTRO - 0.25) * vh));
       const target = clamp((s - (HOLD + INTRO) * vh) / (DIAGRAM * vh));
-      const outro = clamp((s - (HOLD + INTRO + DIAGRAM) * vh) / (OUTRO * vh));
+      const outro = 0; // the diagram stays until the pin releases
 
       // The diagram layer is hidden until its intro starts: the engine only redraws while the
       // intro runs, so scrolling back up would otherwise leave its last frame (the globe) showing
@@ -172,7 +173,6 @@ export default function SectionTwoFlow({ variant = 'line', follow = false }: { v
       stepRef.current?.set(pl, STEPS[label]);
 
       // Part 3 (no typing): fades in as the diagram leaves.
-      if (part3El) part3El.style.opacity = sg(s, V(HOLD + INTRO + DIAGRAM + OUTRO * 0.4), V(HOLD + INTRO + DIAGRAM + OUTRO)).toFixed(3);
 
       if (chromeIn !== lastChrome) { lastChrome = chromeIn; setChrome(chromeIn); }
 
@@ -207,16 +207,17 @@ export default function SectionTwoFlow({ variant = 'line', follow = false }: { v
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
     };
-  }, [follow]);
+  }, [follow, nightOn]);
 
   return (
+    <>
     <section
       ref={sectionRef}
       className={follow ? 's2 s2-flow s2-follow' : 's2 s2-flow'}
       aria-label="Algorithm research"
       data-foot="/Algorithm Research"
       data-chrome={chrome || undefined}
-      style={{ height: `${((follow ? 1 : 2) + HOLD + INTRO + DIAGRAM + OUTRO + TAIL) * 100}svh`, marginTop: follow ? 0 : undefined }}
+      style={{ height: `${((follow ? 1 : 2) + HOLD + INTRO + DIAGRAM + REST) * 100}svh`, marginTop: follow ? 0 : undefined }}
     >
       <div className="s2-stage">
         <div className="frame s2-frame">
@@ -249,7 +250,6 @@ export default function SectionTwoFlow({ variant = 'line', follow = false }: { v
               </div>
             </div>
 
-            <p className="s2-part3" ref={part3ElRef} style={{ opacity: 0 }}>{PART3}</p>
           </div>
 
           <footer className="s2-foot s2-spacer" aria-hidden="true">
@@ -261,5 +261,6 @@ export default function SectionTwoFlow({ variant = 'line', follow = false }: { v
         </div>
       </div>
     </section>
+    </>
   );
 }

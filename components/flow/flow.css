@@ -98,3 +98,106 @@ body:has(.s2-flow) .hero .clients { padding-bottom: calc(40 * var(--px)); --tick
 @media (min-width: 960px) {
   body:has(.s2-flow) .frame { width: max(880px, min(var(--frame-max), 100% - 2 * var(--gutter), 100svh * 1008 / 803 + 2 * var(--pad))); }
 }
+
+/* Section 3 (research papers), /home-2 only: no pin and no hold. One screen, content centred,
+   it scrolls past at normal speed (saves a viewport of scrolling). */
+body:has(.s2-flow) .s3 { height: auto; }
+body:has(.s2-flow) .s3-pin { position: relative; }
+
+/* ───────── Section corners (/home-2 only) ─────────
+   The two margin lines run unbroken down the whole page (the fixed rules). The square markers
+   mark section boundaries: one pair per boundary, drawn on a section's frame so it scrolls with
+   it (and holds with a pinned stage). Nothing toggles while scrolling.
+     Section 2 (pinned)  top pair (hero → 2) and bottom pair (2 → papers); the top pair waits
+                         for the light (the stage sits under the hero at first)
+     Research papers     none of its own (its boundaries are Section 2's end and the tools' start)
+     Iso tools (pinned)  top pair (papers → tools) and bottom pair (tools → services)
+     Services (last)     bottom pair only (the end of the page)
+   Corners sit at the header base (56 Figma px) from the frame's top and bottom. No footer.
+   The hero keeps its own markers (header base, golden split, under the logos). */
+body:has(.s2-flow) .chrome .tick,
+body:has(.s2-flow) .chrome .s2-foot { display: none; }
+
+body:has(.s2-flow) :is(.s2-frame:not(.chrome-frame), .s3-frame, .iso-frame, .sv-frame) {
+  --box: calc(56 * var(--px)); --box-mark: #e6e6e6;
+  position: relative; align-self: stretch; height: 100svh;
+}
+body:has(.s2-flow) :is(.s2-frame:not(.chrome-frame), .s3-frame, .iso-frame, .sv-frame)::after {
+  content: ''; position: absolute; pointer-events: none; transition: opacity 400ms ease;
+  inset: calc(var(--box) - 4px) -4px; /* 9px squares, centred on the lines */
+}
+body:has(.s2-flow) .s2 .s2-frame.s2-frame::after,
+body:has(.s2-flow) .iso .iso-frame.iso-frame::after {
+  background:
+    linear-gradient(var(--box-mark), var(--box-mark)) left top / 9px 9px no-repeat,
+    linear-gradient(var(--box-mark), var(--box-mark)) right top / 9px 9px no-repeat,
+    linear-gradient(var(--box-mark), var(--box-mark)) left bottom / 9px 9px no-repeat,
+    linear-gradient(var(--box-mark), var(--box-mark)) right bottom / 9px 9px no-repeat;
+}
+body:has(.s2-flow) .sv .sv-frame.sv-frame::after {
+  background:
+    linear-gradient(var(--box-mark), var(--box-mark)) left bottom / 9px 9px no-repeat,
+    linear-gradient(var(--box-mark), var(--box-mark)) right bottom / 9px 9px no-repeat;
+}
+html:not([data-theme='light']) body:has(.s2-flow) .s2-frame::after { opacity: 0; }
+
+/* Research band grid (/home-2 only): whole cells, no slivers. The band is 64 cells across (rule
+   to rule) and 29 cells tall, and the grid starts at its top-left corner, so its own lines are
+   the band's outer edges (no separate border to double up against a partial row). */
+body:has(.s2-flow) .s3-band {
+  --cell: calc((100cqw + 2 * var(--pad)) / 64);
+  height: calc(29 * var(--cell) + 1px);
+  border-block: 0;
+  background-position: 0 0;
+}
+@media (max-width: 759px) {
+  body:has(.s2-flow) .s3-band { height: auto; }
+}
+
+
+/* Tighter spacing between sections (/home-2): the research papers take their content's height,
+   not a full screen. */
+body:has(.s2-flow) .s3-frame { height: auto; padding-block: calc(var(--box) + 40 * var(--px)) calc(40 * var(--px)); }
+body:has(.s2-flow) .s3-pin { height: auto; }
+
+/* Research section lead (/home-2): Section 2's closing line, in place of "Read our published
+   findings" — Section 2's part-3 type (12px mono caps), left-aligned in a 512px column centred on the page
+   (as the Services column). */
+.s3-lead {
+  align-self: center; margin: 0 auto; width: min(100%, 512px);
+  font-family: var(--mono); font-size: 12px; line-height: 1.6; text-transform: uppercase;
+  text-align: left; color: #1f1f1f; text-wrap: pretty; pointer-events: auto;
+}
+
+/* Services (/home-2): the heading centred on the page, "Work with us" moved below the cards,
+   centred. The header row is unwrapped (display: contents) so its two items join the column
+   and can be ordered around the grid. */
+body:has(.s2-flow) .sv-head { display: contents; }
+body:has(.s2-flow) .sv-tag { order: 0; align-self: center; text-align: center; padding-bottom: calc(24 * var(--px)); }
+body:has(.s2-flow) .sv-grid { order: 1; }
+body:has(.s2-flow) .sv-cta { order: 2; align-self: center; margin: calc(28 * var(--px)) 0 0; padding: 4px 0; }
+
+
+/* Launches (/home-2, Launches.tsx): label centred, a panel rule to rule (16:9, for the launch
+   video; #f4f4f4 placeholder). The last section: it carries the page's closing corner pair, so Services
+   no longer does. */
+.lc { position: relative; z-index: 1; }
+.lc-frame {
+  --box: calc(56 * var(--px)); --box-mark: #e6e6e6;
+  /* one screen tall, title + video centred vertically (it is the last section: at the end of the
+     page it sits in the middle of the screen) */
+  position: relative; margin-inline: auto; text-align: center;
+  min-height: 100svh; display: flex; flex-direction: column; justify-content: center;
+  padding-block: calc(var(--box) + 16px);
+}
+.lc-label {
+  margin: 0; padding-bottom: calc(26 * var(--px));
+  font-family: var(--mono); font-weight: 400; font-size: 12px; line-height: 1.4; text-transform: uppercase; color: #1f1f1f;
+}
+.lc-panel { width: calc(100% + 2 * var(--pad) - 2px); margin-inline: calc(1px - var(--pad)); aspect-ratio: 16 / 9; background: #f4f4f4; } /* a video later: 16:9, just inside the margin lines (they stay visible) */
+body:has(.s2-flow) .lc-frame::after {
+  content: ''; position: absolute; pointer-events: none; inset: calc(var(--box) - 4px) -4px;
+  background:
+    linear-gradient(var(--box-mark), var(--box-mark)) left bottom / 9px 9px no-repeat,
+    linear-gradient(var(--box-mark), var(--box-mark)) right bottom / 9px 9px no-repeat;
+}

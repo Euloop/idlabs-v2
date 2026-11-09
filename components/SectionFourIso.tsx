@@ -9,16 +9,16 @@ import './iso.css';
    frame plate with a window cut through it (Post Velocity) and a base tray with a recessed floor
    (Cluster Penetration), held together by two screws. Assembled, it is one closed gadget (lid on
    tray, screw heads showing; the board and frame are inside), with the tools intro line under
-   it. As you scroll it comes apart: the screws lift out, the parts separate, construction guides
-   appear at the outer corners and each tool's name slides in on a leader (alternating sides). Hover or focus a name or a layer: it lifts, its
+   it (it stays, following the device's bottom as it opens). As you scroll it comes apart: the screws lift out, the parts separate and each tool's
+   name slides in on a leader (alternating sides). Hover or focus a name or a layer: it lifts, its
    etching turns accent, and its info card folds out on that side, hinged on the edge facing
    the device. Line drawing on the page's own paper (no tinted fills), dark and light.
    Copy is the client's (TOOLS as in SectionFour.tsx; INTRO as in ToolsIntro.tsx).
-   Pinned; scroll budget: 1.3 viewport to come apart, then hold. `light`: the same section on
+   Pinned; scroll budget: 0.6 viewport to come apart, then a short hold. `light`: the same section on
    the light page (data-lights-up switches the page theme while it is on screen). */
 
 const INTRO =
-  'We turned this research into software, built on 2B+ data points, that weights every engagement by the engager’s influence, measures engagement velocity in real time, and maps how deep a post penetrates each niche, to forecast its reach and shelf-life within the first 30 minutes.';
+  'We turned this research into software, built on 2B+ data points, that weights every engagement by the engager’s influence, measures engagement velocity in real time, and maps how deep a post penetrates each niche, to forecast its reach and shelf-life within the first 30\u00a0minutes.'; // last two words kept together
 
 const TOOLS = [
   {
@@ -45,15 +45,17 @@ const TOOLS = [
 
 /* ── Geometry (SVG units, viewBox VW × VH). Parts are rounded rectangles in plate coordinates
    (u, v; the full footprint is S × S), projected isometrically and extruded by their thickness. */
-const VW = 1000;
-const VH = 660;
+// A wide canvas for a small drawing: the device takes ~60% of the size it would at 1000 wide,
+// leaving room around it (the box keeps the 1000 : 660 shape; names and cards keep their size).
+const VW = 1650;
+const VH = 1089;
 const S = 230;
 const C = Math.cos(Math.PI / 6);
 const SN = 0.5;
 const X0 = VW / 2;
-const GAP_OUT = 92; // part to part, apart
-const LIFT = 70; // assembled: the gadget sits this much higher, the intro line under it
-const LABEL_IN = 64;
+const GAP_OUT = 132; // part to part, apart (roomy)
+const LIFT = 80; // the device sits this much higher than centre, the intro line under it
+const LABEL_IN = 84;
 
 const r2 = (n: number) => Math.round(n * 100) / 100;
 type Pt = [number, number];
@@ -107,18 +109,17 @@ const rr = ({ u, v, w, h, r }: Rect) => `M${u + r} ${v} H${u + w - r} A${r} ${r}
 const PARTS: { rect: Rect; t: number; etch: Etch[] }[] = [
   // Lid · Engagement Classifier: a screen with bars against the 15-minute baseline; screw holes
   {
-    rect: { u: 0, v: 0, w: S, h: S, r: 22 }, t: 9,
+    rect: { u: 0, v: 0, w: S, h: S, r: 22 }, t: 5,
     etch: [
       { d: rr({ u: 44, v: 52, w: 142, h: 126, r: 8 }) },
       { d: 'M56 160 H174' },
-      { d: 'M56 122 H174', dash: '3 4' },
       { d: [24, 36, 30, 52, 72, 94].map((h, k) => { const x = 62 + k * 18; return `M${x} 160 V${160 - h} H${x + 9} V160`; }).join(' '), accent: true },
       { circles: HOLES.map(([u, v]): [number, number, number] => [u, v, 5]) },
     ],
   },
   // Board · Weighted Engagement Scoring: smaller board, the network as traces out from the chip
   {
-    rect: BOARD, t: 5,
+    rect: BOARD, t: 3,
     etch: [
       {
         d: Array.from({ length: 8 }, (_, k) => {
@@ -131,48 +132,38 @@ const PARTS: { rect: Rect; t: number; etch: Etch[] }[] = [
         }),
         accent: true,
       },
-      { d: Array.from({ length: 8 }, (_, k) => `M${62 + k * 14} ${BOARD.v + BOARD.h - 12} h7 v6 h-7 Z`).join(' ') },
     ],
   },
   // Frame · Post Velocity: a plate with a window cut through it; the curve beside it
   {
-    rect: { u: 0, v: 0, w: S, h: S, r: 22 }, t: 7,
+    rect: { u: 0, v: 0, w: S, h: S, r: 22 }, t: 4,
     etch: [
       { d: 'M26 128 V204 H112' },
       { d: 'M' + Array.from({ length: 22 }, (_, k) => { const t = k / 21; return `${r2(26 + t * 86)} ${r2(204 - 72 * Math.pow(t, 2.4))}`; }).join(' L'), accent: true },
-      { d: 'M48 128 V204', dash: '3 4' },
     ],
   },
   // Tray · Cluster Penetration: a deep base with a recessed floor; the clusters on the floor
   {
-    rect: { u: 0, v: 0, w: S, h: S, r: 22 }, t: 34,
+    rect: { u: 0, v: 0, w: S, h: S, r: 22 }, t: 18,
     etch: [
       { d: rr(RECESS) },
-      { d: 'M50 112 a40 40 0 1 0 80 0 a40 40 0 1 0 -80 0 M112 82 a36 36 0 1 0 72 0 a36 36 0 1 0 -72 0 M110 152 a38 38 0 1 0 76 0 a38 38 0 1 0 -76 0', dy: 8 },
-      {
-        circles: Array.from({ length: 20 }, (_, k): [number, number, number] => {
-          const a = rnd(k) * Math.PI * 2, r = Math.sqrt(rnd(k + 50)) * 32;
-          return [r2(90 + Math.cos(a) * r), r2(112 + Math.sin(a) * r), 1.5];
-        }),
-        accent: true, dy: 8,
-      },
+      { d: 'M50 112 a40 40 0 1 0 80 0 a40 40 0 1 0 -80 0 M112 82 a36 36 0 1 0 72 0 a36 36 0 1 0 -72 0 M110 152 a38 38 0 1 0 76 0 a38 38 0 1 0 -76 0', dy: 5, accent: true },
     ],
   },
 ];
 const SOLIDS = PARTS.map((p) => solid(p.rect, p.t));
-const CHIP_S = solid(CHIP, 9);
+const CHIP_S = solid(CHIP, 5);
 const WIN_S = solid(WINDOW, 0);
 const RECESS_S = solid(RECESS, 0);
 /* The recess floor's far edge: the rim's back chain (leftmost → back → rightmost), 8 lower. */
 const RECESS_FLOOR = (() => {
   const o = RECESS_S.outline, iL = o.indexOf(RECESS_S.left), iR = o.indexOf(RECESS_S.right);
-  return poly(down([...o.slice(iL), ...o.slice(0, iR + 1)], 8));
+  return poly(down([...o.slice(iL), ...o.slice(0, iR + 1)], 5));
 })();
 
-/* Tray front face (the left side band): a port slot and a status light. */
+/* Tray front face (the left side band): a status light. */
 const sidePt = (u: number, t: number): Pt => { const [x, y] = P(u, S); return [x, r2(y + t)]; };
-const PORT = poly([sidePt(64, 13), sidePt(112, 13), sidePt(112, 21), sidePt(64, 21)]);
-const LED = sidePt(150, 17);
+const LED = sidePt(140, 9);
 
 const clamp = (v: number, a = 0, b = 1) => Math.max(a, Math.min(b, v));
 const smooth = (t: number) => t * t * (3 - 2 * t);
@@ -181,6 +172,8 @@ export default function SectionFourIso({ light = false }: { light?: boolean }) {
   const sectionRef = useRef<HTMLElement>(null);
   const [e, setE] = useState(0); // 0 assembled → 1 apart
   const [hover, setHover] = useState<number | null>(null);
+  const boxRef = useRef<HTMLDivElement>(null);
+  const [boxH, setBoxH] = useState(0); // the box's height in px, to place the intro on whole pixels
 
   useEffect(() => {
     const s = sectionRef.current;
@@ -189,13 +182,16 @@ export default function SectionFourIso({ light = false }: { light?: boolean }) {
     const measure = () => {
       raf = 0;
       const p = -s.getBoundingClientRect().top / window.innerHeight; // viewports since pinned
-      setE(smooth(clamp((p - 0.1) / 1.2)));
+      setE(smooth(clamp((p - 0.05) / 0.6))); // apart over 0.6 of a screen, then a short hold
     };
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(measure); };
     measure();
+    const box = boxRef.current;
+    const ro = box ? new ResizeObserver(() => setBoxH(box.clientHeight)) : null;
+    if (box && ro) { ro.observe(box); setBoxH(box.clientHeight); }
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
-    return () => { cancelAnimationFrame(raf); window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); };
+    return () => { cancelAnimationFrame(raf); ro?.disconnect(); window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); };
   }, []);
 
   const gap = GAP_OUT * e;
@@ -208,14 +204,12 @@ export default function SectionFourIso({ light = false }: { light?: boolean }) {
   const yFrame = yBoard + T[1] * e + gap;
   const yTray = yFrame + T[2] * e + gap;
   const total = screwLift + S + T[0] + (yTray - yLid) - T[0] + T[3]; // screws top → tray bottom
-  const y0 = (VH - total) / 2 - LIFT * (1 - e) + screwLift;
+  const y0 = (VH - total) / 2 - LIFT + screwLift;
   const layerY = [yLid, yBoard, yFrame, yTray].map((y) => y + y0);
   const labelsOn = e > 0.7;
   const open = labelsOn ? hover : null;
   const lift = (i: number) => (open === i ? 8 : 0);
-  const apart = smooth(clamp((e - 0.15) / 0.5));
-  const inner = smooth(clamp(e / 0.3)); // board and frame come out of the tray
-  const introOn = 1 - smooth(clamp(e / 0.22));
+    const inner = smooth(clamp(e / 0.3)); // board and frame come out of the tray
 
   // where each name's leader meets its part (outer extreme point, mid-thickness)
   const anchor = (i: number) => {
@@ -235,16 +229,8 @@ export default function SectionFourIso({ light = false }: { light?: boolean }) {
     >
       <div className="iso-pin">
         <div className="frame iso-frame">
-          <div className="iso-box" onPointerLeave={() => setHover(null)}>
+          <div className="iso-box" ref={boxRef} onPointerLeave={() => setHover(null)}>
             <svg className="iso-svg" viewBox={`0 0 ${VW} ${VH}`} role="img" aria-label="The four analytical tools as the parts of one device: a lid, a circuit board, a frame and a base tray">
-              {/* Construction guides from lid to tray at the outer corners. */}
-              <g className="iso-guides" style={{ opacity: apart }}>
-                {(['left', 'right'] as const).map((side) => {
-                  const [x, y] = SOLIDS[0][side];
-                  return <path key={side} d={`M${x} ${r2(layerY[0] + y + T[0] + 6)} V${r2(layerY[3] + SOLIDS[3][side][1] - 6)}`} />;
-                })}
-              </g>
-
               {/* Parts, bottom first so upper parts cover lower ones. */}
               {[3, 2, 1, 0].map((i) => {
                 const y = layerY[i] - lift(i);
@@ -255,7 +241,7 @@ export default function SectionFourIso({ light = false }: { light?: boolean }) {
                     className="iso-plate"
                     data-on={open === i || undefined}
                     data-dim={(open !== null && open !== i) || undefined}
-                    style={{ transform: `translateY(${r2(y)}px)`, opacity: i === 1 || i === 2 ? inner : undefined }}
+                    style={{ transform: `translateY(${r2(y)}px)`, opacity: (i === 1 || i === 2 ? inner : 1) * (open !== null && open !== i ? (light ? 0.35 : 0.4) : 1) /* coming out of the tray × dimmed while another part is in focus */ }}
                     onPointerEnter={() => labelsOn && setHover(i)}
                   >
                     <polygon className="iso-side" points={s.band} />
@@ -265,7 +251,6 @@ export default function SectionFourIso({ light = false }: { light?: boolean }) {
                         {/* recess: rim, and its back walls down to the floor */}
                         <polygon className="iso-top" points={RECESS_S.top} />
                         <polyline className="iso-edge-soft" points={RECESS_FLOOR} />
-                        <polygon className="iso-port" points={PORT} />
                         <circle className="iso-led" cx={LED[0]} cy={LED[1]} r={2.4} />
                       </>
                     )}
@@ -286,8 +271,8 @@ export default function SectionFourIso({ light = false }: { light?: boolean }) {
                     </g>
                     {i === 1 && (
                       <>
-                        <polygon className="iso-side" points={CHIP_S.band} transform="translate(0 -9)" />
-                        <polygon className="iso-top" points={CHIP_S.top} transform="translate(0 -9)" />
+                        <polygon className="iso-side" points={CHIP_S.band} transform="translate(0 -5)" />
+                        <polygon className="iso-top" points={CHIP_S.top} transform="translate(0 -5)" />
                       </>
                     )}
                   </g>
@@ -297,13 +282,12 @@ export default function SectionFourIso({ light = false }: { light?: boolean }) {
               {/* Screws: heads on the lid when assembled; lifted out, with their shafts, when apart. */}
               {HOLES.map(([u, v], k) => {
                 const [x, yh] = P(u, v);
-                const top = layerY[0] - lift(0) + yh - 5 - screwLift;
-                const shaft = Math.min(screwLift, 30);
-                const sh = cyl(x, r2(top + 5), 3, shaft);
-                const head = cyl(x, r2(top), 7, 5);
+                const top = layerY[0] - lift(0) + yh - 3 - screwLift;
+                const shaft = Math.min(screwLift, 26);
+                const sh = cyl(x, r2(top + 3), 2, shaft);
+                const head = cyl(x, r2(top), 5, 3);
                 return (
                   <g key={k} className="iso-screw" data-dim={(open !== null && open !== 0) || undefined}>
-                    {screwLift > 30 && <path className="iso-guide-s" d={`M${x} ${r2(top + 5 + shaft + 4)} V${r2(layerY[0] - lift(0) + yh - 3)}`} />}
                     {shaft > 0.5 && <path className="iso-side" d={sh.body} />}
                     <path className="iso-side" d={head.body} />
                     <ellipse className="iso-top" cx={x} cy={r2(top)} rx={head.rx} ry={head.ry} />
@@ -328,8 +312,8 @@ export default function SectionFourIso({ light = false }: { light?: boolean }) {
               })}
             </svg>
 
-            {/* The tools intro line, under the assembled device; it fades as the layers part. */}
-            <p className="iso-intro" style={{ top: `${((y0 + total + 34) / VH) * 100}%`, opacity: introOn, visibility: introOn > 0 ? 'visible' : 'hidden' }}>
+            {/* The tools intro line, always under the device (it follows the tray down as it opens). */}
+            <p className="iso-intro" style={{ top: boxH ? `${Math.round(((layerY[3] + S + T[3] + 40) / VH) * boxH)}px` : `${((layerY[3] + S + T[3] + 40) / VH) * 100}%` }}>
               {INTRO}
             </p>
 

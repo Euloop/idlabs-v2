@@ -71,7 +71,9 @@ function Paper({ title, figs, href = '#' }: PaperProps) {
   );
 }
 
-export default function SectionThree() {
+/* lead: replaces "Read our published findings" with a paragraph (on /home-2, Section 2's part 3
+   line moves here); it types in the same way. */
+export default function SectionThree({ lead }: { lead?: string } = {}) {
   const sectionRef = useRef<HTMLElement>(null);
   const readRef = useRef<ScrollTextHandle>(null);
   useEffect(() => {
@@ -80,7 +82,16 @@ export default function SectionThree() {
     let raf = 0;
     const apply = () => {
       raf = 0;
-      const arrive = Math.max(0, Math.min(1, 1 - sec.getBoundingClientRect().top / window.innerHeight));
+      const vh = window.innerHeight;
+      const leadEl = sec.querySelector<HTMLElement>('.s3-lead');
+      if (leadEl) {
+        // The lead starts typing just before it comes on screen and is complete once it is 20%
+        // into the viewport (its top at 80% of the screen height): written as it arrives.
+        const top = leadEl.getBoundingClientRect().top;
+        readRef.current?.set(Math.max(0, Math.min(1, (1.12 * vh - top) / (0.32 * vh))));
+        return;
+      }
+      const arrive = Math.max(0, Math.min(1, 1 - sec.getBoundingClientRect().top / vh));
       readRef.current?.set(Math.max(0, Math.min(1, (arrive - 0.45) / 0.55)));
     };
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(apply); };
@@ -95,9 +106,13 @@ export default function SectionThree() {
       <div className="s3-pin">
         <div className="frame s3-frame">
           <div className="s3-inner">
-            <a className="s3-read" href="#">
-              <ScrollText ref={readRef} as="span" text={'Read our\npublished findings'} />
-            </a>
+            {lead ? (
+              <ScrollText ref={readRef} as="p" className="s3-lead" text={lead} />
+            ) : (
+              <a className="s3-read" href="#">
+                <ScrollText ref={readRef} as="span" text={'Read our\npublished findings'} />
+              </a>
+            )}
             <div className="s3-band">
               <div className="s3-papers">
                 {PAPERS.map((p) => <Paper key={p.title} {...p} />)}
