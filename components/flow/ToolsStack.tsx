@@ -51,11 +51,12 @@ const PANES = TOOLS.flatMap((_, t) => [
 ]);
 const SPAN = (TOOLS.length - 1) * STEP + PAIR;
 
-/* The callout sits clear of the stack, in the free space above or below it: the first two tools
-   (lower left of the row) open below, the last two (upper right) above. From the dot the leader
+/* The callout sits clear of the stack, in the free space above it (a tool listed in
+   BELOW_TOOLS would open below instead; none does). From the dot the leader
    runs straight down / up to CLEAR px past the lowest / highest pane, turns a square corner and
    runs RUN px across; the card sits on the end of that line. */
-const BELOW = (t: number) => t < 2;
+const BELOW_TOOLS: number[] = [];
+const BELOW = (t: number) => BELOW_TOOLS.includes(t);
 const CLEAR = 36;
 const RUN = 48;
 const NOTE_W = 420; // the card's width (tools-stack.css)
