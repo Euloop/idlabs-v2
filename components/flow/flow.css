@@ -161,13 +161,16 @@ body:has(.s2-flow) .s3-frame { height: auto; padding-block: calc(var(--box) + 40
 body:has(.s2-flow) .s3-pin { height: auto; }
 
 /* Research section lead (/home-2): Section 2's closing line, in place of "Read our published
-   findings" — Section 2's part-3 type (12px mono caps), centred, in a 512px column centred on the page
-   (as the Services column). */
+   findings" — Section 2's part-3 type (12px mono caps), justified (last line centred, no orphan), in
+   a column centred on the page. 548px: the copy breaks into four near-full lines, so justify adds
+   only a little space. Clear space below it before the research band. */
 .s3-lead {
-  align-self: center; margin: 0 auto; width: min(100%, 512px);
+  align-self: center; margin: 0 auto; width: min(100%, 548px);
   font-family: var(--mono); font-size: 12px; line-height: 1.6; text-transform: uppercase;
-  text-align: center; color: #1f1f1f; text-wrap: pretty; pointer-events: auto;
+  text-align: justify; text-align-last: center; hyphens: none; color: #1f1f1f; text-wrap: pretty; pointer-events: auto;
 }
+body:has(.s2-flow) .s3-lead + .s3-band { margin-top: calc(112 * var(--px)); }
+@media (max-width: 759px) { body:has(.s2-flow) .s3-lead + .s3-band { margin-top: 64px; } }
 
 /* Services (/home-2): the heading centred on the page, "Work with us" moved below the cards,
    centred. The header row is unwrapped (display: contents) so its two items join the column

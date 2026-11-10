@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, type ElementType } from 'react';
+import { useEffect, useLayoutEffect, useRef, type ElementType } from 'react';
 
 /* Typed text, no cursor: letters appear one by one, fast, each easing from pale grey to
    ink. With `probs`, a faint probability flashes under each word as it starts (a nod to a
@@ -14,6 +14,16 @@ import { useEffect, useRef, type ElementType } from 'react';
 const CHAR_MS = 18; // per letter on short lines
 const MAX_MS = 1000; // whole line, however long
 const OUT_MS = 220;
+const PROB_MS = 650;
+
+export type CharInfo = {
+  /** ms this letter is late against its ideal time (letters land on animation frames) */
+  lag: number;
+  /** the probability shown under this letter's word, if any */
+  prob?: number;
+  /** first letter of a word */
+  first: boolean;
+};
 
 type Props = {
   text: string;
@@ -28,12 +38,22 @@ type Props = {
   fade?: boolean;
   /** minimum time on screen after typing finishes, ms */
   hold?: number;
+  /** tuning (defaults are the site's): ms per letter, cap for a whole line,
+      a probability on every Nth word (0 = none), how long each one shows */
+  charMs?: number;
+  maxMs?: number;
+  probEvery?: number;
+  probMs?: number;
+  /** called as each letter appears (e.g. for a typing sound) */
+  onChar?: (ch: string, info: CharInfo) => void;
 };
 
 const rand = (i: number) => { const x = Math.sin(i * 12.9898 + 78.233) * 43758.5453; return x - Math.floor(x); };
 
-export default function TokenText({ text, show, as: Tag = 'p', className, delay = 0, probs = false, fade = false, hold = 0 }: Props) {
+export default function TokenText({ text, show, as: Tag = 'p', className, delay = 0, probs = false, fade = false, hold = 0, charMs = CHAR_MS, maxMs = MAX_MS, probEvery = 1, probMs = PROB_MS, onChar }: Props) {
   const inner = useRef<HTMLSpanElement>(null);
+  const onCharRef = useRef(onChar);
+  useLayoutEffect(() => { onCharRef.current = onChar; });
   const st = useRef({ built: '', count: 0, raf: 0, timers: [] as number[], doneAt: 0, typing: false });
 
   useEffect(() => {
@@ -75,13 +95,14 @@ export default function TokenText({ text, show, as: Tag = 'p', className, delay 
       el.classList.remove('tk-out');
       if (reduce || fade) { cs.forEach((c) => c.classList.add('on')); s.count = cs.length; s.doneAt = performance.now(); return; }
       // per-letter schedule with a small beat after punctuation
-      const per = Math.min(CHAR_MS, MAX_MS / Math.max(1, cs.length));
+      const per = Math.min(charMs, maxMs / Math.max(1, cs.length));
       const at: number[] = [];
       let t = 0;
       cs.forEach((c) => { at.push(t); const ch = c.textContent!; t += per * (/[.:;?!]/.test(ch) ? 6 : ch === ',' ? 3 : 1); });
       const from = s.count;
       const t0 = performance.now() - (from ? at[Math.min(from, at.length - 1)] : 0);
       let wordIx = 0;
+      let wordProb: number | undefined;
       s.typing = true;
       const step = (now: number) => {
         const e = now - t0;
@@ -89,13 +110,19 @@ export default function TokenText({ text, show, as: Tag = 'p', className, delay 
         while (n < cs.length && at[n] <= e) {
           const c = cs[n];
           c.classList.add('on');
-          if (probs && c === c.parentElement!.firstElementChild && c.textContent!.trim()) {
+          const first = c === c.parentElement!.firstElementChild && !!c.textContent!.trim();
+          if (first) wordProb = undefined;
+          const wi = probs && probEvery > 0 && first ? wordIx++ : -1;
+          if (wi >= 0 && wi % probEvery === 0) {
             const p = document.createElement('span');
             p.className = 'tk-p';
-            p.textContent = (0.04 + 0.28 * rand(wordIx++ + text.length)).toFixed(2);
+            p.textContent = (0.04 + 0.28 * rand(wi + text.length)).toFixed(2);
+            wordProb = Number(p.textContent);
+            if (probMs !== PROB_MS) p.style.animationDuration = `${probMs}ms`;
             c.parentElement!.appendChild(p);
-            later(() => p.remove(), 650);
+            later(() => p.remove(), probMs);
           }
+          onCharRef.current?.(c.textContent!, { lag: e - at[n], prob: wordProb, first });
           n++;
         }
         s.count = n;
@@ -137,7 +164,7 @@ export default function TokenText({ text, show, as: Tag = 'p', className, delay 
     } else hideHeld();
 
     return clear;
-  }, [text, show, delay, probs, fade, hold]);
+  }, [text, show, delay, probs, fade, hold, charMs, maxMs, probEvery, probMs]);
 
   return (
     <Tag className={className}>

@@ -1,0 +1,94 @@
+'use client';
+
+import { useEffect, useRef } from 'react';
+import Bookshelf from './Bookshelf';
+import './footer.css';
+
+/* /home-2 footer: always dark — its own dark ground and grain, whatever the page theme; it does
+   not switch the page theme, it just scrolls up like any section. The site's links in six columns, the reading list on a shelf, and a closing bar (status,
+   offices, socials). In the frame between the rules, 12px mono caps like the rest of the chrome.
+   While it is on screen the fixed chrome's footer labels step aside (html[data-footer]); once it
+   has scrolled up under the fixed header, the header turns light over it (html[data-over-footer]). */
+
+const COLUMNS: { title: string; links: string[] }[] = [
+  { title: 'Platform', links: ['Identity Radar', 'Audience Intelligence', 'Research Suite', 'Analytics Dashboard'] },
+  { title: 'Products', links: ['X Algorithm Tracker', 'LinkedIn Algo Insights', 'Leading Indicators', 'Followers Attribution'] },
+  { title: 'Guides', links: ['Platform Guides', 'Audience Intelligence Guide', 'Research Playbooks', 'Algorithm Deep Dives'] },
+  { title: 'Solutions', links: ['Enterprise', 'PR & Brand Teams', 'Social Media Teams', 'Affiliate Marketers'] },
+  { title: 'Who it’s for', links: ['Marketers', 'Press & Media', 'Legal Teams', 'Founders'] },
+  { title: 'Company', links: ['About', 'Research Papers', 'Careers', 'Press Kit'] },
+];
+
+const OFFICES = ['San Francisco', 'New York', 'Remote'];
+const SOCIALS = ['X / Twitter', 'LinkedIn', 'Instagram', 'Substack'];
+
+export default function SiteFooter() {
+  const ref = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const root = document.documentElement;
+    // "on screen" = its top is above 85% of the screen
+    const io = new IntersectionObserver(([e]) => root.toggleAttribute('data-footer', e.isIntersecting), { rootMargin: '0px 0px -15% 0px' });
+    io.observe(el);
+    // the fixed header (wordmark, nav) is over the footer once the footer's top passes the
+    // middle of the wordmark's line
+    let raf = 0;
+    const measure = () => {
+      raf = 0;
+      const wm = document.querySelector('.chrome .wordmark')?.getBoundingClientRect();
+      const line = wm ? wm.top + wm.height / 2 : 34;
+      root.toggleAttribute('data-over-footer', el.getBoundingClientRect().top < line);
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(measure); };
+    measure();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => {
+      io.disconnect(); cancelAnimationFrame(raf);
+      window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll);
+      root.removeAttribute('data-footer'); root.removeAttribute('data-over-footer');
+    };
+  }, []);
+
+  return (
+    <section ref={ref} className="ft" data-foot="/Footer" aria-label="Footer">
+      <div className="ft-texture" aria-hidden="true" />
+      <div className="frame ft-frame">
+        <nav className="ft-cols" aria-label="Site">
+          {COLUMNS.map((c) => (
+            <div className="ft-col" key={c.title}>
+              <h3 className="ft-h">{c.title}</h3>
+              <ul>
+                {c.links.map((l) => <li key={l}><a href="#">{l}</a></li>)}
+              </ul>
+            </div>
+          ))}
+        </nav>
+
+        {/* a rule across the frame, rule to rule, with the frame's squares where it meets them */}
+        <div className="ft-rule" aria-hidden="true">
+          <span className="tick tick-l" />
+          <span className="tick tick-r" />
+        </div>
+
+        <div className="ft-read">
+          <div className="ft-read-head">
+            <h3 className="ft-h">Reading list</h3>
+            <p className="ft-read-sub">What our researchers keep on the desk</p>
+          </div>
+          <Bookshelf />
+        </div>
+
+        <div className="ft-bar">
+          <span className="ft-status"><span className="ft-dot" aria-hidden="true" />All systems operational</span>
+          <span className="ft-offices">{OFFICES.map((o) => <span key={o}>{o}</span>)}</span>
+          <span className="ft-socials">{SOCIALS.map((s) => <a key={s} href="#">{s}</a>)}</span>
+          <span className="tick tick-l" aria-hidden="true" />
+          <span className="tick tick-r" aria-hidden="true" />
+        </div>
+      </div>
+    </section>
+  );
+}

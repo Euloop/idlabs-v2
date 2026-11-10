@@ -38,7 +38,7 @@ const LAUNCHES: Launch[] = [
 
 /* Each launch's picture: the post's video poster frame or photo, fetched once from the X posts
    (via fxtwitter) and saved small in public/assets/launches/<slug>.webp. Icon's post has none. */
-const slug = (l: Launch) => `${l.client} ${l.what ?? ''}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+export const slug = (l: Launch) => `${l.client} ${l.what ?? ''}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const NO_IMAGE = new Set(['icon-launch']);
 /* Image proportions (w / h) where they are not 16:9. */
 const RATIO: Record<string, number> = { 'lovable-fundraise': 4 / 3, 'airwallex-growth-story': 4 / 3, 'deel-growth-story': 3 / 4 };

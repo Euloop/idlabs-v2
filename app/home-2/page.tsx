@@ -7,6 +7,7 @@ import SiteChrome from '../../components/SiteChrome';
 import ServicesOptions from '../../components/flow/ServicesOptions';
 import LaunchesOptions from '../../components/flow/LaunchesOptions';
 import ThemeDriver from '../../components/flow/ThemeDriver';
+import SiteFooter from '../../components/flow/SiteFooter';
 
 /* /home-2: the full home page with Section 2's funnel diagram replaced by the client's pipeline
    flowchart (components/flow/), in three styles the client can switch between (line, cards,
@@ -39,6 +40,8 @@ export default function Home2() {
       <ServicesOptions />
       {/* Launches as the cloud or the simple video box (Cloud · Box tabs at the bottom, ?launches=). */}
       <LaunchesOptions />
+      {/* Footer: links, the reading list shelf, closing bar; dark (brings the night theme in). */}
+      <SiteFooter />
       <SiteChrome />
       <ThemeDriver />
     </>

@@ -1,0 +1,70 @@
+/* Launches as slides (LaunchesSlides.tsx): "Carousel" and "Slider". The slide box sits just
+   inside the frame rules, like the other Launches panels. */
+
+.lcs { --edge: calc(1px - var(--pad)); width: calc(100% + 2 * var(--pad) - 2px); margin-inline: var(--edge); }
+/* the carousel runs out past the screen edge; the section clips it there (no sideways scroll) */
+body:has(.s2-flow) .lc:has(.lcs) { overflow-x: clip; }
+
+.lcs-view { container-type: inline-size; touch-action: pan-y; cursor: grab; user-select: none; -webkit-user-select: none; }
+.lcs-view:active { cursor: grabbing; }
+/* one slide = the view's width; --dx: the drag offset */
+.lcs-track { display: flex; transform: translateX(calc(var(--i) * -100cqw + var(--dx, 0px))); transition: transform 650ms var(--ease-out); }
+.lcs-track[data-drag] { transition: none; }
+.lcs-slide { flex: none; position: relative; width: 100cqw; margin: 0; aspect-ratio: 16 / 9; overflow: hidden; background: #111214; container-type: inline-size; text-align: left; }
+.lcs-slide img { pointer-events: none; }
+
+/* Carousel: the slide fills the frame rule to rule; the slides before and after run on past the
+   rules to the screen edges. Title left, buttons top right. */
+.lcs[data-mode='carousel'] { position: relative; }
+/* (no clip: the slides either side show past the rules; the section clips at the screen edge) */
+.lcs[data-mode='carousel'] .lcs-slide { box-shadow: 0 30px 60px -34px rgb(0 0 0 / .35); }
+body:has(.s2-flow) .lc[data-variant='carousel'] .lc-label { text-align: left; }
+.lcs-nav { position: absolute; right: calc(var(--pad) - 1px); bottom: calc(100% + 14px); display: flex; gap: 10px; }
+.lcs[data-mode='carousel'] .lcs-btn {
+  width: 36px; height: 36px; padding: 0; background: #fff; color: #1f1f1f;
+  outline: 1px solid #e0e0e0; outline-offset: -1px;
+}
+.lcs[data-mode='carousel'] .lcs-btn:hover { background: #f4f4f4; }
+html[data-theme='night'] .lcs[data-mode='carousel'] .lcs-btn { background: transparent; color: #ebebeb; outline-color: #35363b; }
+html[data-theme='night'] .lcs[data-mode='carousel'] .lcs-btn:hover { background: #2c2e33; }
+
+/* Slider: one slide, centred, the buttons in the margins either side. */
+.lcs[data-mode='slider'] { display: grid; grid-template-columns: 1fr minmax(0, 87%) 1fr; align-items: center; justify-items: center; }
+.lcs[data-mode='slider'] .lcs-view { overflow: hidden; justify-self: stretch; } /* (a size container has no width of its own) */
+
+/* buttons: small grey squares */
+.lcs-btn {
+  width: 22px; height: 22px; display: grid; place-items: center; padding: 0 0 2px;
+  border: 0; border-radius: 0; background: #efefef; color: #6b6b6b; cursor: pointer;
+  font-family: var(--mono); font-size: 14px; line-height: 1;
+  pointer-events: auto;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+.lcs-btn:hover { background: #e2e2e2; color: #1f1f1f; }
+.lcs-btn:focus-visible { outline: 1px solid #1f1f1f; outline-offset: 2px; }
+html[data-theme='night'] .lcs-btn { background: #2c2e33; color: #8f8f8f; }
+html[data-theme='night'] .lcs-btn:hover { background: #35373d; color: #ebebeb; }
+
+/* slide content */
+.lcs-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.lcs-shade {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(180deg, rgb(0 0 0 / .32), transparent 22%),
+    linear-gradient(0deg, rgb(0 0 0 / .68), rgb(0 0 0 / .2) 32%, transparent 52%);
+}
+.lcs-logo { position: absolute; left: 3%; top: 4.5%; height: 4.4cqw; display: flex; align-items: center; }
+.lcs-logo img { height: 72%; width: auto; max-width: 30cqw; object-fit: contain; object-position: left center; filter: brightness(0) invert(1); }
+.lcs-logo span { font-family: var(--sans); font-weight: 600; font-size: 3.4cqw; letter-spacing: -.03em; color: #fff; }
+.lcs-cap { position: absolute; left: 3%; bottom: 4.2%; right: 22%; display: flex; flex-direction: column; gap: 6px; color: #fff; }
+.lcs-reach { font-family: var(--mono); font-weight: 500; font-size: 20px; line-height: 1.2; }
+.lcs-sub { font-family: var(--mono); font-size: 12px; color: rgb(255 255 255 / .72); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lcs-sub i { font-style: normal; margin-inline: .7em; opacity: .7; }
+.lcs-see {
+  position: absolute; right: 3%; bottom: 5.2%;
+  font-family: var(--mono); font-size: 12px; text-transform: uppercase; color: #fff;
+  transition: opacity 160ms ease;
+}
+.lcs-see:hover { opacity: .7; }
+
+@media (prefers-reduced-motion: reduce) { .lcs-track { transition: none; } }
