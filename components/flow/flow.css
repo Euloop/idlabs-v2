@@ -370,3 +370,7 @@ html[data-theme='night'] body:has(.s2-flow) .lcg-tile { background: #2c2e33; }
   font-family: var(--mono); font-size: 12px; line-height: 1.4; text-transform: uppercase; letter-spacing: .04em; color: var(--lcg-ink, #8f8f8f);
 }
 html[data-theme='night'] body:has(.s2-flow) .lcg { --lcg-ink: #8f8f8f; }
+
+/* Nothing on /home-2 may widen the page sideways (floating pieces, zooms): a sideways scroll would
+   shift the content against the fixed frame rules. clip (not hidden) keeps sticky sections working. */
+html:has(body .s2-flow), body:has(.s2-flow) { overflow-x: clip; }

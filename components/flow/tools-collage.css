@@ -223,14 +223,14 @@ section.tcl[data-gather] .tcl-box > .tcl-scraps:not(.tcl-blur) {
   clip-path: inset(calc((1 - var(--a-home, 1)) * -200vh));
 }
 section.tcl[data-gather] .tcl-intro {
-  width: min(680px, calc(100% - 48px)); z-index: 4;
-  font-family: var(--mono); font-size: clamp(15px, 1.2vw, 19px); line-height: 1.55; text-transform: uppercase; letter-spacing: .01em;
+  width: min(512px, calc(100% - 48px)); z-index: 4;
+  font-family: var(--mono); font-size: clamp(14px, 1.05vw, 16px); line-height: 1.6; text-transform: uppercase; letter-spacing: .01em;
   text-wrap: balance;
 }
 /* Margin lines: the section is white paper over the page's fixed solid pair and draws its own on
    the pinned frame — dashed while the pieces float loose past them (--a-dash 1), crossfading to
    solid as they come home (0) */
-section.tcl[data-gather] { background: #fff; }
+section.tcl[data-gather] { background: #fff; overflow-x: clip; } /* loose pieces past the screen edge must not widen the page */
 section.tcl[data-gather] .tcl-frame::before {
   border: 0;
   --sol: color-mix(in srgb, #e0e0e0 calc((1 - var(--a-dash, 0)) * 100%), transparent);
