@@ -16,6 +16,9 @@ import SiteFooter from '../../components/flow/SiteFooter';
 export const metadata: Metadata = {
   title: 'Identity Labs — flowchart version',
   robots: { index: false, follow: false },
+  // the launch reel plays its videos straight from X's video server, which refuses another site's
+  // referrer (components/flow/launch-videos.ts)
+  referrer: 'no-referrer',
 };
 
 const RESEARCH_LEAD =

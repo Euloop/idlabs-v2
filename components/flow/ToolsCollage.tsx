@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import ScrollText, { type ScrollTextHandle } from '../ScrollText';
 import './tools-collage.css';
 
 /* Analytical tools, "Collage" layout (/home-2; option to Graph, Device and Stack). Figma
@@ -125,14 +126,48 @@ const SCRAPS: Scrap[] = [
 ];
 
 const CYCLE_MS = 7000;
+
+/* White: an immersive arrival. The section pins for longer; the research line types in, centred
+   on the white page, then lifts away while the collage builds behind it — the scraps float up one
+   by one, then the paper ground, the glass card and the card's contents in turn. All scroll
+   driven (damped, so it glides) and reversible. The scraps keep a slight depth drift. Phones keep
+   the plain layout. Values go to CSS variables on the section (--a-*), read by both collage
+   copies (the one behind the card and its blurred twin), so they always match. */
+const INTRO =
+  'We turned this research into software, built on 2B+ data points, that weights every engagement by the engager’s influence, measures engagement velocity in real time, and maps how deep a post penetrates each niche, to forecast its reach and shelf-life within the first 30\u00a0minutes.';
+const DEPTH = [0.4, 0.9, 0.6, 1.3, 0.5, 1.1, 0.7, 1.4, 1.0]; // per scrap, for the drift
+// in screens of scroll from the pin's start (negative: still arriving)
+// typed line, a hold to read it, out; the pictures one by one; then the paper colour fills the
+// rectangle from its centre; the card; its contents; a hold to read (the pin ends at 3.5)
+const T_WHITE = { typeA: -0.6, typeB: 0.3, textOutA: 0.7, textOutB: 0.97, scrap0: 0.8, scrapStep: 0.08, scrapLen: 0.34, bgA: 1.62, bgB: 1.95, cardA: 1.88, cardB: 2.18, inA: 2.05, inStep: 0.08, inLen: 0.2, shots: [2.25, 2.45], lines: [2.4, 2.6], notes: [2.52, 2.7], live: 2.7, drift0: 2.7 }; // done at 2.7, a short hold, release at 3.5
+/* Gather: the same build, but it opens on the line set large in serif, with the nine collage pieces
+   floating loose around it across the whole screen, rising with the scroll (as the launches field).
+   Then each piece travels in, straightens and settles into its place in the collage; the paper
+   colour fills, the card and its contents come in as in White. */
+const TG = { typeA: -0.6, typeB: 0.25, textOutA: 0.95, textOutB: 1.3, gather0: 1.0, gatherStep: 0.08, gatherLen: 0.9, bgA: 2.35, bgB: 2.7, cardA: 2.65, cardB: 2.95, inA: 2.82, inStep: 0.08, inLen: 0.2, shots: [3.02, 3.22], lines: [3.17, 3.37], notes: [3.27, 3.45], live: 3.45, drift0: 3.45 }; // release at 4.3
+// where each piece floats (centre, as a fraction of the screen from its middle), its tilt and depth
+const FLOAT: { x: number; y: number; r: number; d: number }[] = [
+  { x: -0.33, y: -0.27, r: -4, d: 1.1 }, { x: 0.37, y: -0.32, r: 3, d: 0.8 }, { x: -0.4, y: 0.12, r: 2, d: 0.7 },
+  { x: 0.43, y: 0.06, r: -3, d: 1.2 }, { x: -0.22, y: 0.42, r: 4, d: 0.9 }, { x: 0.39, y: 0.42, r: -2, d: 1.0 },
+  { x: -0.06, y: -0.42, r: 3, d: 0.6 }, { x: 0.16, y: 0.5, r: -4, d: 1.3 }, { x: -0.46, y: -0.08, r: 5, d: 0.75 },
+];
+const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
+const spanT = (y: number, a: number, b: number) => clamp01((y - a) / (b - a));
+const smooth = (t: number) => t * t * (3 - 2 * t);
+const smoother = (t: number) => t * t * t * (t * (t * 6 - 15) + 10); // gentler start and landing
 const v = (n: number) => `calc(${n.toFixed(2)} * var(--u))`;
 
 function Scraps({ blur = false }: { blur?: boolean }) {
   return (
     <div className={blur ? 'tcl-scraps tcl-blur' : 'tcl-scraps'} aria-hidden="true">
       <div className="tcl-scraps-in">
-      {SCRAPS.map((s) => (
-        <div key={s.f} className="tcl-scrap" style={{ left: v(s.x), top: v(s.y), width: v(s.w), height: v(s.h), mixBlendMode: s.blend } as CSSProperties}>
+      {SCRAPS.map((s, i) => (
+        <div key={s.f} className="tcl-scrap" style={{ left: v(s.x), top: v(s.y), width: v(s.w), height: v(s.h), mixBlendMode: s.blend,
+          // laid down like paper: slides up into place while it unmasks from the bottom edge up
+          // (Gather overrides all three per piece: --a-o, --a-k, --a-t)
+          opacity: `var(--a-o${i}, min(1, var(--a-s${i}, 1) * 3))`,
+          clipPath: `var(--a-k${i}, inset(calc((1 - var(--a-s${i}, 1)) * 100%) -40px -40px -40px))`,
+          transform: `var(--a-t${i}, translate3d(0, calc((1 - var(--a-s${i}, 1)) * 64px + var(--a-d${i}, 0px)), 0) rotate(calc((1 - var(--a-s${i}, 1)) * -2.5deg)))` } as CSSProperties}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={`/assets/tools-collage/${s.f}.webp`} alt="" draggable={false}
             className={s.top ? 'tcl-fit-top' : undefined}
@@ -144,13 +179,20 @@ function Scraps({ blur = false }: { blur?: boolean }) {
   );
 }
 
-export type CollageTheme = 'white' | 'paper' | 'dark';
+export type CollageTheme = 'white' | 'gather' | 'paper' | 'dark';
 
 export default function ToolsCollage({ theme = 'white' }: { theme?: CollageTheme }) {
   const ref = useRef<HTMLElement>(null);
   const [active, setActive] = useState(0);
   const [inView, setInView] = useState(false);
   const [paused, setPaused] = useState(false);
+  const immersive = theme === 'white' || theme === 'gather';
+  const gather = theme === 'gather';
+  const boxRef = useRef<HTMLDivElement>(null);
+  const introRef = useRef<ScrollTextHandle>(null);
+  // White: during the build the panel (views, leaders, notes) is drawn by the scroll (data-static);
+  // once a tool is switched (cycle or click) the panel plays its own timed draw-in as usual
+  const [switched, setSwitched] = useState(false);
 
   // On screen once its top is halfway up (as the other tool layouts); cycles only then.
   useEffect(() => {
@@ -160,14 +202,118 @@ export default function ToolsCollage({ theme = 'white' }: { theme?: CollageTheme
     const measure = () => {
       raf = 0;
       const r = s.getBoundingClientRect();
-      setInView(r.top < window.innerHeight * 0.5 && r.bottom > window.innerHeight * 0.3);
+      const vh = window.innerHeight;
+      // the immersive arrival: only once the card is in
+      const start = immersive && window.innerWidth >= 720 ? -(gather ? TG : T_WHITE).live * vh : vh * 0.5;
+      setInView(r.top < start && r.bottom > vh * 0.3);
     };
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(measure); };
     measure();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
     return () => { cancelAnimationFrame(raf); window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); };
-  }, []);
+  }, [immersive, gather]);
+
+  // The immersive arrival (White): every frame while near the screen, eased toward the scroll.
+  useEffect(() => {
+    const s = ref.current;
+    if (!s || !immersive) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const phone = window.matchMedia('(max-width: 719px)');
+    // one timeline per mode (each reads only its own fields)
+    const T = (gather ? TG : T_WHITE) as typeof T_WHITE & typeof TG;
+    const pin = s.querySelector<HTMLElement>('.tcl-pin');
+    let raf = 0, last = performance.now(), y = NaN;
+    const put = (k: string, val: number) => s.style.setProperty(k, val.toFixed(4));
+    const frame = (now: number) => {
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      const vh = window.innerHeight;
+      const rect = s.getBoundingClientRect();
+      const target = -rect.top / vh; // screens of scroll since the pin
+      const goal = target; // reversible: scrolling back up rewinds the build
+      // near the screen: glide toward the scroll; away from it, or after a big jump, snap — so the
+      // state is always the scroll's when the section comes back (never stale)
+      const inRange = rect.top < vh * 1.2 && rect.bottom > -vh * 0.2;
+      y = Number.isNaN(y) || reduce || !inRange || Math.abs(goal - y) > 1.2 ? goal : y + (goal - y) * (1 - Math.exp(-dt * (gather ? 4 : 6)));
+      const yDrift = target;
+      if (phone.matches) {
+        introRef.current?.set(1);
+        SCRAPS.forEach((_, i) => { put(`--a-s${i}`, 1); s.style.setProperty(`--a-d${i}`, '0px'); });
+        ['--a-bg', '--a-card', '--a-c0', '--a-c1', '--a-c2', '--a-c3', '--a-p0', '--a-p1', '--a-p2'].forEach((k) => put(k, 1));
+        put('--a-text', 0);
+        SCRAPS.forEach((_, i) => { s.style.setProperty(`--a-t${i}`, 'none'); s.style.setProperty(`--a-k${i}`, 'none'); put(`--a-o${i}`, 1); });
+        put('--a-dash', 0);
+      } else if (gather) {
+        introRef.current?.set(spanT(y, T.typeA, T.typeB));
+        put('--a-text', 1 - smooth(spanT(y, T.textOutA, T.textOutB)));
+        put('--a-bg', smooth(spanT(y, T.bgA, T.bgB)));
+        // each piece: loose on the screen, rising with the scroll, then gathered into its place
+        const box = boxRef.current?.getBoundingClientRect();
+        const pr = pin?.getBoundingClientRect();
+        const W = window.innerWidth, H = vh;
+        if (box && pr) {
+          const u = box.width / 1056;
+          SCRAPS.forEach((sc, i) => {
+            const f = FLOAT[i];
+            const g = smoother(spanT(y, T.gather0 + i * T.gatherStep, T.gather0 + i * T.gatherStep + T.gatherLen));
+            const yf = Math.min(y, T.gather0 + i * T.gatherStep); // the rise stops where its gathering starts
+            const hx = box.left + (sc.x + sc.w / 2) * u, hy = box.top + (sc.y + sc.h / 2) * u; // home (in the collage)
+            const fx = W / 2 + f.x * W;
+            const fy = pr.top + H / 2 + f.y * H + (0.35 - yf * 0.42) * f.d * H; // rises as you scroll
+            const k = Math.min(1, (150 + 80 * f.d) / (Math.max(sc.w, sc.h) * u)); // loose: a card of ~150–250px
+            const dx = (fx - hx) * (1 - g), dy = (fy - hy) * (1 - g);
+            const sca = k + (1 - k) * g, rot = f.r * (1 - g);
+            s.style.setProperty(`--a-t${i}`, `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0) rotate(${rot.toFixed(2)}deg) scale(${sca.toFixed(4)})`);
+            // cut to the collage's rectangle as it comes in (the crop is in the piece's own frame, so it
+            // travels with it): it lands already trimmed to the box
+            const c = smooth(spanT(g, 0.05, 0.8)) * u; // drawn in gradually over most of the flight
+            const ct = Math.max(0, -sc.y) * c, cl = Math.max(0, -sc.x) * c;
+            const cr = Math.max(0, sc.x + sc.w - 1056) * c, cb = Math.max(0, sc.y + sc.h - 569) * c;
+            s.style.setProperty(`--a-k${i}`, c > 0 ? `inset(${ct.toFixed(1)}px ${cr.toFixed(1)}px ${cb.toFixed(1)}px ${cl.toFixed(1)}px)` : 'none');
+            put(`--a-o${i}`, smooth(spanT(y, T.typeA - 0.1 + i * 0.03, T.typeA + 0.35 + i * 0.03)));
+            put(`--a-s${i}`, 1);
+          });
+          // margin lines: dashed while the pieces float loose past them, solid again once home
+          put('--a-dash', 1 - smooth(spanT(y, T.gather0 + 8 * T.gatherStep + T.gatherLen * 0.5, T.gather0 + 8 * T.gatherStep + T.gatherLen)));
+          // the collage's edge only applies once the pieces are home
+          put('--a-home', smooth(spanT(y, T.gather0 + 8 * T.gatherStep + T.gatherLen * 0.7, T.gather0 + 8 * T.gatherStep + T.gatherLen)));
+        }
+        put('--a-card', smooth(spanT(y, T.cardA, T.cardB)));
+        for (let k = 0; k < 4; k++) { const a = T.inA + k * T.inStep; put(`--a-c${k}`, smooth(spanT(y, a, a + T.inLen))); }
+        put('--a-p0', smooth(spanT(y, T.shots[0], T.shots[1])));
+        put('--a-p1', smooth(spanT(y, T.lines[0], T.lines[1])));
+        put('--a-p2', smooth(spanT(y, T.notes[0], T.notes[1])));
+      } else {
+        introRef.current?.set(spanT(y, T.typeA, T.typeB));
+        put('--a-text', 1 - smooth(spanT(y, T.textOutA, T.textOutB)));
+        put('--a-bg', smooth(spanT(y, T.bgA, T.bgB)));
+        SCRAPS.forEach((_, i) => {
+          const a = T.scrap0 + i * T.scrapStep;
+          put(`--a-s${i}`, smooth(spanT(y, a, a + T.scrapLen)));
+          // the drift: deeper scraps move a little more as the section scrolls on
+          s.style.setProperty(`--a-d${i}`, `${(-(Math.max(yDrift, T.drift0 - 1.2) - T.drift0) * 26 * DEPTH[i]).toFixed(1)}px`);
+        });
+        put('--a-card', smooth(spanT(y, T.cardA, T.cardB)));
+        for (let k = 0; k < 4; k++) { const a = T.inA + k * T.inStep; put(`--a-c${k}`, smooth(spanT(y, a, a + T.inLen))); }
+        put('--a-p0', smooth(spanT(y, T.shots[0], T.shots[1])));
+        put('--a-p1', smooth(spanT(y, T.lines[0], T.lines[1])));
+        put('--a-p2', smooth(spanT(y, T.notes[0], T.notes[1])));
+      }
+      raf = inRange && Math.abs(goal - y) > 0.0005 ? requestAnimationFrame(frame) : 0;
+    };
+    const kick = () => { if (!raf) { last = performance.now(); raf = requestAnimationFrame(frame); } };
+    window.addEventListener('scroll', kick, { passive: true });
+    window.addEventListener('resize', kick);
+    frame(performance.now());
+    return () => {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('scroll', kick); window.removeEventListener('resize', kick);
+      ['--a-text', '--a-bg', '--a-card', '--a-c0', '--a-c1', '--a-c2', '--a-c3', '--a-p0', '--a-p1', '--a-p2'].forEach((k) => s.style.removeProperty(k));
+      s.style.removeProperty('--a-home'); s.style.removeProperty('--a-dash');
+      SCRAPS.forEach((_, i) => ['s', 'd', 't', 'k', 'o'].forEach((v) => s.style.removeProperty(`--a-${v}${i}`)));
+    };
+  }, [immersive, gather]);
 
   // Paper dark is its own dark band under the fixed header: while it is behind the wordmark's
   // line, the header turns light, as over the footer (html[data-over-dark], footer.css).
@@ -197,17 +343,18 @@ export default function ToolsCollage({ theme = 'white' }: { theme?: CollageTheme
   // the next tool comes up. It holds (frozen where it is) while the section is off screen or the
   // pointer / focus is on the card, so bar and timing never drift apart.
   const running = inView && !paused;
-  const next = () => setActive((a) => (a + 1) % TOOLS.length);
+  const next = () => { setSwitched(true); setActive((a) => (a + 1) % TOOLS.length); };
 
   const t = TOOLS[active];
   const r = place(t);
   const l = leaders(r);
 
   return (
-    <section ref={ref} className="tcl" data-theme-tc={theme} data-foot="/Analytical Tools" aria-label="Analytical tools">
+    <section ref={ref} className="tcl" data-theme-tc={theme} data-immersive={immersive || undefined} data-gather={gather || undefined} data-foot="/Analytical Tools" aria-label="Analytical tools">
       <div className="tcl-pin">
+      {immersive && <ScrollText ref={introRef} className="tcl-intro" text={INTRO} />}
       <div className="frame tcl-frame">
-        <div className="tcl-box">
+        <div className="tcl-box" ref={boxRef}>
           <Scraps />
 
           {/* keyboard focus in the card holds the cycle (a mouse click on a name does not) */}
@@ -216,14 +363,14 @@ export default function ToolsCollage({ theme = 'white' }: { theme?: CollageTheme
             {/* the glass: the same collage, blurred, seen through the card (a copy rather than
                 backdrop-filter, which drops the blended scraps in some browsers) */}
             <Scraps blur />
-            <h2 className="tcl-title">/Analytical Tool</h2>
-            <p key={`lead-${active}`} className="tcl-lead">{t.lead}</p>
+            <h2 className="tcl-title tcl-in0">/Analytical Tool</h2>
+            <p key={`lead-${active}`} className="tcl-lead tcl-in1">{t.lead}</p>
 
-            <ul className="tcl-list" role="tablist" aria-label="Tools">
+            <ul className="tcl-list tcl-in2" role="tablist" aria-label="Tools">
               {TOOLS.map((tool, i) => (
                 <li key={tool.name} role="presentation">
                   <button type="button" role="tab" id={`tcl-tab-${i}`} aria-selected={i === active} aria-controls="tcl-panel"
-                    className="tcl-name" onClick={() => setActive(i)}>
+                    className="tcl-name" onClick={() => { if (i !== active) setSwitched(true); setActive(i); }}>
                     {tool.name}
                     {i === active && (
                       <span className="tcl-prog" aria-hidden="true">
@@ -236,7 +383,7 @@ export default function ToolsCollage({ theme = 'white' }: { theme?: CollageTheme
               ))}
             </ul>
 
-            <div key={active} id="tcl-panel" role="tabpanel" aria-labelledby={`tcl-tab-${active}`} className="tcl-panel">
+            <div key={active} data-static={(immersive && !switched) || undefined} id="tcl-panel" role="tabpanel" aria-labelledby={`tcl-tab-${active}`} className="tcl-panel tcl-in3">
               {/* the pointer resting on the tool's views holds the cycle (someone is reading them) */}
               <a className="tcl-shots" href={t.href} target="_blank" rel="noopener noreferrer" aria-label={`Try ${t.name} (opens in a new tab)`}
                 onPointerEnter={() => setPaused(true)} onPointerLeave={() => setPaused(false)}>

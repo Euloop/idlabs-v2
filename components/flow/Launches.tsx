@@ -1,6 +1,7 @@
 import LaunchesCloud from './LaunchesCloud';
 import LaunchesGrid from './LaunchesGrid';
 import LaunchesSlides from './LaunchesSlides';
+import LaunchesFloat from './LaunchesFloat';
 
 /* Launches we've done for our clients (/home-2). A centred 12px mono caps label over a 16:9 panel
    just inside the rules, in one of two variants:
@@ -9,9 +10,16 @@ import LaunchesSlides from './LaunchesSlides';
      box       the simple panel, a placeholder for the launch video
      carousel  big slides in a row running off the right edge, prev / next under (LaunchesSlides.tsx)
      slider    one big slide centred, prev / next either side (LaunchesSlides.tsx)
+     float     a loading teaser that scatters into a full-width floating field (LaunchesFloat.tsx);
+               leaves the frame, so it renders without it
    Light page; normal scroll; the last section, so it closes the page's corners. */
-export type LaunchesVariant = 'cloud' | 'grid' | 'box' | 'carousel' | 'slider';
+export type LaunchesVariant = 'cloud' | 'grid' | 'box' | 'carousel' | 'slider' | 'float';
 export default function Launches({ variant = 'cloud' }: { variant?: LaunchesVariant }) {
+  if (variant === 'float') return (
+    <section className="lc" data-variant={variant} data-foot="/Launches" aria-labelledby="lc-title">
+      <LaunchesFloat />
+    </section>
+  );
   return (
     <section className="lc" data-variant={variant} data-foot="/Launches" aria-labelledby="lc-title">
       <div className="frame lc-frame">

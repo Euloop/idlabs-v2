@@ -174,9 +174,78 @@ section.tcl[data-theme-tc='dark'] .tcl-name:hover { color: #fff; opacity: .8; }
   .tcl-prog { display: none; } /* no auto-cycling: the names still switch on click */  @keyframes tcl-fade { from { opacity: 0; } }
 }
 
+/* White, immersive arrival (ToolsCollage.tsx, --a-* set every frame). Longer pin; the line in
+   the middle first, then the collage builds behind it. */
+section.tcl[data-immersive] { height: 450svh; } /* pinned 3.5 screens: read, build (done at 2.7), a short hold */
+.tcl-intro {
+  position: absolute; left: 50%; top: 50%; z-index: 5; margin: 0; width: min(460px, calc(100% - 48px));
+  translate: -50% calc(-50% - (1 - var(--a-text, 1)) * 36px);
+  opacity: var(--a-text, 1); pointer-events: none;
+  font-family: var(--mono); font-size: 12px; line-height: 1.5; text-transform: uppercase; text-align: center;
+  color: #1f1f1f; text-wrap: pretty;
+}
+/* the paper ground fills the rectangle after the pictures, opening from its centre (under the
+   scraps, inside the box's isolation, so their blends still work) */
+section.tcl[data-immersive] .tcl-box { background: transparent; }
+section.tcl[data-immersive] .tcl-box::before {
+  content: ''; position: absolute; inset: 0; z-index: -1; background: #efece3;
+  opacity: min(1, var(--a-bg, 1) * 4);
+  clip-path: inset(calc((1 - var(--a-bg, 1)) * 50%) calc((1 - var(--a-bg, 1)) * 50%));
+}
+section.tcl[data-immersive] .tcl-scrap { will-change: transform, opacity; }
+/* the glass card rises in; its blurred twin moves back by the same amount, so it stays registered */
+section.tcl[data-immersive] .tcl-card {
+  opacity: var(--a-card, 1); transform: translate3d(0, calc((1 - var(--a-card, 1)) * 34px), 0) scale(calc(.97 + .03 * var(--a-card, 1)));
+}
+section.tcl[data-immersive] .tcl-scraps.tcl-blur { transform: translate3d(0, calc((var(--a-card, 1) - 1) * 34px), 0); }
+section.tcl[data-immersive] .tcl-scraps.tcl-blur, section.tcl[data-immersive] .tcl-scraps.tcl-blur::after { opacity: 1; }
+/* then the card's contents, one after another */
+section.tcl[data-immersive] .tcl-in0 { opacity: var(--a-c0, 1); transform: translateY(calc((1 - var(--a-c0, 1)) * 12px)); }
+section.tcl[data-immersive] .tcl-in1 { opacity: var(--a-c1, 1); transform: translateY(calc((1 - var(--a-c1, 1)) * 12px)); }
+section.tcl[data-immersive] .tcl-in2 { opacity: var(--a-c2, 1); transform: translateY(calc((1 - var(--a-c2, 1)) * 12px)); }
+section.tcl[data-immersive] .tcl-in3 { opacity: min(1, var(--a-c3, 1) * 3); }
+/* during the build the panel is drawn by the scroll: views rise in, the leaders draw, the notes come up */
+section.tcl[data-immersive] .tcl-panel[data-static] .tcl-shot {
+  animation: none; opacity: var(--a-p0, 1); translate: 0 calc((1 - var(--a-p0, 1)) * 10px);
+}
+section.tcl[data-immersive] .tcl-panel[data-static] .tcl-line { animation: none; stroke-dashoffset: calc(1 - var(--a-p1, 1)); }
+section.tcl[data-immersive] .tcl-panel[data-static] .tcl-dot { animation: none; opacity: var(--a-p1, 1); scale: var(--a-p1, 1); }
+section.tcl[data-immersive] .tcl-panel[data-static] .tcl-note {
+  animation: none; opacity: var(--a-p2, 1); translate: 0 calc((1 - var(--a-p2, 1)) * 4px);
+}
+
+/* Gather (data-gather): the pieces float loose over the whole screen first, so the collage box
+   doesn't clip them until they are home (--a-home: 0 loose … 1 home; the clip closes in from far
+   outside to the box's edge). The line is set large in serif. */
+section.tcl[data-gather] { height: 530svh; } /* pinned 4.3 screens: the line and the loose pieces, gather, build, a hold */
+section.tcl[data-gather] .tcl-box { overflow: visible; }
+section.tcl[data-gather] .tcl-box > .tcl-scraps:not(.tcl-blur) {
+  clip-path: inset(calc((1 - var(--a-home, 1)) * -200vh));
+}
+section.tcl[data-gather] .tcl-intro {
+  width: min(680px, calc(100% - 48px)); z-index: 4;
+  font-family: var(--mono); font-size: clamp(15px, 1.2vw, 19px); line-height: 1.55; text-transform: uppercase; letter-spacing: .01em;
+  text-wrap: balance;
+}
+/* Margin lines: the section is white paper over the page's fixed solid pair and draws its own on
+   the pinned frame — dashed while the pieces float loose past them (--a-dash 1), crossfading to
+   solid as they come home (0) */
+section.tcl[data-gather] { background: #fff; }
+section.tcl[data-gather] .tcl-frame::before {
+  border: 0;
+  --sol: color-mix(in srgb, #e0e0e0 calc((1 - var(--a-dash, 0)) * 100%), transparent);
+  --das: color-mix(in srgb, #e0e0e0 calc(var(--a-dash, 0) * 100%), transparent);
+  background:
+    linear-gradient(var(--sol), var(--sol)) left top / 1px 100% no-repeat,
+    linear-gradient(var(--sol), var(--sol)) right top / 1px 100% no-repeat,
+    repeating-linear-gradient(to bottom, var(--das) 0 6px, transparent 6px 12px) left top / 1px 100% no-repeat,
+    repeating-linear-gradient(to bottom, var(--das) 0 6px, transparent 6px 12px) right top / 1px 100% no-repeat;
+}
+
 /* Phones: the card turns into a column over the collage (no leaders; the notes become captions). */
 @media (max-width: 719px) {
-  section.tcl { height: auto; }
+  section.tcl, section.tcl[data-immersive] { height: auto; }
+  .tcl-intro { display: none; }
   .tcl-pin { position: relative; height: auto; min-height: 0; }
   .tcl-frame { position: relative; height: auto; min-height: 0; padding-block: 96px 64px; }
   .tcl-frame::after { display: none; }
