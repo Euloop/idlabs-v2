@@ -7,7 +7,13 @@
    an optional zoom boost B for narrow screens, and the chapter label/progress
    dots removed from the in-SVG HUD (the page renders its own step label). */
 
-export function createPipeline(svg) {
+/* Scroll timeline, as durations (in screens) of each stretch of the diagram's budget, in order:
+   overview pause, zoom into the globe, sourcing story, slide, scoring story, slide, selection
+   story, end hold. DEFAULT_TIMELINE is the live page's (9 screens); /home-2 passes a compact one. */
+export const DEFAULT_TIMELINE = [0.45, 1.17, 1.8, 0.63, 1.8, 0.63, 2.07, 0.45];
+export const timelineLength = (d) => d.reduce((a, b) => a + b, 0);
+
+export function createPipeline(svg, durations = DEFAULT_TIMELINE) {
 const R1=n=>Math.round(n*10)/10;
 const clamp=(v,a,b)=>Math.max(a===undefined?0:a,Math.min(b===undefined?1:b,v));
 const seg=(t,a,b)=>clamp((t-a)/(b-a));
@@ -162,7 +168,7 @@ function v17Select(){
    the candidate grid) is revealed behind that front.
    Stage to stage: the outgoing stage moves left and fades, the incoming one comes in from
    the right (never more than two on screen). Selection is held to the end (no zoom out).  */
-function v31Story(){
+function v31Story(DUR){
   const src0=v7Sourcing(),src={st:src0.st,anchors:src0.anchors,dyn:(t,q)=>{const s=src0.dyn(t,q),i=s.indexOf('<text class="rt"');return i>=0?s.slice(0,i):s;}};
   const SC=[src,v10Scoring(),v17Select()];
   const CX=600,CY=280,D=110;
@@ -256,14 +262,18 @@ function v31Story(){
      overview hold · zoom into the globe · sourcing · → scoring · → selection, held to the end */
   /* overview · zoom · sourcing story · → · scoring story · → · selection story (held to the end).
      In each story window the highlighted post is scrubbed through the stage (q 0 → 1). */
-  const TR=[[.05,.18],[.38,.45],[.65,.72]],HW=[[.18,.38],[.45,.65],[.72,.95]];
-  const chapter=P=>P<.115?0:P<.415?1:P<.685?2:3;
+  /* from the durations: cumulative marks, then the transitions TR and story windows HW (live page:
+     TR [.05,.18] [.38,.45] [.65,.72], HW [.18,.38] [.45,.65] [.72,.95]); chapters switch mid-transition */
+  const TOT=DUR.reduce((a,b)=>a+b,0),MK=[0];DUR.forEach(d=>MK.push(MK[MK.length-1]+d/TOT));
+  const TR=[[MK[1],MK[2]],[MK[3],MK[4]],[MK[5],MK[6]]],HW=[[MK[2],MK[3]],[MK[4],MK[5]],[MK[6],MK[7]]];
+  const MID=TR.map(r=>(r[0]+r[1])/2);
+  const chapter=P=>P<MID[0]?0:P<MID[1]?1:P<MID[2]?2:3;
 
   /* ---- stage progress ----
      Each stage's story (highlighted post, notes, leaders) is scrubbed by the scroll: q 0 → 1
      across its window HW[j]. ACT: the stage's notes may show (window plus a short tail in
      which notes that run to the end of the stage write themselves out). */
-  const QS=[0,0,0],ACT=[false,false,false],TAILP=.03;
+  const QS=[0,0,0],ACT=[false,false,false],TAILP=.27/TOT; /* ~0.27 screens */
   const stageQ=P=>{for(let j=0;j<3;j++){QS[j]=seg(P,HW[j][0],HW[j][1]);ACT[j]=P>=HW[j][0]-.005&&(j===2||P<=HW[j][1]+TAILP);}};
   const OUT=u=>1-seg(u,0,.55),IN=u=>seg(u,.45,1),EDGE=140;
 
@@ -320,7 +330,7 @@ function v31Story(){
 
   let E=null,frame=0,lastHint='',lastF='';
   /* I = the diagram drawing itself in (0 → 1) before the scroll story starts */
-  return {st:ST,notes:NOTES.map(n=>({id:n.id,text:n.text,x:n.x,y:n.y,w:n.w})),visible,noteProg,chapter,setRects,dyn:(t,P,B,RM,I)=>{P=P||0;B=B||1;I=I===undefined?1:I;
+  return {st:ST,timeline:{TR,HW,MID},notes:NOTES.map(n=>({id:n.id,text:n.text,x:n.x,y:n.y,w:n.w})),visible,noteProg,chapter,setRects,dyn:(t,P,B,RM,I)=>{P=P||0;B=B||1;I=I===undefined?1:I;
     if(!E||!E.w.isConnected){const q=id=>svg.querySelector('#'+id);
       E={w:q('wG'),l:q('wL'),q:q('wQ'),f:q('wF'),e:q('wE'),gl:q('wGl'),ov:q('ovG'),mg:q('mgg'),
          sg:[0,1,2].map(k=>q('sg'+k)),sd:[0,1,2].map(k=>q('sd'+k))};}
@@ -365,11 +375,11 @@ function v31Story(){
     if(frame%2===0){
       if(inWorld&&I>0){E.gl.innerHTML=globe(t,Z);if(aux>.01){E.q.innerHTML=posts(t,false);E.e.innerHTML=posts(t,true);}}
       SC.forEach((S,j)=>{if(op[j]>.001)E.sd[j].innerHTML=S.dyn(t+j*3.1,QS[j]);});}
-    const h=I>=1&&P<.04?(1-P/.04):0,hs=(h>.01?'<text class="cp" x="'+CX+'" y="476" text-anchor="middle" opacity="'+h.toFixed(2)+'">SCROLL TO LOOK INSIDE</text>':'')+leaders(noteProg(P,I));
+    const hs=leaders(noteProg(P,I));
     if(hs!==lastHint){E.ov.innerHTML=hs;lastHint=hs;}
     return '';}};
 }
-  const story = v31Story();
+  const story = v31Story(durations);
   return {
     /** static markup for the <svg> */
     markup: story.st,
@@ -377,6 +387,8 @@ function v31Story(){
     render: (t, P, B, reduced, intro) => story.dyn(t, P, B, reduced, intro),
     /** chapter: 0 overview, 1 sourcing, 2 scoring, 3 selection (switches mid-transition) */
     chapter: story.chapter,
+    /** transitions [zoom, → scoring, → selection] and story windows, in diagram progress (0–1) */
+    timeline: story.timeline,
     /** notes: { id, text, x, y, w } in SVG units — the page renders the text */
     notes: story.notes,
     /** measured text boxes { id: [l, t, r, b] } in SVG units; leaders start from them */

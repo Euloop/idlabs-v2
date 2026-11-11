@@ -18,12 +18,14 @@ html:not([data-theme]) .opt-tabs[data-on], html[data-theme='dark'] .opt-tabs[dat
 }
 .opt-tabs button:hover, .opt-tabs button[aria-pressed='true'] { color: #1f1f1f; }
 .opt-tabs button:focus-visible { outline: 1px solid #1f1f1f; outline-offset: 3px; }
+html[data-theme='night'] .opt-tabs button:focus-visible, .opt-tabs[data-dark] button:focus-visible { outline-color: #ebebeb; }
 .opt-tabs-sep { color: #cfcfcf; }
 .opt-tabs-group { display: inline-flex; align-items: center; gap: 10px; }
 .opt-tabs-rule { width: 1px; height: 12px; background: #e0e0e0; margin-inline: 4px; }
 /* on a dark section the bar goes dark too */
-html[data-theme='night'] .opt-tabs { background: #232427; outline-color: #3a3a3a; }
-html[data-theme='night'] .opt-tabs button { color: #6a6a6a; }
-html[data-theme='night'] .opt-tabs button:hover, html[data-theme='night'] .opt-tabs button[aria-pressed='true'] { color: #ebebeb; }
-html[data-theme='night'] .opt-tabs-sep { color: #4a4a4a; }
-html[data-theme='night'] .opt-tabs-rule { background: #3a3a3a; }
+html[data-theme='night'] .opt-tabs, .opt-tabs[data-dark] { background: #232427; outline-color: #3a3a3a; }
+html[data-theme='night'] .opt-tabs button, .opt-tabs[data-dark] button { color: #6a6a6a; }
+html[data-theme='night'] .opt-tabs button:hover, html[data-theme='night'] .opt-tabs button[aria-pressed='true'],
+.opt-tabs[data-dark] button:hover, .opt-tabs[data-dark] button[aria-pressed='true'] { color: #ebebeb; }
+html[data-theme='night'] .opt-tabs-sep, .opt-tabs[data-dark] .opt-tabs-sep { color: #4a4a4a; }
+html[data-theme='night'] .opt-tabs-rule, .opt-tabs[data-dark] .opt-tabs-rule { background: #3a3a3a; }

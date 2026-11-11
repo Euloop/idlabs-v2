@@ -3,16 +3,16 @@
 import Launches, { type LaunchesVariant as Variant } from './Launches';
 import OptionTabs, { useOption } from './OptionTabs';
 
-/* /home-2: the Launches section as the drifting cloud (default), the draggable grid, the simple
-   video box, or big slides (carousel / slider); bottom
+/* /home-2: the Launches section as big slides (carousel, the default), the drifting cloud, the draggable grid, the simple
+   video box, or the slider; bottom
    tabs once it is on screen; ?launches=. */
 
-const VARIANTS: [Variant, string][] = [['cloud', 'Cloud'], ['grid', 'Grid'], ['box', 'Box'], ['carousel', 'Carousel'], ['slider', 'Slider']];
+const VARIANTS: [Variant, string][] = [['carousel', 'Carousel'], ['cloud', 'Cloud'], ['grid', 'Grid'], ['box', 'Box'], ['slider', 'Slider']];
 // The last section: from when its top reaches the middle of the screen.
 const arrived = (r: DOMRect, vh: number) => r.top <= vh * 0.5;
 
 export default function LaunchesOptions() {
-  const [variant, pick] = useOption<Variant>('launches', VARIANTS, 'cloud');
+  const [variant, pick] = useOption<Variant>('launches', VARIANTS, 'carousel');
   return (
     <>
       <Launches variant={variant} />

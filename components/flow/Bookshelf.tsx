@@ -63,7 +63,36 @@ const SUM_T = BOOKS.reduce((a, b) => a + b.t, 0);
 const OPEN_EXTRA = 0.883 * W0 + 10 - 0.265 * 44; // an average book opening adds this much width
 const HOVER_MS = 110;
 
-export default function Bookshelf() {
+/* "il": every book bound in Identity Labs' colours instead of its own (the client: "have these
+   books colour in IL"). The IL feel: dark browns, greys, black and old paper — an archive shelf.
+   No bright accents. Darks carry the shelf; old-paper spines break it up. Titles are old paper on
+   the darks and dark brown on the papers. Placed by hand so neighbours always part. */
+export type ShelfPalette = 'classic' | 'il';
+const IL: Record<string, [string, string]> = {
+  espresso: ['#2b211a', '#e6dcc6'],
+  brown: ['#3d2f24', '#d9cdb4'],
+  walnut: ['#5a4535', '#e9e0cc'],
+  umber: ['#6e5a48', '#efe7d6'],
+  black: ['#141414', '#cfc6b4'],
+  charcoal: ['#232325', '#bfb6a4'],
+  slate: ['#4a4a48', '#e6e1d9'],
+  grey: ['#7d7a74', '#1c1b19'],
+  warmgrey: ['#a19a8f', '#241d17'],
+  oldpaper: ['#e6dcc6', '#3d2f24'],
+  aged: ['#d9ccb0', '#2b211a'],
+  parchment: ['#efe7d6', '#5a4535'],
+};
+const IL_ORDER = [
+  'espresso', 'oldpaper', 'black', 'walnut', 'slate', 'aged', 'brown', 'charcoal', 'parchment', 'umber', 'black', 'grey',
+  'espresso', 'oldpaper', 'slate', 'walnut', 'warmgrey', 'black', 'aged', 'brown', 'charcoal', 'parchment', 'umber', 'black',
+];
+function colours(b: Book, i: number, palette: ShelfPalette) {
+  if (palette !== 'il') return { bg: b.bg, ink: b.ink };
+  const [bg, ink] = IL[IL_ORDER[i % IL_ORDER.length]];
+  return { bg, ink };
+}
+
+export default function Bookshelf({ palette = 'il' }: { palette?: ShelfPalette } = {}) {
   const [open, setOpen] = useState(0);
   const ref = useRef<HTMLUListElement>(null);
   const hover = useRef({ timer: 0, x: NaN, y: NaN });
@@ -110,7 +139,7 @@ export default function Bookshelf() {
           data-open={open === i || undefined}
           data-art={b.art}
           data-mat={b.mat}
-          style={{ '--t0': b.t, '--h0': b.h, '--bg': b.bg, '--ink': b.ink } as CSSProperties}
+          style={{ '--t0': b.t, '--h0': b.h, '--bg': colours(b, i, palette).bg, '--ink': colours(b, i, palette).ink } as CSSProperties}
         >
           <a href="#" className="bs-hit" onFocus={() => setOpen(i)} onClick={(e) => { e.preventDefault(); setOpen(i); }} aria-label={`${b.title} by ${b.author}`}>
             <span className="bs-box" aria-hidden="true">

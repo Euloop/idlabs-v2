@@ -98,7 +98,11 @@ export default function SectionThree({ lead }: { lead?: string } = {}) {
     apply();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
-    return () => { cancelAnimationFrame(raf); window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); };
+    // The stage's height, for /home-2's short hold (flow.css: where it pins, how tall the section is).
+    const pin = sec.querySelector<HTMLElement>('.s3-pin');
+    const ro = new ResizeObserver(() => { if (pin) sec.style.setProperty('--s3-h', `${pin.offsetHeight}px`); });
+    if (pin) ro.observe(pin);
+    return () => { cancelAnimationFrame(raf); ro.disconnect(); window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); };
   }, []);
 
   return (

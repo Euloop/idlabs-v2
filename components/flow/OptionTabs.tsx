@@ -23,11 +23,13 @@ type Props = {
   selector: string;
   label: string;
   when?: (r: DOMRect, vh: number, nextTop: number) => boolean;
+  /** dark bar (over a section in its own dark theme, while the page stays light) */
+  dark?: boolean;
 };
 
 const pinnedAndAlone = (r: DOMRect, vh: number, nextTop: number) => r.top <= 1 && r.bottom >= vh - 1 && nextTop >= vh - 1;
 
-export default function OptionTabs({ groups, selector, label, when = pinnedAndAlone }: Props) {
+export default function OptionTabs({ groups, selector, label, when = pinnedAndAlone, dark = false }: Props) {
   const [show, setShow] = useState(false);
   const key = groups.map((g) => g.value).join('|');
 
@@ -53,7 +55,7 @@ export default function OptionTabs({ groups, selector, label, when = pinnedAndAl
   }, [selector, key, when]);
 
   return (
-    <nav className="opt-tabs" data-on={show || undefined} aria-label={label}>
+    <nav className="opt-tabs" data-on={show || undefined} data-dark={dark || undefined} aria-label={label}>
       {groups.map((g, gi) => (
         <Fragment key={g.label}>
           {gi > 0 && <span className="opt-tabs-rule" aria-hidden="true" />}

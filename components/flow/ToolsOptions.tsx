@@ -3,34 +3,43 @@
 import SectionFourIso from '../SectionFourIso';
 import ToolsGraph from './ToolsGraph';
 import ToolsStack from './ToolsStack';
+import ToolsCollage, { type CollageTheme as Paper } from './ToolsCollage';
 import OptionTabs, { THEMES, useOption } from './OptionTabs';
 
-/* /home-2: the analytical tools in one of three layouts — Graph (a small living network; default),
-   Device (the exploded isometric device) or Stack (glass panes in a row, ToolsStack.tsx) — each in light or dark (dark brings the night down
-   while it is on screen, ThemeDriver.tsx). Bottom tabs while the section is on screen;
-   ?tools= &toolsTheme=. */
+/* /home-2: the analytical tools in one of four layouts — Collage (glass card over archive scraps,
+   ToolsCollage.tsx; the default, in Paper), Stack (glass panes in a row, ToolsStack.tsx), Graph (a
+   small living network) or Device (the exploded isometric device). Stack, Graph and Device come in
+   light or dark (dark brings the night down while it is on screen, ThemeDriver.tsx); Collage in
+   paper, paper dark or white.
+   Bottom tabs while the section is on screen; ?tools= &toolsTheme= (&collageTheme=). */
 
-type Layout = 'graph' | 'device' | 'stack';
+type Layout = 'graph' | 'device' | 'stack' | 'collage';
 type Theme = 'light' | 'dark';
-const LAYOUTS: [Layout, string][] = [['graph', 'Graph'], ['device', 'Device'], ['stack', 'Stack']];
+const LAYOUTS: [Layout, string][] = [['collage', 'Collage'], ['stack', 'Stack'], ['graph', 'Graph'], ['device', 'Device']];
+const PAPERS: [Paper, string][] = [['paper', 'Paper'], ['dark', 'Paper dark'], ['white', 'White']];
 // From when the section's top reaches the middle of the screen until the next section comes up.
 const inView = (r: DOMRect, vh: number, nextTop: number) => r.top <= vh * 0.5 && nextTop >= vh - 1;
 
 export default function ToolsOptions() {
-  const [layout, pickLayout] = useOption<Layout>('tools', LAYOUTS, 'graph');
+  const [layout, pickLayout] = useOption<Layout>('tools', LAYOUTS, 'collage');
   const [theme, pickTheme] = useOption<Theme>('toolsTheme', THEMES, 'light');
+  const [paper, pickPaper] = useOption<Paper>('collageTheme', PAPERS, 'paper');
   const light = theme === 'light';
+  const collage = layout === 'collage';
   return (
     <>
       {layout === 'device' ? <SectionFourIso key={theme} light={light} />
         : layout === 'stack' ? <ToolsStack key={theme} light={light} />
+        : collage ? <ToolsCollage theme={paper} />
         : <ToolsGraph key={theme} light={light} />}
       <OptionTabs
         groups={[
           { label: 'Tools layout', options: LAYOUTS, value: layout, onChange: (v) => pickLayout(v as Layout) },
-          { label: 'Tools theme', options: THEMES, value: theme, onChange: (v) => pickTheme(v as Theme) },
+          collage
+            ? { label: 'Collage theme', options: PAPERS, value: paper, onChange: (v) => pickPaper(v as Paper) }
+            : { label: 'Tools theme', options: THEMES, value: theme, onChange: (v) => pickTheme(v as Theme) },
         ]}
-        selector="section.iso, section.tg, section.tk" label="Tools options" when={inView}
+        selector="section.iso, section.tg, section.tk, section.tcl" label="Tools options" when={inView} dark={collage && paper === 'dark'}
       />
     </>
   );

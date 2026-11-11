@@ -1,0 +1,89 @@
+/* Services, Columns and Cards layouts (ServicesCards.tsx). Measures from the client's references
+   at the 1056px frame (scaled with --px): label → grid 40, cell padding 18 (columns) / 19 (cards),
+   number box 30, title 18px mono, copy 12px mono caps. Colours follow the page theme. */
+.svc {
+  --c-line: #e0e0e0; --c-ink: #1f1f1f; --c-title: #3a3a3a; --c-body: #8f8f8f;
+  --c-btn: #474747; --c-btn-ink: #fff; --c-btn-hover: #1f1f1f; --c-paper: #fff;
+}
+html[data-theme='night'] body:has(.s2-flow) .svc {
+  --c-line: #363636; --c-ink: #ebebeb; --c-title: #d6d6d6; --c-body: #8f8f8f;
+  --c-btn: #d6d6d6; --c-btn-ink: #1f1f1f; --c-btn-hover: #ebebeb; --c-paper: #232427;
+}
+body:has(.s2-flow) .svc { transition: --c-line 400ms ease, --c-ink 400ms ease, --c-title 400ms ease, --c-body 400ms ease, --c-btn 400ms ease, --c-btn-ink 400ms ease, --c-paper 400ms ease; }
+.svc[data-tone='dark'] { height: auto; }
+
+.svc .svc-inner { align-items: stretch; }
+.svc-label {
+  margin: 0 0 calc(40 * var(--px)); align-self: center; text-align: center;
+  font-family: var(--mono); font-weight: 400; font-size: 12px; line-height: 1.4; letter-spacing: 0.04em;
+  text-transform: uppercase; color: var(--c-ink);
+}
+
+.svc-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); }
+.svc-cell {
+  display: flex; flex-direction: column; align-items: flex-start; min-height: calc(384 * var(--px));
+  opacity: 0; translate: 0 8px;
+  transition: opacity 500ms var(--ease-out) calc(var(--i) * 80ms), translate 500ms var(--ease-out) calc(var(--i) * 80ms);
+}
+.svc[data-on] .svc-cell { opacity: 1; translate: 0 0; }
+
+.svc-num {
+  display: grid; place-items: center; width: 30px; height: 30px; box-sizing: border-box;
+  font-family: var(--serif); font-size: 21px; line-height: 1; color: var(--c-title);
+}
+.svc-title { margin: calc(24 * var(--px)) 0 0; font-weight: 400; text-transform: uppercase; color: var(--c-title); text-wrap: balance; }
+.svc-text {
+  margin: calc(24 * var(--px)) 0 0; font-family: var(--mono); font-size: 12px; line-height: 1.4; letter-spacing: 0.01em;
+  text-transform: uppercase; color: var(--c-body); text-wrap: pretty;
+}
+.svc-cta {
+  margin-top: auto; pointer-events: auto; white-space: nowrap;
+  font-family: var(--mono); font-size: 12px; line-height: 1.4; letter-spacing: 0.02em;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+.svc-cta:focus-visible { outline: 1px solid var(--c-ink); outline-offset: 3px; }
+
+/* ── Columns: ruled cells rule to rule ── */
+.svc[data-layout='columns'] .svc-grid {
+  position: relative; margin-inline: calc(-1 * var(--pad)); border-block: 1px solid var(--c-line);
+}
+/* 9px squares where the band's rules meet the frame rules */
+.svc[data-layout='columns'] .svc-grid::before {
+  content: ''; position: absolute; inset: -5px -4px; pointer-events: none;
+  background:
+    linear-gradient(var(--box-mark), var(--box-mark)) left top / 9px 9px no-repeat,
+    linear-gradient(var(--box-mark), var(--box-mark)) right top / 9px 9px no-repeat,
+    linear-gradient(var(--box-mark), var(--box-mark)) left bottom / 9px 9px no-repeat,
+    linear-gradient(var(--box-mark), var(--box-mark)) right bottom / 9px 9px no-repeat;
+}
+.svc[data-layout='columns'] .svc-cell { padding: 18px; }
+.svc[data-layout='columns'] .svc-cell + .svc-cell { border-left: 1px solid var(--c-line); }
+.svc[data-layout='columns'] .svc-num { border: 1px solid var(--c-line); }
+.svc[data-layout='columns'] .svc-title {
+  font-family: var(--mono); font-size: calc(18 * var(--px)); line-height: 1.55; letter-spacing: 0.02em; color: var(--c-ink);
+}
+.svc[data-layout='columns'] .svc-cta { padding: 3px 16px; background: var(--c-btn); color: var(--c-btn-ink); }
+.svc[data-layout='columns'] .svc-cta:hover { background: var(--c-btn-hover); }
+
+/* ── Cards: separate hairline cards ── */
+.svc[data-layout='cards'] .svc-grid { gap: 15px; padding-inline: 2px; }
+.svc[data-layout='cards'] .svc-cell { padding: 19px; border: 1px solid var(--c-line); }
+.svc[data-layout='cards'] .svc-num { border-radius: 4px; background: var(--c-btn); color: var(--c-btn-ink); }
+.svc[data-layout='cards'] .svc-title {
+  font-family: var(--mono); font-size: calc(18 * var(--px)); line-height: 1.55; letter-spacing: 0.02em; color: var(--c-ink);
+}
+.svc[data-layout='cards'] .svc-cta { margin-left: 0; padding: 3px 16px; color: var(--c-title); }
+.svc[data-layout='cards'] .svc-cta:hover { background: var(--c-ink); color: var(--c-paper); }
+
+@media (prefers-reduced-motion: reduce) {
+  .svc-cell { transition: none; translate: none; }
+}
+
+/* Narrow: the cells stack; the section grows past one screen (no pin) */
+@media (max-width: 759px) {
+  .svc-grid { grid-template-columns: 1fr; }
+  .svc-cell { min-height: 0; }
+  .svc-cta { margin-top: 32px; }
+  .svc[data-layout='columns'] .svc-cell + .svc-cell { border-left: 0; border-top: 1px solid var(--c-line); }
+  .svc .svc-title { font-size: 16px; }
+}

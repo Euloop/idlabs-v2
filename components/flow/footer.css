@@ -65,17 +65,26 @@
   .ft-socials { justify-content: flex-start; }
 }
 
-/* The fixed header over the dark footer: light ink, as on the dark sections. ([data-theme] for
+/* The fixed header over the dark footer, and over the tools' Paper dark band (data-over-dark,
+   ToolsCollage.tsx): light ink, as on the dark sections. ([data-theme] for
    weight: it must beat the light theme's grey header (sections.css) whatever order the
    stylesheets load in.) */
-html[data-over-footer][data-theme] .chrome .s2-header .wordmark { color: #ebebeb; }
-html[data-over-footer][data-theme] .chrome-nav .roll { color: #ebebeb; }
-html[data-over-footer][data-theme] .chrome-nav .roll-track > span + span { color: #fff; }
+html[data-over-footer][data-theme] .chrome .s2-header .wordmark,
+html[data-over-dark][data-theme] .chrome .s2-header .wordmark { color: #ebebeb; }
+html[data-over-footer][data-theme] .chrome-nav .roll,
+html[data-over-dark][data-theme] .chrome-nav .roll { color: #ebebeb; }
+html[data-over-footer][data-theme] .chrome-nav .roll-track > span + span,
+html[data-over-dark][data-theme] .chrome-nav .roll-track > span + span { color: #fff; }
 
 /* The fixed chrome's footer labels and the Launches tabs step aside while the footer is on screen. */
 .chrome .s2-foot { transition: color 400ms ease, opacity 300ms ease; }
 html[data-footer] .chrome .s2-foot { opacity: 0; }
-html[data-footer] .opt-tabs[data-on] { opacity: 0; visibility: hidden; pointer-events: none; }
+html[data-footer] .opt-tabs[data-on]:not([aria-label='Footer options']) { opacity: 0; visibility: hidden; pointer-events: none; }
+/* the footer's own tabs (Reading list: Classic · IL colours) stay, dark like the footer */
+.opt-tabs[aria-label='Footer options'] { background: #232427; outline-color: #3a3a3a; }
+.opt-tabs[aria-label='Footer options'] button { color: #6a6a6a; }
+.opt-tabs[aria-label='Footer options'] button:hover, .opt-tabs[aria-label='Footer options'] button[aria-pressed='true'] { color: #ebebeb; }
+.opt-tabs[aria-label='Footer options'] .opt-tabs-sep { color: #4a4a4a; }
 
 
 /* ───────── Shelf ─────────

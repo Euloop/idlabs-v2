@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import TokenText from './TokenText';
 import ScrollText, { type ScrollTextHandle } from './ScrollText';
-import { createPipeline } from './pipeline/engine';
+import { createPipeline, DEFAULT_TIMELINE, timelineLength } from './pipeline/engine';
 import './pipeline/pipeline.css';
 
 /* Section 2 — Algorithm research. Figma 110:920 (part 1) and 110:898 (part 2).
@@ -23,11 +23,14 @@ import './pipeline/pipeline.css';
                     (leader first, then text) write in and out as it passes
      0.6 viewport   selection fades out, its step label types out, part 3 types in
      1.4 viewport   hold, then the pin releases                                            */
-const HOLD = 1.5;
-const INTRO = 1.2;
-const DIAGRAM = 9;
 const OUTRO = 0.6;
 const TAIL = 1.4;
+/* Budgets (screens). Full: the live page. Compact (/home-2): same story and notes, less scroll —
+   part 1 holds 1.1, the draw-in takes 0.9, and the diagram 6.85 instead of 9: every note keeps at
+   least the scroll the shortest note has on the live page (~0.27 screens); the transitions and
+   pauses are shorter. Durations: overview, zoom, sourcing, slide, scoring, slide, selection, end. */
+const FULL = { hold: 1.5, intro: 1.2, timeline: DEFAULT_TIMELINE, rest: 0.35 };
+const COMPACT = { hold: 1.1, intro: 0.9, timeline: [0.25, 0.8, 2.25, 0.4, 1.1, 0.4, 1.35, 0.3], rest: 0.15 };
 
 /* Step label, centred below the diagram, indexed by chapter (0 overview, 1 sourcing,
    2 scoring, 3 selection). Copy is the client's (Notion) word for word — do not edit.
@@ -49,8 +52,11 @@ const clamp = (v: number, a = 0, b = 1) => Math.max(a, Math.min(b, v));
 
 
 /* noOutro (/home-2's Diagram option): no part 3 — after the diagram a short rest on its last
-   frame, then the pin releases into normal scrolling. The live page (/) keeps the outro. */
-export default function SectionTwo({ noOutro = false }: { noOutro?: boolean } = {}) {
+   frame, then the pin releases into normal scrolling. The live page (/) keeps the outro.
+   compact (/home-2): the shorter scroll budget (COMPACT above). */
+export default function SectionTwo({ noOutro = false, compact = false }: { noOutro?: boolean; compact?: boolean } = {}) {
+  const B = compact ? COMPACT : FULL;
+  const HOLD = B.hold, INTRO = B.intro, DIAGRAM = timelineLength(B.timeline);
   const sectionRef = useRef<HTMLElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const part2Ref = useRef<HTMLDivElement>(null);
@@ -72,7 +78,8 @@ export default function SectionTwo({ noOutro = false }: { noOutro?: boolean } = 
 
     const root = document.documentElement;
     const hero = document.querySelector<HTMLElement>('.hero');
-    const pipe = createPipeline(svg);
+    const pipe = createPipeline(svg, B.timeline);
+    const { TR, MID } = pipe.timeline as { TR: number[][]; MID: number[] };
     pipeRef.current = pipe;
     svg.innerHTML = pipe.markup;
     setNotes(pipe.notes);
@@ -143,10 +150,12 @@ export default function SectionTwo({ noOutro = false }: { noOutro?: boolean } = 
       // Step label (below the diagram): overview line, then 1) Sourcing, then 2) Ranking (scoring and
       // selection). Each types in as its chapter starts and out as it ends.
       const P = target;
-      const label = P < 0.113 ? 0 : P < 0.413 ? 1 : 2;
-      const pl = label === 0 ? Math.min(sg(intro, 0.55, 1), 1 - sg(P, 0.07, 0.11))
-        : label === 1 ? Math.min(sg(P, 0.115, 0.16), 1 - sg(P, 0.37, 0.41))
-        : Math.min(sg(P, 0.415, 0.46), 1 - sg(outro, 0, 0.4));
+      // (timings from the engine's transitions; on the live page: out .07–.11, in .115–.16, out .37–.41, in .415–.46)
+      const zl = TR[0][1] - TR[0][0];
+      const label = P < MID[0] - 0.002 ? 0 : P < MID[1] - 0.002 ? 1 : 2;
+      const pl = label === 0 ? Math.min(sg(intro, 0.55, 1), 1 - sg(P, TR[0][0] + 0.15 * zl, MID[0] - 0.005))
+        : label === 1 ? Math.min(sg(P, MID[0], TR[0][0] + 0.85 * zl), 1 - sg(P, TR[1][0] - 0.01, MID[1] - 0.005))
+        : Math.min(sg(P, MID[1], TR[1][1] + 0.01), 1 - sg(outro, 0, 0.4));
       stepRef.current?.set(pl, STEPS[label]);
 
       // Notes: leader over the first part of each note's progress, then its text types.
@@ -191,7 +200,7 @@ export default function SectionTwo({ noOutro = false }: { noOutro?: boolean } = 
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
     };
-  }, [noOutro]);
+  }, [noOutro, compact]);
 
   // Measure where each note's text really sits (it wraps differently per width) so the
   // leaders start from the text edge. ScrollText keeps the layout of untyped text, so this is
@@ -225,7 +234,7 @@ export default function SectionTwo({ noOutro = false }: { noOutro?: boolean } = 
       aria-label="Algorithm research"
       data-foot="/Algorithm Research"
       data-chrome={chrome || undefined}
-      style={{ height: `${(2 + HOLD + INTRO + DIAGRAM + (noOutro ? 0.35 : OUTRO + TAIL)) * 100}svh` }}
+      style={{ height: `${(2 + HOLD + INTRO + DIAGRAM + (noOutro ? B.rest : OUTRO + TAIL)) * 100}svh` }}
     >
       <div className="s2-stage">
         <div className="frame s2-frame">

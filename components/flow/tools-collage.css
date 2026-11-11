@@ -1,0 +1,196 @@
+/* Analytical tools, Collage layout (ToolsCollage.tsx). Figma 163:713 (white) / 165:762 (paper).
+   The collage box spans the frame rule to rule (1056 Figma px); --u is one Figma px of it, so the
+   whole box scales with the frame. Text: IBM Plex Mono caps, as the design. */
+section.tcl {
+  position: relative; z-index: 1; height: 160svh; /* holds on screen a little, as the other layouts */
+  --c-title: #4a4a4a; --c-lead: #808080; --c-name: #808080; --c-name-on: #1f1f1f; --c-note: #4a4a4a;
+  --c-line: #4a4a4a; --c-mark: #d9d9d9; --c-rule: transparent;
+}
+
+/* Paper light: the section is its own sheet of paper (as the footer is its own dark band), no
+   page-wide theme change. The surface is Figma 165:763 (the frame's texture with its fibre
+   overlay), rendered from Figma. It covers the page's fixed rules, so the frame draws its own
+   (ink at 15%), with the corner squares to match. */
+section.tcl[data-theme-tc='paper'] {
+  background: #e6e1d9;
+  --c-mark: rgb(52 49 42 / .15); --c-rule: rgb(52 49 42 / .15);
+}
+/* The paper is on the pinned layer, not the section: it scrolls in and out with the page like
+   anything else, and holds still with the content while the section is pinned. One screen of
+   it, so the grain is the design's (1280 × 832). */
+section.tcl[data-theme-tc='paper'] .tcl-pin {
+  background: #e6e1d9 url('/assets/tools-collage/paper-surface.webp') center / cover no-repeat;
+}
+
+/* Paper dark (Figma 166:817): the hero's and the footer's dark material, the #2a2c31 ground with
+   the paper texture burnt in at 48%. Its own dark band (the page around stays as it is). The
+   scraps go straight onto the dark ground, each hard-light at 63% (the stamp at 42%), so they keep
+   their colour but sink into the dark. The glass card is the light one with white at 15%; all type
+   is white, and the rules and corner squares are #828282 at 25%. */
+section.tcl[data-theme-tc='dark'] {
+  background: #2a2c31;
+  --c-title: #fff; --c-lead: #fff; --c-name: #fff; --c-name-on: #fff; --c-note: #fff;
+  --c-line: #fff; --c-mark: rgb(130 130 130 / .25); --c-rule: rgb(130 130 130 / .25);
+  --c-track: rgb(255 255 255 / .2);
+}
+section.tcl[data-theme-tc='dark'] .tcl-pin { background: #2a2c31; isolation: isolate; }
+section.tcl[data-theme-tc='dark'] .tcl-pin::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: url('/assets/texture.webp') center top / 1280px auto repeat;
+  mix-blend-mode: color-burn; opacity: .48;
+}
+section.tcl[data-theme-tc='dark'] .tcl-frame { position: relative; }
+/* As in Figma, the scraps are a group (each at 63%), hard-lit as a whole onto the dark ground
+   (.tcl-scraps-in). The card is Figma's glass as is: a real backdrop blur (Figma's 56.6, eased to 40) over the collage
+   behind it, filled with white at 15% (no blurred copy in this theme). */
+section.tcl[data-theme-tc='dark'] .tcl-box { background: #2a2c31; }
+section.tcl[data-theme-tc='dark'] .tcl-scraps { background: #2a2c31; isolation: isolate; }
+section.tcl[data-theme-tc='dark'] .tcl-scraps-in { isolation: isolate; mix-blend-mode: hard-light; }
+section.tcl[data-theme-tc='dark'] .tcl-scrap { mix-blend-mode: normal !important; opacity: .63; }
+section.tcl[data-theme-tc='dark'] .tcl-scraps.tcl-blur { display: none; }
+section.tcl[data-theme-tc='dark'] .tcl-card {
+  background: rgb(255 255 255 / .15);
+  -webkit-backdrop-filter: blur(calc(40 * var(--u))); backdrop-filter: blur(calc(40 * var(--u))); /* Figma 56.6, a little less */
+}
+section.tcl[data-theme-tc='dark'] .tcl-name:hover { color: #fff; opacity: .8; }
+
+/* full width, pinned for the section's hold; the frame sits in it */
+.tcl-pin { position: sticky; top: 0; height: 100svh; min-height: 560px; }
+.tcl-frame {
+  height: 100%; min-height: 0;
+  display: grid; align-items: center;
+  padding-top: calc(30 * var(--px)); /* the design sits the box a little below centre (146 / 832) */
+}
+/* the frame's own rules (paper only; the pinned frame covers all of the section that is on screen) */
+.tcl-frame::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  border-inline: 1px solid var(--c-rule);
+}
+/* 8px corner squares on the rules, at the header base and near the bottom (as the design) */
+.tcl-frame::after {
+  content: ''; position: absolute; pointer-events: none;
+  inset: calc(59 * var(--px)) -4px calc(31 * var(--px));
+  background:
+    linear-gradient(var(--c-mark), var(--c-mark)) left top / 8px 8px no-repeat,
+    linear-gradient(var(--c-mark), var(--c-mark)) right top / 8px 8px no-repeat,
+    linear-gradient(var(--c-mark), var(--c-mark)) left bottom / 8px 8px no-repeat,
+    linear-gradient(var(--c-mark), var(--c-mark)) right bottom / 8px 8px no-repeat;
+}
+
+.tcl-box {
+  --u: calc((100cqw + 2 * var(--pad)) / 1056);
+  position: relative; margin-inline: calc(-1 * var(--pad));
+  height: calc(569 * var(--u)); overflow: clip;
+  background: #efece3; isolation: isolate;
+}
+.tcl-scraps, .tcl-scraps-in { position: absolute; inset: 0; }
+.tcl-scrap { position: absolute; }
+.tcl-scrap img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; max-width: none; pointer-events: none; user-select: none; }
+.tcl-scrap img.tcl-fit-top { object-position: top; }
+
+/* the glass card (972 × 467 at 42, 51): a blurred copy of the collage, lined up with the one
+   behind it, under white at 34% (the design's backdrop blur 56.6 + fill) */
+.tcl-card {
+  position: absolute; left: calc(42 * var(--u)); top: calc(51 * var(--u));
+  width: calc(972 * var(--u)); height: calc(467 * var(--u)); overflow: clip;
+  font-family: var(--mono); text-transform: uppercase;
+}
+.tcl-scraps.tcl-blur {
+  inset: auto; left: calc(-42 * var(--u)); top: calc(-51 * var(--u));
+  width: calc(1056 * var(--u)); height: calc(569 * var(--u)); overflow: clip;
+  background: #efece3; isolation: isolate;
+  box-shadow: 0 0 0 calc(120 * var(--u)) #efece3; /* keeps the blur's edges paper, not clear */
+  filter: blur(calc(28.3 * var(--u))); /* Figma's blur value is twice the CSS radius */
+}
+.tcl-scraps.tcl-blur::after { content: ''; position: absolute; inset: 0; background: rgb(255 255 255 / .34); }
+.tcl-title {
+  position: absolute; left: calc(42 * var(--u)); top: calc(40 * var(--u)); margin: 0;
+  font-weight: 400; font-size: 24px; line-height: normal; color: var(--c-title); white-space: nowrap;
+}
+.tcl-lead {
+  position: absolute; left: calc(42 * var(--u)); top: calc(86 * var(--u)); width: calc(230 * var(--u)); margin: 0;
+  font-size: 12px; line-height: 1.5; color: var(--c-lead); text-wrap: pretty;
+  animation: tcl-in 500ms var(--ease-out) both;
+}
+.tcl-list {
+  position: absolute; left: calc(42 * var(--u)); top: calc(314 * var(--u)); width: calc(273 * var(--u));
+  list-style: none; margin: 0; padding: 0; display: grid; gap: calc(12 * var(--u));
+}
+/* the active name's progress bar: a dim hairline under the name, filling over the cycle
+   (ToolsCollage.tsx: the fill's animationend brings the next tool; paused = frozen) */
+.tcl-prog {
+  position: absolute; left: 0; right: 0; bottom: -5px; height: 1px; pointer-events: none;
+  background: var(--c-track, rgb(0 0 0 / .12));
+}
+.tcl-prog-fill {
+  position: absolute; inset: 0; background: var(--c-name-on); opacity: .7; transform-origin: left;
+  animation: tcl-prog linear both paused; /* duration from the component */
+}
+.tcl-prog-fill[data-run] { animation-play-state: running; }
+@keyframes tcl-prog { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.tcl-list li { display: flex; } /* no line-box gap under the inline-block names */
+.tcl-name {
+  all: unset; cursor: pointer; display: inline-block; position: relative;
+  font-family: var(--mono); font-size: 12px; line-height: 1.5; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--c-name); transition: color 200ms ease;
+}
+.tcl-name:hover { color: var(--c-title); }
+.tcl-name[aria-selected='true'] { color: var(--c-name-on); }
+.tcl-name:focus-visible { outline: 1px solid var(--c-name-on); outline-offset: 3px; }
+
+/* the active tool: two of its views, two notes on leaders */
+.tcl-panel { position: absolute; inset: 0; pointer-events: none; }
+.tcl-shots { pointer-events: auto; cursor: pointer; }
+.tcl-shot {
+  position: absolute; display: block; max-width: none; background: #fff;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / .06);
+  animation: tcl-shot 600ms var(--ease-out) calc(var(--i) * 90ms) both;
+}
+.tcl-lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.tcl-line {
+  fill: none; stroke: var(--c-line); stroke-width: 1;
+  stroke-dasharray: 1; stroke-dashoffset: 1;
+  animation: tcl-draw 500ms var(--ease-out) calc(350ms + var(--i) * 160ms) forwards;
+}
+.tcl-dot {
+  position: absolute; width: calc(5.33 * var(--u)); height: calc(5.33 * var(--u)); min-width: 4px; min-height: 4px;
+  translate: -50% -50%; border-radius: 50%; background: var(--c-line);
+  animation: tcl-dot 300ms var(--ease-out) calc(300ms + var(--i) * 160ms) both;
+}
+.tcl-note {
+  position: absolute; margin: 0;
+  font-size: 12px; line-height: 1.5; color: var(--c-note); text-wrap: pretty;
+  animation: tcl-in 450ms var(--ease-out) calc(700ms + var(--i) * 160ms) both;
+}
+
+@keyframes tcl-in { from { opacity: 0; translate: 0 4px; } }
+@keyframes tcl-shot { from { opacity: 0; translate: 0 8px; } }
+@keyframes tcl-draw { to { stroke-dashoffset: 0; } }
+@keyframes tcl-dot { from { opacity: 0; scale: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .tcl-lead, .tcl-shot, .tcl-dot, .tcl-note { animation: tcl-fade 200ms ease both; }
+  .tcl-line { animation: none; stroke-dashoffset: 0; }
+  .tcl-prog { display: none; } /* no auto-cycling: the names still switch on click */  @keyframes tcl-fade { from { opacity: 0; } }
+}
+
+/* Phones: the card turns into a column over the collage (no leaders; the notes become captions). */
+@media (max-width: 719px) {
+  section.tcl { height: auto; }
+  .tcl-pin { position: relative; height: auto; min-height: 0; }
+  .tcl-frame { position: relative; height: auto; min-height: 0; padding-block: 96px 64px; }
+  .tcl-frame::after { display: none; }
+  .tcl-box { height: auto; padding: 32px 16px; }
+  .tcl-card { position: relative; left: auto; top: auto; width: auto; height: auto; padding: 24px 20px; display: grid; gap: 16px; }
+  .tcl-title, .tcl-lead, .tcl-list { position: relative; left: auto; top: auto; width: auto; }
+  .tcl-title { font-size: 24px; }
+  .tcl-lead, .tcl-name { font-size: 12px; }
+  .tcl-list { order: 3; gap: 10px; }
+  .tcl-panel { position: relative; display: grid; gap: 12px; pointer-events: auto; order: 2; }
+  .tcl-shots { display: block; }
+  /* one view per tool here: the main chart (the upper note's image) */
+  .tcl-shot { position: static; width: 100% !important; height: auto !important; }
+  .tcl-shot:first-child { display: none; }
+  .tcl-lines, .tcl-dot { display: none; }
+  .tcl-note { position: static; width: auto !important; }
+}

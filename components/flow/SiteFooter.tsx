@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import Bookshelf from './Bookshelf';
+import Bookshelf, { type ShelfPalette } from './Bookshelf';
+import OptionTabs, { useOption } from './OptionTabs';
 import './footer.css';
 
 /* /home-2 footer: always dark — its own dark ground and grain, whatever the page theme; it does
@@ -19,11 +20,17 @@ const COLUMNS: { title: string; links: string[] }[] = [
   { title: 'Company', links: ['About', 'Research Papers', 'Careers', 'Press Kit'] },
 ];
 
+// Reading-list colours: the books' own, or bound in Identity Labs' palette (?books=)
+const SHELVES: [ShelfPalette, string][] = [['il', 'IL colours'], ['classic', 'Classic']];
+// tabs while the footer's top is in the upper half of the screen
+const footerInView = (r: DOMRect, vh: number) => r.top <= vh * 0.5;
+
 const OFFICES = ['San Francisco', 'New York', 'Remote'];
 const SOCIALS = ['X / Twitter', 'LinkedIn', 'Instagram', 'Substack'];
 
 export default function SiteFooter() {
   const ref = useRef<HTMLElement>(null);
+  const [shelf, pickShelf] = useOption<ShelfPalette>('books', SHELVES, 'il');
 
   useEffect(() => {
     const el = ref.current;
@@ -53,6 +60,7 @@ export default function SiteFooter() {
   }, []);
 
   return (
+    <>
     <section ref={ref} className="ft" data-foot="/Footer" aria-label="Footer">
       <div className="ft-texture" aria-hidden="true" />
       <div className="frame ft-frame">
@@ -78,7 +86,7 @@ export default function SiteFooter() {
             <h3 className="ft-h">Reading list</h3>
             <p className="ft-read-sub">What our researchers keep on the desk</p>
           </div>
-          <Bookshelf />
+          <Bookshelf palette={shelf} />
         </div>
 
         <div className="ft-bar">
@@ -90,5 +98,10 @@ export default function SiteFooter() {
         </div>
       </div>
     </section>
+    <OptionTabs
+      groups={[{ label: 'Reading list', options: SHELVES, value: shelf, onChange: (v) => pickShelf(v as ShelfPalette) }]}
+      selector="section.ft" label="Footer options" when={footerInView}
+    />
+    </>
   );
 }
