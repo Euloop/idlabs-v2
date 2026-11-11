@@ -23,7 +23,7 @@ section.tcl[data-theme-tc='paper'] .tcl-pin {
 }
 
 /* Paper dark (Figma 166:817): the hero's and the footer's dark material, the #2a2c31 ground with
-   the paper texture burnt in at 48%. Its own dark band (the page around stays as it is). The
+   the hero's paper texture burnt in (as the hero and footer). Its own dark band (the page around stays as it is). The
    scraps go straight onto the dark ground, each hard-light at 63% (the stamp at 42%), so they keep
    their colour but sink into the dark. The glass card is the light one with white at 15%; all type
    is white, and the rules and corner squares are #828282 at 25%. */
@@ -37,7 +37,7 @@ section.tcl[data-theme-tc='dark'] .tcl-pin { background: #2a2c31; isolation: iso
 section.tcl[data-theme-tc='dark'] .tcl-pin::before {
   content: ''; position: absolute; inset: 0; pointer-events: none;
   background: url('/assets/texture.webp') center top / 1280px auto repeat;
-  mix-blend-mode: color-burn; opacity: .48;
+  mix-blend-mode: color-burn; /* the file has Figma's 48% baked in (as the hero's .texture) */
 }
 section.tcl[data-theme-tc='dark'] .tcl-frame { position: relative; }
 /* As in Figma, the scraps are a group (each at 63%), hard-lit as a whole onto the dark ground
