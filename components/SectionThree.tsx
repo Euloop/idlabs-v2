@@ -21,7 +21,7 @@ const A = '/assets/research/';
 type Fig = { src: string; className: string };
 type PaperProps = { title: string; figs: Fig[]; href?: string };
 
-const PAPERS: PaperProps[] = [
+export const PAPERS: PaperProps[] = [
   {
     title: X_TITLE,
     href: 'https://assets.ctfassets.net/xsgwjwcuxltx/2D7hwss9WnXBNLD3T8e7mK/8a276a95b9f7b0f2f1c0d1d6b14b450e/How_the_X_Algorithm_Works_2026.pdf',
@@ -42,7 +42,7 @@ const PAPERS: PaperProps[] = [
   },
 ];
 
-function Paper({ title, figs, href = '#' }: PaperProps) {
+export function Paper({ title, figs, href = '#' }: PaperProps) {
   return (
     <a className="pp" href={href} target="_blank" rel="noopener noreferrer" aria-label={`${title} ${AUTHORS}, ${LAB} (PDF, opens in a new tab)`}>
       <span className="pp-box" aria-hidden="true">
