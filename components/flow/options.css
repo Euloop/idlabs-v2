@@ -9,8 +9,8 @@
   opacity: 0; visibility: hidden; pointer-events: none;
   transition: none; /* vanishes at once when the section ends */
 }
-.opt-tabs[data-on] { opacity: 1; visibility: visible; pointer-events: auto; translate: -50% 0; transition: opacity 250ms ease, translate 250ms var(--ease-out), visibility 0s; }
-html:not([data-theme]) .opt-tabs[data-on], html[data-theme='dark'] .opt-tabs[data-on] { opacity: 0; visibility: hidden; pointer-events: none; } /* not over the hero */
+.opt-tabs[data-on], .opt-tabs-open[data-on] { opacity: 1; visibility: visible; pointer-events: auto; translate: -50% 0; transition: opacity 250ms ease, translate 250ms var(--ease-out), visibility 0s; }
+html:not([data-theme]) :is(.opt-tabs, .opt-tabs-open)[data-on], html[data-theme='dark'] :is(.opt-tabs, .opt-tabs-open)[data-on] { opacity: 0; visibility: hidden; pointer-events: none; } /* not over the hero */
 .opt-tabs span { display: inline-flex; align-items: center; gap: 10px; }
 .opt-tabs button {
   padding: 0; border: 0; background: none; cursor: pointer; font: inherit; letter-spacing: inherit; text-transform: inherit;
@@ -29,3 +29,26 @@ html[data-theme='night'] .opt-tabs button:hover, html[data-theme='night'] .opt-t
 .opt-tabs[data-dark] button:hover, .opt-tabs[data-dark] button[aria-pressed='true'] { color: #ebebeb; }
 html[data-theme='night'] .opt-tabs-sep, .opt-tabs[data-dark] .opt-tabs-sep { color: #4a4a4a; }
 html[data-theme='night'] .opt-tabs-rule, .opt-tabs[data-dark] .opt-tabs-rule { background: #3a3a3a; }
+
+/* the options scroll sideways inside the bar when it is wider than the screen (phones); the ×
+   stays put at the right end */
+.opt-tabs { max-width: calc(100vw - 32px); }
+.opt-tabs-scroll { display: flex; align-items: center; gap: 10px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.opt-tabs-scroll::-webkit-scrollbar { display: none; }
+.opt-tabs-scroll span { flex: none; }
+.opt-tabs-rule, .opt-tabs-close { flex: none; }
+/* the × at the bar's right end; on close the bar gives way to one "Open" button, bottom right */
+.opt-tabs .opt-tabs-close { display: inline-grid; place-items: center; width: 16px; height: 16px; margin-right: -4px; }
+.opt-tabs-open {
+  position: fixed; right: 22px; bottom: 22px; translate: 0 6px; z-index: 7;
+  padding: 6px 14px; border: 0; cursor: pointer;
+  background: #fff; outline: 1px solid #e0e0e0; outline-offset: -1px; color: #1f1f1f;
+  font-family: var(--mono); font-size: 12px; line-height: 1.4; letter-spacing: .04em; text-transform: uppercase;
+  opacity: 0; visibility: hidden; pointer-events: none; transition: none;
+}
+.opt-tabs-open[data-on] { translate: 0 0; }
+.opt-tabs-open:hover { color: #6a6a6a; }
+.opt-tabs-open:focus-visible { outline: 1px solid #1f1f1f; outline-offset: 2px; }
+html[data-theme='night'] .opt-tabs-open, .opt-tabs-open[data-dark] { background: #232427; outline-color: #3a3a3a; color: #ebebeb; }
+html[data-theme='night'] .opt-tabs-open:hover, .opt-tabs-open[data-dark]:hover { color: #a3a3a3; }
+@media (max-width: 719px) { .opt-tabs-open { right: 16px; bottom: 16px; } }
