@@ -21,7 +21,7 @@ const COLUMNS: { title: string; links: string[] }[] = [
 ];
 
 // Reading-list colours: the books' own, or bound in Identity Labs' palette (?books=)
-const SHELVES: [ShelfPalette, string][] = [['il', 'IL colours'], ['classic', 'Classic']];
+const SHELVES: [ShelfPalette, string][] = [['classic', 'Classic'], ['il', 'IL colours']];
 // tabs while the footer's top is in the upper half of the screen
 const footerInView = (r: DOMRect, vh: number) => r.top <= vh * 0.5;
 
@@ -30,7 +30,7 @@ const SOCIALS = ['X / Twitter', 'LinkedIn', 'Instagram', 'Substack'];
 
 export default function SiteFooter() {
   const ref = useRef<HTMLElement>(null);
-  const [shelf, pickShelf] = useOption<ShelfPalette>('books', SHELVES, 'il');
+  const [shelf, pickShelf] = useOption<ShelfPalette>('books', SHELVES, 'classic');
 
   useEffect(() => {
     const el = ref.current;

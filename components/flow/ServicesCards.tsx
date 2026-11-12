@@ -61,7 +61,7 @@ export default function ServicesCards({ light = true, layout }: { light?: boolea
       <div className="sv-pin">
         <div className="frame sv-frame">
           <div className="sv-inner svc-inner">
-            <h2 id="svc-title" className="svc-label">Our forward-deployed services</h2>
+            <h2 id="svc-title" className="svc-label">Our forward&#8209;deployed services</h2>
             <ol className="svc-grid">
               {SERVICES.map((s, i) => (
                 <li key={s.title} className="svc-cell" style={{ '--i': i } as CSSProperties}>
