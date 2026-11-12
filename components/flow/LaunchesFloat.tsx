@@ -67,6 +67,7 @@ const N = TILES.length;
    ends (a launch with a video first, and one the reel has), so the zoom starts from a tile you can
    see. The reel then opens on that launch. */
 const FLOAT_TRAVEL = 0.62; // how far (stage heights × depth) the field rises over the float
+const HERO_LAUNCH = 'matic-robots-launch'; // the launch the zoom goes into
 const HERO = (() => {
   let best = -1, bd = Infinity;
   TILES.forEach((t, i) => {
@@ -76,6 +77,13 @@ const HERO = (() => {
     const dd = (t.fx * t.fx + ey * ey) * (LAUNCH_VIDEO[slug(t.l)] ? 1 : 4);
     if (dd < bd) { bd = dd; best = i; }
   });
+  // HERO_LAUNCH takes that central tile; the launch that was there takes HERO_LAUNCH's old place
+  const m = TILES.findIndex((t) => !t.dup && t.l && slug(t.l) === HERO_LAUNCH);
+  if (best >= 0 && m >= 0 && m !== best) {
+    const a = TILES[best], b = TILES[m];
+    [a.l, b.l] = [b.l, a.l];
+    [a.ratio, b.ratio] = [b.ratio, a.ratio];
+  }
   return best;
 })();
 const HERO_SLIDE = Math.max(0, REEL.indexOf(TILES[HERO]?.l as Launch));
