@@ -109,20 +109,20 @@ function leaders(r: { a: Rect; b: Rect }) {
   };
 }
 
-/* The collage behind the card (Figma 163:728), in paint order, box px (1056 × 569).
+/* The collage behind the card (Figma "Tool section bg 3", 176:87; was 163:728), in paint order, box px (1056 × 569).
    [file, left, top, width, height, blend?, rotate°?, inner w, inner h, opacity?, fit-top?] —
    rotated scraps: the box is the rotated image's bounds and the image (inner w × h) is centred in it. */
 type Scrap = { f: string; x: number; y: number; w: number; h: number; blend?: CSSProperties['mixBlendMode']; rot?: number; iw?: number; ih?: number; o?: number; top?: boolean };
 const SCRAPS: Scrap[] = [
-  { f: 'c1', x: 579, y: -29, w: 600, h: 771 },
+  { f: 'c1', x: 579, y: -31, w: 750, h: 852 }, // "Tool section bg 3" (176:87): the new right-hand piece
   { f: 'c2', x: 308, y: -70, w: 400, h: 400, blend: 'darken' },
-  { f: 'c3', x: 171, y: 97, w: 424, h: 516, blend: 'darken' },
-  { f: 'c4', x: 551, y: 318, w: 214.743, h: 287.825, blend: 'lighten', rot: -11.43, iw: 166.523, ih: 259.98 },
+  { f: 'c3', x: 171, y: 95, w: 424, h: 516, blend: 'darken' },
+  { f: 'c4', x: 551, y: 316, w: 214.743, h: 287.825, blend: 'lighten', rot: -11.43, iw: 166.523, ih: 259.98 },
   { f: 'c5', x: -35, y: -70, w: 392, h: 496, top: true },
-  { f: 'c6', x: 401, y: 192, w: 275.116, h: 196.269, blend: 'darken', rot: -14.04, iw: 248.539, ih: 140.176 },
-  { f: 'c7', x: 0, y: 192, w: 242, h: 381 },
-  { f: 'c8', x: 124, y: 238, w: 325.723, h: 325.723, blend: 'multiply', rot: -21.58, iw: 251, ih: 251, o: 0.67 },
-  { f: 'c9', x: 475.43, y: 179.52, w: 178.137, h: 220.961, rot: 4.89, iw: 161, ih: 208 },
+  { f: 'c6', x: 401, y: 190, w: 275.116, h: 196.269, blend: 'darken', rot: -14.04, iw: 248.539, ih: 140.176 },
+  { f: 'c7', x: 0, y: 190, w: 242, h: 381 },
+  { f: 'c8', x: 124, y: 236, w: 325.723, h: 325.723, blend: 'multiply', rot: -21.58, iw: 251, ih: 251, o: 0.67 },
+  { f: 'c9', x: 475.43, y: 177.52, w: 178.137, h: 220.961, rot: 4.89, iw: 161, ih: 208 },
 ];
 
 const CYCLE_MS = 7000;
