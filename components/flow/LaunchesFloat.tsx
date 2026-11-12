@@ -246,14 +246,18 @@ export default function LaunchesFloat({ alt = false, card = false, track = false
       // they fade as the scatter starts.
       const gap = Math.max(10, W * 0.008);
       const wordOff = gap + (ribW / 2 + cardH * 0.95 + gap) * g;
+      // together, the pair is centred as a whole (the two words differ in length); as the wave opens
+      // between them they part evenly around it
+      const lw = leftRef.current?.offsetWidth ?? 0, rw = rightRef.current?.offsetWidth ?? 0;
+      const pairX = ((lw - rw) / 2) * (1 - g);
       const wordO = String(clamp((vh - r.top) / (vh * 0.6)) * (1 - span(prog, 0.33, 0.48)));
       const vOff = gap + (amp + cardH + 14) * g;
       if (leftRef.current) {
-        leftRef.current.style.transform = narrow ? `translate(-50%, calc(-100% - ${vOff}px))` : `translate(calc(-100% - ${wordOff}px), -50%)`;
+        leftRef.current.style.transform = narrow ? `translate(-50%, calc(-100% - ${vOff}px))` : `translate(calc(-100% - ${(wordOff - pairX).toFixed(1)}px), -50%)`;
         leftRef.current.style.opacity = wordO;
       }
       if (rightRef.current) {
-        rightRef.current.style.transform = narrow ? `translate(-50%, ${vOff}px)` : `translate(${wordOff}px, -50%)`;
+        rightRef.current.style.transform = narrow ? `translate(-50%, ${vOff}px)` : `translate(${(wordOff + pairX).toFixed(1)}px, -50%)`;
         rightRef.current.style.opacity = wordO;
       }
       if (headRef.current) {

@@ -176,13 +176,8 @@ html[data-theme='night'] .lcf-rails::before, html[data-theme='night'] .lcf-rails
 /* once it has gone forward, the previous launch peeks in at the left too */
 .lcr[data-track][data-moved] { clip-path: inset(-40px -100vw); }
 .lcr[data-track][data-dragging] { cursor: grabbing; }
-.lcr[data-track] .lcr-slide {
-  opacity: 1; visibility: hidden; translate: calc(var(--d, 0) * 100% + var(--drag, 0px)) 0; /* edge to edge: no white seams */
-  transition: translate 800ms var(--ease-out), visibility 0s 800ms;
-}
-.lcr[data-track] .lcr-slide[data-near] { visibility: visible; transition: translate 800ms var(--ease-out), visibility 0s; }
+.lcr[data-track] .lcr-slide { opacity: 1; visibility: hidden; transition: none; } /* placed every frame from the reel's position (LaunchesReel.tsx) */
 .lcr[data-track] .lcr-slide:not([data-on]) img.lcr-media { scale: 1; }
-.lcr[data-track][data-dragging] .lcr-slide { transition: none; }
 /* at fractional widths the seam between two launches can show a hairline of the page: fill it dark */
 .lcr[data-track] .lcr-slide { box-shadow: 1px 0 0 #111214, -1px 0 0 #111214; }
 /* the side areas' hover shade does not slide with the launches: it steps aside while they move */

@@ -51,28 +51,31 @@ export default function LaunchesReel({ on, start = 0, alt = false, card = false,
   const [playing, setPlaying] = useState(true); // Float II: play / pause (kept across launches)
   const videoRef = useRef<HTMLVideoElement>(null);
   const n = REEL.length;
-  // track (Float IV): `moved` once the reel has gone forward (from then on the previous launch peeks in
-  // at the left too); `sliding` while a slide runs (the side hover shade steps aside, it does not slide)
+  /* track (Float IV): one continuous position `pos` (launches from `start`, fractional), eased every
+     frame toward `target`, like the page's own smooth scroll. The wheel over the reel, a drag, the
+     arrows and the peeks all just move the target; the reel glides there, and only once the wheel
+     rests does it settle on the nearest launch (eased too). Each slide is placed from `pos` directly.
+     `moved`: it has gone forward (from then on the previous launch peeks in at the left too). */
   const [moved, setMoved] = useState(false);
-  const [sliding, setSliding] = useState(false);
-  const slideT = useRef(0);
+  const movedRef = useRef(false);
+  const pos = useRef(0);
+  const target = useRef(0);
+  const vel = useRef(0); // the spring's speed, launches per second
+  const slideRefs = useRef<(HTMLElement | null)[]>([]);
+  const kick = useRef<() => void>(() => {});
   const go = (d: number) => {
-    setI((v) => (v + d + n) % n);
-    if (!track) return;
-    if (d > 0) setMoved(true);
-    setSliding(true);
-    window.clearTimeout(slideT.current);
-    slideT.current = window.setTimeout(() => setSliding(false), 800);
+    if (!track) { setI((v) => (v + d + n) % n); return; }
+    target.current = Math.round(target.current) + d;
+    kick.current();
   };
-  useEffect(() => () => window.clearTimeout(slideT.current), []);
 
-  /* track: drag the reel sideways. Past 60px a release moves on (left drag: next, right: back);
-     less springs back. A drag never counts as a click on what it started on. */
-  const drag = useRef<{ x: number; id: number; dx: number; on: boolean } | null>(null);
+  /* track: drag the reel sideways (it follows the pointer); past 60px a release moves on (left drag:
+     next, right: back), less springs back. A drag never counts as a click on what it started on. */
+  const drag = useRef<{ x: number; id: number; p0: number; dx: number; on: boolean; t: number; v: number } | null>(null);
   const dragged = useRef(false);
   const onDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!track || !on || e.button !== 0 || (e.target as HTMLElement).closest('a, .lcr-nav')) return;
-    drag.current = { x: e.clientX, id: e.pointerId, dx: 0, on: false };
+    drag.current = { x: e.clientX, id: e.pointerId, p0: pos.current, dx: 0, on: false, t: performance.now(), v: 0 };
     dragged.current = false;
   };
   const onMove = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -80,16 +83,100 @@ export default function LaunchesReel({ on, start = 0, alt = false, card = false,
     if (!g || !el) return;
     g.dx = e.clientX - g.x;
     if (!g.on && Math.abs(g.dx) > 6) { g.on = true; dragged.current = true; el.setPointerCapture(g.id); el.setAttribute('data-dragging', ''); }
-    if (g.on) el.style.setProperty('--drag', `${g.dx.toFixed(1)}px`);
+    if (g.on) {
+      const p = g.p0 - g.dx / el.clientWidth, now = performance.now(), dt = Math.max(1, now - g.t) / 1000;
+      g.v = g.v * 0.6 + ((p - pos.current) / dt) * 0.4; // its speed, smoothed: kept for the release
+      g.t = now;
+      target.current = pos.current = p;
+      kick.current();
+    }
   };
   const onUp = () => {
     const g = drag.current, el = rootRef.current;
     drag.current = null;
     if (!g || !g.on || !el) return;
     el.removeAttribute('data-dragging');
-    el.style.setProperty('--drag', '0px');
-    if (g.dx < -60) go(1); else if (g.dx > 60) go(-1);
+    const p = g.p0 - g.dx / el.clientWidth;
+    target.current = Math.round(p + (g.dx < -60 ? 0.35 : g.dx > 60 ? -0.35 : 0));
+    vel.current = Math.max(-6, Math.min(6, g.v)); // the throw carries into the spring
+    kick.current();
   };
+
+  /* track: scrolling with the pointer over the reel moves it sideways (down: forward) instead of the
+     page, once through: when the first launch is back in the middle the page takes the scroll and
+     goes on to the footer, and from then on the reel leaves the scroll to the page both ways
+     (coming back up from the footer the page simply goes up). It takes the scroll again only after
+     the reel has been left (scrolled back up into the float). Elsewhere the page scrolls as usual. */
+  const onRef = useRef(on);
+  onRef.current = on;
+  const doneRef = useRef(false);
+  useEffect(() => { if (!on) doneRef.current = false; }, [on]);
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!track || !el) return;
+    let raf = 0, last = 0, idle = 0, cur = -1;
+    let dir = 0; // the way the wheel last moved it (+1 forward, −1 back), for the settle
+    const wrap = (x: number) => ((x % n) + n) % n;
+    const paint = () => {
+      const p = pos.current;
+      slideRefs.current.forEach((sl, k) => {
+        if (!sl) return;
+        let d = wrap(k - start - p);
+        if (d > n / 2) d -= n;
+        const near = Math.abs(d) < 1.5;
+        sl.style.visibility = near ? 'visible' : 'hidden';
+        if (near) sl.style.translate = `${(d * 100).toFixed(3)}% 0`;
+      });
+      const idx = wrap(start + Math.round(p));
+      if (idx !== cur) { cur = idx; setI(idx); }
+      if (!movedRef.current && p > 0.5) { movedRef.current = true; setMoved(true); }
+      el.toggleAttribute('data-sliding', Math.abs(target.current - p) > 0.004 || !!drag.current?.on);
+    };
+    const frame = (now: number) => {
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      if (!drag.current?.on) {
+        // a critically damped spring toward the target, in small steps: it eases in and out, the
+        // wheel's separate notches blend into one glide, and it never overshoots
+        const K = 70, C = 2 * Math.sqrt(K);
+        for (let r = dt; r > 0; r -= 1 / 240) {
+          const h = Math.min(r, 1 / 240);
+          vel.current += (K * (target.current - pos.current) - C * vel.current) * h;
+          pos.current += vel.current * h;
+        }
+      }
+      if (Math.abs(target.current - pos.current) < 0.0004 && Math.abs(vel.current) < 0.002) { pos.current = target.current; vel.current = 0; }
+      paint();
+      raf = pos.current !== target.current || vel.current !== 0 || drag.current?.on ? requestAnimationFrame(frame) : 0;
+    };
+    kick.current = () => { if (!raf) { last = performance.now(); raf = requestAnimationFrame(frame); } };
+    paint();
+    const onWheel = (e: WheelEvent) => {
+      if (!onRef.current || e.ctrlKey || doneRef.current) return;
+      const k = e.deltaMode === 1 ? 40 : e.deltaMode === 2 ? el.clientHeight : 1;
+      // twice the wheel's distance sideways: a whole cycle (13 launches) in a reasonable scroll
+      const dy = (Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX) * k * 2;
+      const t = target.current;
+      if (dy < 0 && t <= 0) return; // at the start, going up: the page's
+      e.preventDefault();
+      e.stopPropagation(); // the page's smooth scroll (Lenis, on the window) must not see it either
+      target.current = Math.min(n, Math.max(0, t + dy / el.clientWidth));
+      dir = dy > 0 ? 1 : -1;
+      if (target.current >= n) doneRef.current = true; // the cycle is complete: from now on the page's
+      window.clearTimeout(idle);
+      // once the wheel rests, settle on a launch: the next one the way it was going if it is over a
+      // quarter of the way there, else back to the one it left (the spring eases it in)
+      idle = window.setTimeout(() => {
+        const tt = target.current, f = tt - Math.floor(tt);
+        target.current = Math.min(n, Math.max(0, f < 1e-6 ? tt : dir > 0 ? (f > 0.25 ? Math.ceil(tt) : Math.floor(tt)) : (f < 0.75 ? Math.floor(tt) : Math.ceil(tt))));
+        kick.current();
+      }, 320);
+      kick.current();
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => { el.removeEventListener('wheel', onWheel); window.clearTimeout(idle); cancelAnimationFrame(raf); kick.current = () => {}; };
+  }, [track, n, start]);
+
   const onClickCapture = (e: React.MouseEvent) => {
     if (dragged.current) { e.preventDefault(); e.stopPropagation(); dragged.current = false; }
   };
@@ -133,17 +220,15 @@ export default function LaunchesReel({ on, start = 0, alt = false, card = false,
 
   return (
     <div className="lcr" ref={rootRef} data-alt={alt || undefined} data-card={card || undefined} data-track={track || undefined}
-      data-moved={(track && moved) || undefined} data-sliding={(track && sliding) || undefined}
+      data-moved={(track && moved) || undefined}
       onPointerDown={track ? onDown : undefined} onPointerMove={track ? onMove : undefined} onPointerUp={track ? onUp : undefined}
       onPointerCancel={track ? onUp : undefined} onClickCapture={track ? onClickCapture : undefined}
       role="region" aria-roledescription="carousel" aria-label="Client launches">
       {REEL.map((s, k) => {
         const active = k === i;
-        const d = ((k - i + n + Math.floor(n / 2)) % n) - Math.floor(n / 2); // track: −1 gone left, 0 here, 1 peeking
         const video = LAUNCH_VIDEO[slug(s)];
         return (
-          <figure key={slug(s)} className="lcr-slide" data-on={active || undefined} aria-hidden={!active || undefined}
-            data-near={(track && Math.abs(d) <= 1) || undefined} style={track ? { '--d': d } as React.CSSProperties : undefined}>
+          <figure key={slug(s)} ref={(el) => { slideRefs.current[k] = el; }} className="lcr-slide" data-on={active || undefined} aria-hidden={!active || undefined}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="lcr-media" src={`/assets/launches/hd/${slug(s)}.webp`} alt=""
               loading={k === start || Math.abs(k - i) <= 1 ? 'eager' : 'lazy'} decoding="async" draggable={false} />
