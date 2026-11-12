@@ -194,6 +194,32 @@ export default function ToolsCollage({ theme = 'white' }: { theme?: CollageTheme
   // once a tool is switched (cycle or click) the panel plays its own timed draw-in as usual
   const [switched, setSwitched] = useState(false);
 
+  /* Paper: the paper comes in over the whole screen as a theme change, not as a sheet with a hard
+     top edge. A fixed wash of the paper (first in the body, so under the page's rails) fades in
+     as the section rises into view and out again as it leaves, scroll driven both ways. */
+  useEffect(() => {
+    const s = ref.current;
+    if (!s || theme !== 'paper') return;
+    const wash = document.createElement('div');
+    wash.className = 'tcl-paper-wash';
+    wash.setAttribute('aria-hidden', 'true');
+    document.body.prepend(wash);
+    let raf = 0;
+    const measure = () => {
+      raf = 0;
+      const r = s.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const k = (x: number) => smooth(clamp01(x));
+      const a = Math.min(k((vh - r.top) / (0.75 * vh)), k((r.bottom - 0.1 * vh) / (0.65 * vh)));
+      wash.style.opacity = a.toFixed(4);
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(measure); };
+    measure();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => { cancelAnimationFrame(raf); wash.remove(); window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); };
+  }, [theme]);
+
   // On screen once its top is halfway up (as the other tool layouts); cycles only then.
   useEffect(() => {
     const s = ref.current;

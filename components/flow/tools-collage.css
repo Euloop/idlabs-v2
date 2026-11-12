@@ -18,9 +18,12 @@ section.tcl[data-theme-tc='paper'] {
 /* The paper is on the pinned layer, not the section: it scrolls in and out with the page like
    anything else, and holds still with the content while the section is pinned. One screen of
    it, so the grain is the design's (1280 × 832). */
-section.tcl[data-theme-tc='paper'] .tcl-pin {
-  background: #e6e1d9 url('/assets/tools-collage/paper-surface.webp') center / cover no-repeat;
-}
+/* It comes in as a theme change (ToolsCollage.tsx): one full-screen paper wash, fixed to the
+   screen under the page's rails, fades in and out with the scroll. The section itself is clear
+   (a paper of its own would stack on the wash and show its edge mid-fade). */
+section.tcl[data-theme-tc='paper'] { background: none; }
+.tcl-paper-wash { background: #e6e1d9 url('/assets/tools-collage/paper-surface.webp') center / cover no-repeat; }
+.tcl-paper-wash { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0; }
 
 /* Paper dark (Figma 166:817): the hero's and the footer's dark material, the #2a2c31 ground with
    the hero's paper texture burnt in (as the hero and footer). Its own dark band (the page around stays as it is). The
