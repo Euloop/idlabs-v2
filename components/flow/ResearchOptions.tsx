@@ -2,6 +2,7 @@
 
 import SectionThree, { type Cover } from '../SectionThree';
 import OptionTabs, { useOption } from './OptionTabs';
+import MonoTrail from './MonoTrail';
 
 /* /home-2: the research papers with one of two covers: Paper (the default; each paper's real
    first page as a printed, punched cover, SectionThree's PaperCover) or Site (the live page's
@@ -16,6 +17,8 @@ export default function ResearchOptions({ lead }: { lead?: string }) {
   return (
     <>
       <SectionThree lead={lead} cover={cover} />
+      {/* the mouse leaves a trail of mono characters on the papers' grid band (after paper.design/mono) */}
+      <MonoTrail key={cover} selector="section.s3 .s3-band" />
       <OptionTabs
         groups={[{ label: 'Paper cover', options: COVERS, value: cover, onChange: (v) => pick(v as Cover) }]}
         selector="section.s3" label="Research options" when={arrived}

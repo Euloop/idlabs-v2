@@ -66,7 +66,9 @@ export default function ServicesCards({ light = true, layout }: { light?: boolea
               {SERVICES.map((s, i) => (
                 <li key={s.title} className="svc-cell" style={{ '--i': i } as CSSProperties}>
                   <span className="svc-num" aria-hidden="true">{i + 1}</span>
-                  <h3 className="svc-title">{s.title}</h3>
+                  {/* "Founder &" / "CEO Brand": all three titles on two lines, so the descriptions
+                      start on the same line (phones: one line again, flow.css) */}
+                  <h3 className="svc-title">{s.title === 'Founder & CEO Brand' ? <>Founder &amp;{' '}<br className="svc-br" />CEO Brand</> : s.title}</h3>
                   <p className="svc-text">{s.text}</p>
                   <a className="svc-cta" href="#" aria-label={`${cta.slice(1, -1)}: ${s.title}`}>{cta}</a>
                 </li>

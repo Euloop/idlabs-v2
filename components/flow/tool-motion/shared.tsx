@@ -38,9 +38,21 @@ export function keys(t: number, k: [number, number][]) {
   return k[k.length - 1][1];
 }
 
+/* Real seconds → timeline units. Every loop's story is done by 8.8 units; the rest is closing up
+   and the fade. So the story plays in the first PLAY seconds, holds finished for HOLD, then the
+   last units (closing, fade) run in what is left — the loop always ends complete with the cycle. */
+export const STORY = 8.8;
+const PLAY = 6.6, HOLD = 0.8;
+export function toDesign(r: number) {
+  if (r < PLAY) return (r / PLAY) * STORY;
+  if (r < PLAY + HOLD) return STORY;
+  return STORY + ((r - PLAY - HOLD) / (LOOP - PLAY - HOLD)) * (DESIGN - STORY);
+}
+
 /* The loop's clock, in timeline units (0 … DESIGN). Runs while `playing`; holds where it is otherwise.
    Before it has ever played (and with reduced motion) it shows `poster`. */
-export function useLoop(playing: boolean, poster: number) {
+/* `time` (timeline units) drives the loop from outside instead (the scroll, in Motion Scroll). */
+export function useLoop(playing: boolean, poster: number, time?: number) {
   const [t, setT] = useState(poster);
   const elapsed = useRef(-1);
   useEffect(() => {
@@ -51,13 +63,13 @@ export function useLoop(playing: boolean, poster: number) {
     let raf = 0;
     const tick = (now: number) => {
       elapsed.current = (now - start) / 1000;
-      setT(((elapsed.current % LOOP) / LOOP) * DESIGN);
+      setT(toDesign(elapsed.current % LOOP));
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [playing, poster]);
-  return t;
+  return time ?? t;
 }
 
 export const C = {
@@ -70,6 +82,10 @@ const Clip = createContext('');
 
 export function Frame({ label, title, meta, children }: { label: string; title: string; meta: string; children: ReactNode }) {
   const id = useId().replace(/[^a-zA-Z0-9]/g, '');
+  // drawn in the browser only: the server's and the browser's floating point differ in the last
+  // digits of a few computed positions, which React would report as a hydration mismatch
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
   return (
     <svg className="tm" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={label}>
       <defs>
@@ -82,7 +98,7 @@ export function Frame({ label, title, meta, children }: { label: string; title: 
         <tspan fill={C.faint}>{'  |  '}</tspan>
         {meta}
       </text>
-      <Clip.Provider value={`url(#${id}c)`}>{children}</Clip.Provider>
+      {mounted && <Clip.Provider value={`url(#${id}c)`}>{children}</Clip.Provider>}
     </svg>
   );
 }

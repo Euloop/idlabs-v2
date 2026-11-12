@@ -12,9 +12,10 @@ import OptionTabs, { useOption } from './OptionTabs';
 type Size = 'small' | 'large';
 const SIZES: [Size, string][] = [['small', '12px'], ['large', '20px']];
 
-const PRE = 'Our research lab backpropagates ';
+const PRE = 'We backpropagate ';
 const HL = '500M posts/week';
-const POST = ' to analyse how the algorithm treats each post as it goes through the sourcing and ranking stages.';
+const POST =
+  ' to analyse how the algorithm treats each post as it goes through the sourcing and ranking stages. The dominant patterns that emerge fine-tune our approach and ensure every post or launch we do goes consistently viral.';
 const TEXT = PRE + HL + POST;
 
 const clamp = (v: number) => Math.max(0, Math.min(1, v));

@@ -1,6 +1,6 @@
 'use client';
 
-import { Av, C, Card, Cursor, Frame, click, eout, fmt, keys, loopFade, scenes, seg, useLoop } from './shared';
+import { Av, C, Card, Frame, eout, fmt, loopFade, scenes, seg, useLoop } from './shared';
 
 /* Cluster Penetration: the watched posts with how many of the 11 clusters each reached; the
    pointer opens one and its map replays over the post's first hours — it lives in Founders and
@@ -33,14 +33,10 @@ const INSIGHT = [
   'Tech Twitter, then Media and Finance within 90 minutes, tripling total reach.',
 ];
 
-export default function Clusters({ playing }: { playing: boolean }) {
-  const t = useLoop(playing, 8.4);
+export default function Clusters({ playing, time }: { playing: boolean; time?: number }) {
+  const t = useLoop(playing, 8.4, time);
   const fade = loopFade(t);
   const sc = scenes(t, 3.3);
-  const cx = keys(t, [[1.6, 690], [2.7, 160], [3.4, 160], [4.5, 470], [5.4, 650]]);
-  const cy = keys(t, [[1.6, 350], [2.7, 116], [3.4, 116], [4.5, 140], [5.4, 330]]);
-  const co = Math.min(seg(t, 1.5, 1.8), 1 - seg(t, 4.4, 4.8));
-  const press = click(t, 3.0);
   const hrs = HOURS * seg(t, 3.9, 8.7);
   const grow = BUBS.map((b) => eout(seg(hrs, b.s, b.e)));
   const reached = BUBS.filter((b, i) => !b.dashed && grow[i] > 0.04).length;
@@ -175,7 +171,6 @@ export default function Clusters({ playing }: { playing: boolean }) {
             <text x={692} y={338} textAnchor="end" className="tm-m" fontSize={6.3} fill={C.mute}>+6.5h</text>
           </g>
         )}
-        {co > 0 && <Cursor x={cx} y={cy} press={press} o={co} />}
       </g>
     </Frame>
   );

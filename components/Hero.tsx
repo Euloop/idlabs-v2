@@ -40,6 +40,8 @@ export default function Hero() {
           {/* Construction artwork (Figma 109:716), revealed outward from the spiral's eye. */}
           <div className="spiral-box" aria-hidden="true">
             <img className="spiral" src="/assets/golden-icon.svg" width={1006.88} height={592.795} alt="" />
+            {/* the light hero's (/home-2, ?hero=light): one more turn, a small grey eye */}
+            <img className="spiral spiral-light" src="/assets/golden-icon-light.svg" width={1006.88} height={592.795} alt="" loading="lazy" />
           </div>
 
           <div className="cell cell-small">

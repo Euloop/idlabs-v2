@@ -276,7 +276,29 @@ section.tcl[data-gather] .tcl-frame::before {
 .tm text { font-family: var(--sans); }
 .tm .tm-m, .tm .tm-m tspan, .tm tspan.tm-m { font-family: var(--mono); }
 .tm .tm-title { font-size: 15px; font-weight: 450; fill: #1c1b19; }
-section.tcl[data-motion] .tcl-note { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+/* Motion Scroll: the pin runs on through the four tools (live at 2.7, a screen each, a hold) */
+section.tcl[data-scroll] { height: 780svh; } /* live at 2.7, a screen per tool, then the release */
+/* the immersive build: nothing in the card is clickable until the card is in */
+section.tcl[data-immersive]:not([data-built]) .tcl-card { pointer-events: none; }
+section.tcl[data-immersive]:not([data-built]) .tcl-card * { pointer-events: none !important; }
+/* the intro's highlight: a dark bar wipes across the phrase, letters turning white (as .rl-hl) */
+.tcl-intro .tc-hlg { white-space: nowrap; }
+.tcl-intro .tc.tc-hl { transition: opacity 120ms linear, background-color 120ms linear, color 120ms linear; padding-block: 2px; }
+.tcl-intro .tc.tc-hl.lit { background: #1f1f1f; color: #fff; }
+.tcl-intro .tc-hl-a { padding-left: 4px; margin-left: -1px; }
+.tcl-intro .tc-hl-b { padding-right: 4px; margin-right: -1px; }
+@media (max-width: 719px) { section.tcl[data-scroll] { height: auto; } }
+/* Motion: all the text in the left column (the notes between the lead and the tool names), the
+   walkthrough beside it, larger (ToolsCollage.tsx MOTION_RECT) */
+/* one column, one width (title to the tool names): the lead and the two notes flow under the
+   title with even gaps, no rules; the names at the foot */
+section.tcl[data-motion] .tcl-list { width: calc(236 * var(--u)); top: calc(342 * var(--u)); }
+.tcl-mnotes {
+  position: absolute; left: calc(42 * var(--u)); top: calc(86 * var(--u)); width: calc(236 * var(--u));
+  display: grid; gap: calc(16 * var(--u)); pointer-events: auto;
+}
+.tcl-mnotes .tcl-lead, .tcl-mnotes .tcl-note { position: static; width: auto; margin: 0; }
 @media (max-width: 719px) {
   section.tcl[data-motion] .tcl-shot.tcl-motion { display: block; aspect-ratio: 720 / 370; }
+  .tcl-mnotes { position: static; width: auto; }
 }

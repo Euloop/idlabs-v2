@@ -132,10 +132,10 @@ html[data-footer] .opt-tabs[data-on]:not([aria-label='Footer options']) { opacit
 .bs-cover { transform: translateZ(calc(var(--t) / 2)); }
 .bs-back { transform: translateZ(calc(var(--t) / -2)) rotateY(180deg); filter: brightness(.8); }
 .bs-spine { left: calc(var(--t) / -2); width: var(--t); color: var(--ink); transform: rotateY(-90deg); }
-/* page block (fore edge): cream pages */
+/* page block (fore edge): off-white pages */
 .bs-pages {
   left: calc(var(--w) - var(--t) / 2); width: var(--t); top: 3px; height: calc(100% - 6px);
-  background: #e6e0d2 repeating-linear-gradient(90deg, rgb(0 0 0 / .08) 0 1px, transparent 1px 3px);
+  background: #e2e2df repeating-linear-gradient(90deg, rgb(0 0 0 / .08) 0 1px, transparent 1px 3px);
   transform: rotateY(90deg);
 }
 

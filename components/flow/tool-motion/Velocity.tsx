@@ -1,6 +1,6 @@
 'use client';
 
-import { Av, C, Card, Cursor, Frame, Spark, click, eout, fmt, keys, lerp, loopFade, rng, scenes, seg, useLoop } from './shared';
+import { Av, C, Card, Frame, Spark, eout, fmt, lerp, loopFade, rng, scenes, seg, useLoop } from './shared';
 
 /* Post Velocity: the posts in flight, sorted by acceleration, each with its first-hour
    sparkline; the pointer opens the fastest one and its total-views curve is sampled out to now —
@@ -38,14 +38,10 @@ const EVENTS = [
 ];
 const BUCKET_TONE = ['#d6d4cd', '#cfe0e0', '#e6e4de', '#e6e4de', '#e6e4de', '#e6e4de', '#cfe0e0', '#dccfb2', '#e6e4de'];
 
-export default function Velocity({ playing }: { playing: boolean }) {
-  const t = useLoop(playing, 7.6);
+export default function Velocity({ playing, time }: { playing: boolean; time?: number }) {
+  const t = useLoop(playing, 7.6, time);
   const fade = loopFade(t);
   const sc = scenes(t, 3.3);
-  const cx = keys(t, [[1.6, 690], [2.7, 236], [3.4, 236], [4.6, 520], [5.6, 640]]);
-  const cy = keys(t, [[1.6, 350], [2.7, 112], [3.4, 112], [4.6, 200], [5.6, 300]]);
-  const co = Math.min(seg(t, 1.5, 1.8), 1 - seg(t, 4.6, 5.0));
-  const press = click(t, 3.0);
   const sweep = NOW * seg(t, 3.8, 7.4); // sampled up to this minute
   const proj = eout(seg(t, 7.45, 8.6));
 
@@ -198,7 +194,6 @@ export default function Velocity({ playing }: { playing: boolean }) {
             <rect x={496} y={346} width={196 * (9 / 31)} height={3} rx={1.5} fill="#d6d4cd" />
           </g>
         )}
-        {co > 0 && <Cursor x={cx} y={cy} press={press} o={co} />}
       </g>
     </Frame>
   );

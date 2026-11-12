@@ -64,27 +64,27 @@ const OPEN_EXTRA = 0.883 * W0 + 10 - 0.265 * 44; // an average book opening adds
 const HOVER_MS = 110;
 
 /* "il": every book bound in Identity Labs' colours instead of its own (the client: "have these
-   books colour in IL"). The IL feel: dark browns, greys, black and old paper — an archive shelf.
-   No bright accents. Darks carry the shelf; old-paper spines break it up. Titles are old paper on
-   the darks and dark brown on the papers. Placed by hand so neighbours always part. */
+   books colour in IL"). Black, greys and whites only (no browns): darks carry the shelf, the
+   white spines break it up. Titles are light grey on the darks and near-black on the lights.
+   Placed by hand so neighbours always part. */
 export type ShelfPalette = 'classic' | 'il';
 const IL: Record<string, [string, string]> = {
-  espresso: ['#2b211a', '#e6dcc6'],
-  brown: ['#3d2f24', '#d9cdb4'],
-  walnut: ['#5a4535', '#e9e0cc'],
-  umber: ['#6e5a48', '#efe7d6'],
-  black: ['#141414', '#cfc6b4'],
-  charcoal: ['#232325', '#bfb6a4'],
-  slate: ['#4a4a48', '#e6e1d9'],
-  grey: ['#7d7a74', '#1c1b19'],
-  warmgrey: ['#a19a8f', '#241d17'],
-  oldpaper: ['#e6dcc6', '#3d2f24'],
-  aged: ['#d9ccb0', '#2b211a'],
-  parchment: ['#efe7d6', '#5a4535'],
+  ink: ['#1c1c1d', '#e4e4e2'],
+  graphite: ['#2e2e30', '#d6d6d4'],
+  iron: ['#4d4d4f', '#ececea'],
+  ash: ['#626264', '#f0f0ee'],
+  black: ['#141414', '#cfcfcd'],
+  charcoal: ['#232325', '#bdbdbb'],
+  slate: ['#4a4a4a', '#e6e6e4'],
+  grey: ['#7d7d7d', '#1c1c1c'],
+  silver: ['#a3a3a1', '#1f1f1f'],
+  white: ['#e4e4e1', '#2a2a2a'],
+  mist: ['#d2d2cf', '#232323'],
+  paper: ['#f0f0ed', '#4a4a4a'],
 };
 const IL_ORDER = [
-  'espresso', 'oldpaper', 'black', 'walnut', 'slate', 'aged', 'brown', 'charcoal', 'parchment', 'umber', 'black', 'grey',
-  'espresso', 'oldpaper', 'slate', 'walnut', 'warmgrey', 'black', 'aged', 'brown', 'charcoal', 'parchment', 'umber', 'black',
+  'ink', 'white', 'black', 'iron', 'slate', 'mist', 'graphite', 'charcoal', 'paper', 'ash', 'black', 'grey',
+  'ink', 'white', 'slate', 'iron', 'silver', 'black', 'mist', 'graphite', 'charcoal', 'paper', 'ash', 'black',
 ];
 function colours(b: Book, i: number, palette: ShelfPalette) {
   if (palette !== 'il') return { bg: b.bg, ink: b.ink };

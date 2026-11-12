@@ -81,6 +81,7 @@ body:has(.s2-flow) .svc { transition: --c-line 400ms ease, --c-ink 400ms ease, -
 
 /* Narrow: the cells stack; the section grows past one screen (no pin) */
 @media (max-width: 759px) {
+  .svc-br { display: none; }
   .svc-grid { grid-template-columns: 1fr; }
   .svc-cell { min-height: 0; }
   .svc-cta { margin-top: 32px; }

@@ -8,6 +8,7 @@ import SiteChrome from '../../components/SiteChrome';
 import ServicesOptions from '../../components/flow/ServicesOptions';
 import LaunchesOptions from '../../components/flow/LaunchesOptions';
 import ThemeDriver from '../../components/flow/ThemeDriver';
+import HeroOptions from '../../components/flow/HeroOptions';
 import SiteFooter from '../../components/flow/SiteFooter';
 
 /* /home-2: the full home page with Section 2's funnel diagram replaced by the client's pipeline
@@ -28,6 +29,8 @@ export default function Home2() {
       {/* page marker: the /home-2 styles key off body:has(.s2-flow), whichever Section 2 is shown */}
       <span className="s2-flow" hidden />
       <Hero />
+      {/* The hero dark (as live) or light (Dark · Light tabs at the bottom, ?hero=). */}
+      <HeroOptions />
       {/* One Section 2 at a time, in the style picked with the switch at the bottom (or ?style=).
           The page stays light after the hero: the dark tools and services copies are hidden. */}
       <Section2Options />

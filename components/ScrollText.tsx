@@ -9,30 +9,41 @@ import { useEffect, useImperativeHandle, useRef, type ElementType, type Ref } fr
    just transparent, so wrapping is identical at any progress and the text box can be measured
    any time. Driven imperatively (ref.set) so scrolling doesn't re-render React. */
 
-export type ScrollTextHandle = { set: (p: number, text?: string) => void };
+export type ScrollTextHandle = { set: (p: number, text?: string) => void; light?: (q: number) => void };
 
 type Props = {
   text: string;
   as?: ElementType;
   className?: string;
   probs?: boolean;
+  /* a phrase to highlight: its words are kept on one line, and light(q) wipes a dark bar across
+     its letters (0 → 1), each letter turning white as the bar passes (as "500M posts/week") */
+  hl?: string;
   ref?: Ref<ScrollTextHandle>;
 };
 
 const rand = (i: number) => { const x = Math.sin(i * 12.9898 + 78.233) * 43758.5453; return x - Math.floor(x); };
 
-export default function ScrollText({ text, as: Tag = 'p', className, probs = false, ref }: Props) {
+export default function ScrollText({ text, as: Tag = 'p', className, probs = false, hl, ref }: Props) {
   const inner = useRef<HTMLSpanElement>(null);
   const srRef = useRef<HTMLSpanElement>(null);
-  const st = useRef({ built: '', chars: [] as HTMLElement[], words: [] as HTMLElement[], wordOf: [] as number[], n: 0, pw: -1, p: 0 });
+  const st = useRef({ built: '', chars: [] as HTMLElement[], words: [] as HTMLElement[], wordOf: [] as number[], n: 0, pw: -1, p: 0, hlc: [] as HTMLElement[], m: 0 });
 
   const build = (t: string) => {
     const el = inner.current;
     if (!el) return;
     const s = st.current;
     el.textContent = '';
-    s.chars = []; s.words = []; s.wordOf = [];
+    s.chars = []; s.words = []; s.wordOf = []; s.hlc = []; s.m = 0;
+    const h0 = hl ? t.indexOf(hl) : -1, h1 = h0 + (hl?.length ?? 0);
+    let group: HTMLElement | null = null, pos = 0;
     (t.match(/\S+\s*|\s+/g) ?? []).forEach((w) => {
+      const w0 = pos, w1 = pos + w.length;
+      pos = w1;
+      // the highlighted phrase's words go into one no-wrap group
+      const inHl = h0 >= 0 && w0 < h1 && w1 > h0;
+      if (inHl && !group) { group = document.createElement('span'); group.className = 'tc-hlg'; el.appendChild(group); }
+      if (!inHl) group = null;
       const ws = document.createElement('span');
       ws.className = 'tw-w';
       const wi = s.words.length;
@@ -40,13 +51,17 @@ export default function ScrollText({ text, as: Tag = 'p', className, probs = fal
         const c = document.createElement('span');
         c.className = 'tc';
         c.textContent = ch;
+        const at = w0 + ws.childNodes.length;
+        if (h0 >= 0 && at >= h0 && at < h1) { c.classList.add('tc-hl'); s.hlc.push(c); }
         ws.appendChild(c);
         s.chars.push(c);
         s.wordOf.push(wi);
       }
-      el.appendChild(ws);
+      (group ?? el).appendChild(ws);
       s.words.push(ws);
     });
+    s.hlc[0]?.classList.add('tc-hl-a');
+    s.hlc[s.hlc.length - 1]?.classList.add('tc-hl-b');
     s.built = t; s.n = 0; s.pw = -1;
     if (srRef.current) srRef.current.textContent = t;
   };
@@ -78,7 +93,15 @@ export default function ScrollText({ text, as: Tag = 'p', className, probs = fal
     }
   };
 
-  useImperativeHandle(ref, () => ({ set }));
+  const light = (q: number) => {
+    const s = st.current;
+    const m = Math.round(Math.max(0, Math.min(1, q)) * s.hlc.length);
+    if (m === s.m) return;
+    if (m > s.m) for (let i = s.m; i < m; i++) s.hlc[i].classList.add('lit');
+    else for (let i = m; i < s.m; i++) s.hlc[i].classList.remove('lit');
+    s.m = m;
+  };
+  useImperativeHandle(ref, () => ({ set, light }));
   useEffect(() => { build(text); set(st.current.p); }, [text]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (

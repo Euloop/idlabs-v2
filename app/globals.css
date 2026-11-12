@@ -141,6 +141,7 @@ html[data-theme='light'] .frame.rails > .rails-light { opacity: 1; }
   /* Revealed outward from the spiral's eye (unmirrored artwork coordinates). */
   animation: reveal 1800ms var(--ease-out) 150ms both;
 }
+.spiral.spiral-light { display: none; } /* the light hero's copy (/home-2, flow.css) */
 .cell { position: relative; min-width: 0; }
 .cell-small { grid-column: 1; grid-row: 1; padding: calc(30 * var(--gu)) 0 0 calc(23 * var(--gu)); }
 .cell-large { grid-column: 2; grid-row: 1 / span 2; padding: calc(30 * var(--gu)) 0 0 calc(48 * var(--gu)); }

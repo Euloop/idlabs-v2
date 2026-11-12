@@ -1,6 +1,6 @@
 'use client';
 
-import { Av, C, Card, Cursor, Frame, Pill, click, eout, fmt, keys, lerp, loopFade, scenes, seg, useLoop } from './shared';
+import { Av, C, Card, Frame, Pill, eout, fmt, lerp, loopFade, scenes, seg, useLoop } from './shared';
 
 /* Weighted Engagement: the scored feed (the action weights up top, each post's weighted score
    counting up), the pointer opens the top post, and its breakdown builds — the score, what each
@@ -48,14 +48,10 @@ const curve = (top: number, k: number, p: number) => {
   return d;
 };
 
-export default function Weighted({ playing }: { playing: boolean }) {
-  const t = useLoop(playing, 7);
+export default function Weighted({ playing, time }: { playing: boolean; time?: number }) {
+  const t = useLoop(playing, 7, time);
   const fade = loopFade(t);
   const sc = scenes(t, 3.35);
-  const cx = keys(t, [[1.8, 690], [2.9, 196], [3.6, 196], [4.4, 470], [5.4, 600]]);
-  const cy = keys(t, [[1.8, 352], [2.9, 140], [3.6, 140], [4.4, 120], [5.4, 250]]);
-  const co = Math.min(seg(t, 1.7, 2.0), 1 - seg(t, 5.2, 5.6));
-  const press = click(t, 3.15);
   const score = eout(seg(t, 3.9, 5.4));
 
   return (
@@ -195,7 +191,6 @@ export default function Weighted({ playing }: { playing: boolean }) {
             <text x={692} y={347} textAnchor="end" className="tm-m" fontSize={7.5} fill={C.ink} opacity={seg(t, 7.0, 7.4)}>+53</text>
           </g>
         )}
-        {co > 0 && <Cursor x={cx} y={cy} press={press} o={co} />}
       </g>
     </Frame>
   );

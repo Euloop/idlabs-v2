@@ -390,7 +390,7 @@ html:has(body .s2-flow), body:has(.s2-flow) { overflow-x: clip; }
   position: relative; margin-inline: auto; height: 50svh; min-height: 280px; display: grid; place-items: center;
 }
 .rl-text {
-  margin: 0; width: min(100% - 32px, 322px); text-align: center; /* 322: the same four lines at the wider spacing */
+  margin: 0; width: min(100% - 32px, 512px); text-align: center;
   font-family: var(--mono); font-size: 12px; line-height: 1.6; letter-spacing: 0.06em; text-transform: uppercase; color: #3a3a3a;
 }
 .rl-hl {
@@ -401,3 +401,30 @@ html:has(body .s2-flow), body:has(.s2-flow) { overflow-x: clip; }
 /* Large (the 20px tab): same four lines, a wider column */
 .rl[data-size='large'] .rl-text { width: min(100% - 32px, 520px); font-size: 20px; line-height: 1.45; letter-spacing: 0.02em; }
 .rl[data-size='large'] .rl-hl { padding: 2px 6px; margin-inline: -2px; }
+
+/* ───────── Hero, Light (/home-2, HeroOptions.tsx: html[data-hero='light']) ─────────
+   The hero on the white page: the page, its texture, the rules and markers, the header, the type,
+   the logo tiles and their logos all in the light colours. The theme switch is as before (the
+   hero still fades into Section 2 when the lights come up — white to white now). */
+html[data-hero='light'] { background: #fff; color-scheme: light; }
+html[data-hero='light'] .backdrop, html[data-hero='light'] .backdrop-dark { background: #fff; }
+html[data-hero='light'] .backdrop .texture { display: none; }
+html[data-hero='light'] .hero {
+  --ink: #1f1f1f; --body-ink: #5e5e5e; --rule: #e6e6e6; --tile: transparent; --tile-hover: transparent;
+  color: var(--ink);
+}
+html[data-hero='light'] body:has(.s2-flow) .hero .tick { background: #e6e6e6; }
+html[data-hero='light'] .hero .glow { display: none; }
+/* the logos are drawn light grey and white for the dark tiles: turned dark here */
+html[data-hero='light'] .hero .logo { filter: grayscale(1) invert(1) brightness(.55); }
+/* the frame rules: the light pair at once (they are white-page grey already) */
+html[data-hero='light'] .frame.rails > .rails-light { opacity: 1; }
+/* the header, until a dark band (night, footer, a dark section) takes it */
+html[data-hero='light']:not([data-theme='night']):not([data-over-dark]):not([data-over-footer]) .chrome .s2-header .wordmark { color: #4a4a4a; }
+html[data-hero='light']:not([data-theme='night']):not([data-over-dark]):not([data-over-footer]) .chrome-nav .roll { color: #4a4a4a; }
+html[data-hero='light']:not([data-theme='night']):not([data-over-dark]):not([data-over-footer]) .chrome-nav .roll-track > span + span { color: #1f1f1f; }
+/* the spiral: the light copy (one more turn, a small grey eye) in place of the dark one */
+html[data-hero='light'] .spiral.spiral-light { display: block; }
+html[data-hero='light'] .spiral:not(.spiral-light) { display: none; }
+/* the research papers' mouse trail (MonoTrail.tsx): a canvas filling the grid band, behind the papers */
+.mono-trail { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }

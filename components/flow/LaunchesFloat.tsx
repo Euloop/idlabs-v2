@@ -28,6 +28,7 @@ const rnd = (i: number) => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453;
 const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const span = (v: number, a: number, b: number) => clamp((v - a) / (b - a));
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2); // in-out cubic
+const easeSine = (t: number) => (1 - Math.cos(Math.PI * t)) / 2; // in-out sine
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
 
@@ -89,12 +90,18 @@ const HERO = (() => {
 const HERO_SLIDE = Math.max(0, REEL.indexOf(TILES[HERO]?.l as Launch));
 /* Timeline, in screens of scroll from the pin's start. The first FIELD screens are the load,
    scatter and float (as fractions of it, `prog`); then the zoom and the reel. */
-const FIELD = 3.2, ZOOM = [3.2, 3.9], REEL_IN = [3.82, 3.98], REEL_UI = [3.95, 4.2];
+// the zoom over 1.1 screens (was 0.7: too fast), the reel in front at its end
+const FIELD = 3.2, ZOOM = [3.2, 4.3], REEL_IN = [4.22, 4.38], REEL_UI = [4.35, 4.6];
 
 
 /* alt (Float II): the words read "Launches" / "we have done"; no headline over the field (it stays
-   for screen readers); the reel in its alt dress (LaunchesReel.tsx). */
-export default function LaunchesFloat({ alt = false }: { alt?: boolean }) {
+   for screen readers); the reel in its alt dress (LaunchesReel.tsx).
+   card (Float III): the zoom settles the launch in the centre between the margin lines (the frame's
+   width, 16:9) instead of filling the screen; the rest of the field fades away under it, and the
+   reel takes the card's place with prev / next chevrons in the side margins. */
+/* track (Float IV): the card as a track of launches, the next one peeking in past the right margin
+   (tryprofound.com's story cards). */
+export default function LaunchesFloat({ alt = false, card = false, track = false }: { alt?: boolean; card?: boolean; track?: boolean }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLElement | null)[]>([]);
@@ -148,7 +155,7 @@ export default function LaunchesFloat({ alt = false }: { alt?: boolean }) {
       const cardH = Math.max(34, Math.min(W * 0.042, 58));
       const gl = span(load, 0.02, 0.92), g = mix(1 - (1 - gl) * (1 - gl), ease(gl), 0.4); // opens quickly at first: room for the first cards
       const t = clock / 1000;
-      const z = ease(span(ys, ZOOM[0], ZOOM[1]));        // the zoom into the hero launch
+      const z = easeSine(span(ys, ZOOM[0], ZOOM[1]));    // the zoom into the hero launch (a gentle in-out: no rush in the middle)
       const reelIn = span(ys, REEL_IN[0], REEL_IN[1]);
       const ui = ease(span(ys, REEL_UI[0], REEL_UI[1]));
 
@@ -182,16 +189,20 @@ export default function LaunchesFloat({ alt = false }: { alt?: boolean }) {
 
       // 4 · zoom: only the hero tile moves — it grows from its place to the full stage (its picture
       // covers); the rest of the field stays exactly as it is, underneath.
+      // Float III: the target is a card between the margin lines, a little below the middle
+      const TW = card ? Math.min(W, (root.querySelector('.lcf-rails') as HTMLElement | null)?.offsetWidth ?? W) : W;
+      const TH = card ? Math.min(TW * 9 / 16, H * 0.74) : H;
+      const TY = card ? Math.min(H * 0.035, (H - TH) / 2) : 0;
       const h0 = P[HERO];
       const hw = h0 ? h0.fw * h0.sc : W, hh = h0 ? h0.fh * h0.sc : H;
-      const cx = h0 ? mix(h0.x, 0, z) : 0, cy = h0 ? mix(h0.y, 0, z) : 0;
+      const cx = h0 ? mix(h0.x, 0, z) : 0, cy = h0 ? mix(h0.y, TY, z) : TY;
       TILES.forEach((tile, i) => {
         const el = cardRefs.current[i];
         const p = P[i];
         if (!el || !p) return;
         if (i === HERO) {
-          el.style.width = `${mix(hw, W, z).toFixed(1)}px`;
-          el.style.height = `${mix(hh, H, z).toFixed(1)}px`;
+          el.style.width = `${mix(hw, TW, z).toFixed(1)}px`;
+          el.style.height = `${mix(hh, TH, z).toFixed(1)}px`;
           el.style.transform = `translate3d(${cx.toFixed(1)}px, ${cy.toFixed(1)}px, 0)${z > 0 ? '' : ` scale(${(p.sc).toFixed(4)})`}`;
           if (z <= 0) { el.style.width = `${p.fw.toFixed(1)}px`; el.style.height = `${p.fh.toFixed(1)}px`; }
           el.style.zIndex = z > 0 ? '950' : String(p.si > 0.5 ? Math.round(tile.d * 100) : 200 + Math.round((1 - p.from) * 100));
@@ -203,7 +214,7 @@ export default function LaunchesFloat({ alt = false }: { alt?: boolean }) {
           el.style.transform = `translate3d(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px, 0) scale(${p.sc.toFixed(4)})`;
           el.style.zIndex = String(p.si > 0.5 ? Math.round(tile.d * 100) : 200 + Math.round((1 - p.from) * 100));
         }
-        el.style.opacity = String(p.b);
+        el.style.opacity = String(card && i !== HERO ? p.b * (1 - z) : p.b);
         // blank tiles carry a picture in the ribbon (cycled), which fades as they land
         el.style.setProperty('--pic', tile.l ? '1' : String(1 - span(p.si, 0.35, 0.85)));
         el.toggleAttribute('data-live', p.si > 0.98 && z <= 0);
@@ -211,6 +222,12 @@ export default function LaunchesFloat({ alt = false }: { alt?: boolean }) {
 
       // 5 · the reel comes in front of the zoomed launch (same picture: no visible cut)
       if (reelRef.current) {
+        if (card) { // the reel takes the card's place exactly (same picture: no visible cut)
+          const rs = reelRef.current.style;
+          rs.left = `${((W - TW) / 2).toFixed(1)}px`; rs.top = `${((H - TH) / 2 + TY).toFixed(1)}px`;
+          rs.width = `${TW.toFixed(1)}px`; rs.height = `${TH.toFixed(1)}px`;
+          rs.setProperty('--gut', `${((W - TW) / 2).toFixed(1)}px`);
+        }
         reelRef.current.style.opacity = String(reelIn);
         reelRef.current.style.setProperty('--ui', ui.toFixed(3));
         reelRef.current.style.visibility = reelIn > 0 ? 'visible' : 'hidden';
@@ -221,7 +238,7 @@ export default function LaunchesFloat({ alt = false }: { alt?: boolean }) {
       // the fixed header turns light while the dark reel is behind it
       const wm = document.querySelector('.chrome .wordmark')?.getBoundingClientRect();
       const line = wm ? wm.top + wm.height / 2 : 34;
-      const sr = stage.getBoundingClientRect();
+      const sr = (card && reelRef.current ? reelRef.current : stage).getBoundingClientRect();
       const dark = reelIn > 0.5 && sr.top < line && sr.bottom > line;
       if (dark !== overDark) { overDark = dark; document.documentElement.toggleAttribute('data-over-dark', dark); }
 
@@ -304,7 +321,7 @@ export default function LaunchesFloat({ alt = false }: { alt?: boolean }) {
           </div>
         )}
         <div className="lcf-reel" ref={reelRef}>
-          <LaunchesReel on={reelOn} start={HERO_SLIDE} alt={alt} />
+          <LaunchesReel on={reelOn} start={HERO_SLIDE} alt={alt} card={card} track={track} />
         </div>
       </div>
     </div>

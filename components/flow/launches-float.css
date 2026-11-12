@@ -1,6 +1,6 @@
 /* Launches "Float" (LaunchesFloat.tsx): a pinned, full-width stage, sticking for most of the section. Positions are written every frame from the script. */
 
-.lcf { position: relative; height: 560svh; } /* 4.6 screens pinned: load, scatter, float (3.2), zoom, the reel and a short hold */
+.lcf { position: relative; height: 600svh; } /* 5 screens pinned: load, scatter, float (3.2), zoom (1.1), the reel and a short hold */
 .lcf-stage {
   position: sticky; top: 0; width: 100%; height: 100svh; overflow: hidden;
 }
@@ -123,7 +123,13 @@ html[data-theme='night'] .lcf-rails::before, html[data-theme='night'] .lcf-rails
 @keyframes lcr-in { from { opacity: 0; translate: 0 10px; } }
 
 /* Float II (data-alt): a smaller reach, the line under it in mono; prev / next areas at each side */
-.lcr[data-alt] .lcr-reach { font-size: clamp(24px, 2.5vw, 42px); line-height: 1.05; }
+/* Float II: IBM Plex Mono at Profound's stat size (56px on a 64px line, smaller on narrow screens) */
+.lcr[data-alt] .lcr-reach { font-family: var(--mono); font-size: clamp(34px, 3.9vw, 56px); line-height: 1.14; letter-spacing: -0.02em; text-transform: uppercase; }
+/* the post link: no underline, the arrow says it */
+.lcr[data-alt] .lcr-sub a { text-decoration: none; }
+.lcr[data-alt] .lcr-sub a:hover { opacity: 1; color: #fff; }
+.lcr[data-alt] .lcr-sub a span { display: inline-block; transition: translate 200ms var(--ease-out); }
+.lcr[data-alt] .lcr-sub a:hover span { translate: 1px -1px; }
 .lcr[data-alt] .lcr-sub { margin-top: 10px; font-family: var(--mono); font-size: 12px; line-height: 1.6; letter-spacing: .01em; }
 .lcr-side {
   position: absolute; top: 0; bottom: 0; width: min(22vw, 320px); padding: 0; border: 0; background: none; color: #fff; cursor: pointer;
@@ -158,6 +164,38 @@ html[data-theme='night'] .lcf-rails::before, html[data-theme='night'] .lcf-rails
 }
 .lcr[data-alt] .lcr-btn { width: 32px; height: 32px; color: rgb(255 255 255 / .62); border-color: rgb(255 255 255 / .18); }
 .lcr[data-alt] .lcr-btn svg { width: 12px; height: 12px; }
+
+/* Float III (data-card): a card between the margin lines (LaunchesFloat.tsx), the caption and
+   controls inside it, the side areas inside it as in Float II (--gut: the margin's width, for Float IV's peeks) */
+.lcr[data-card] { overflow: visible; }
+.lcr[data-card] .lcr-slide { overflow: hidden; }
+.lcr[data-card] .lcr-cap, .lcr[data-card] .lcr-nav { bottom: max(28px, 5.5%); }
+/* Float IV (data-track): the launches side by side, sliding across; the next peeks in past the
+   right edge (to the screen's edge), anything to the left is clipped at the card */
+.lcr[data-track] { clip-path: inset(-40px -100vw -40px 0); touch-action: pan-y; cursor: grab; user-select: none; }
+/* once it has gone forward, the previous launch peeks in at the left too */
+.lcr[data-track][data-moved] { clip-path: inset(-40px -100vw); }
+.lcr[data-track][data-dragging] { cursor: grabbing; }
+.lcr[data-track] .lcr-slide {
+  opacity: 1; visibility: hidden; translate: calc(var(--d, 0) * 100% + var(--drag, 0px)) 0; /* edge to edge: no white seams */
+  transition: translate 800ms var(--ease-out), visibility 0s 800ms;
+}
+.lcr[data-track] .lcr-slide[data-near] { visibility: visible; transition: translate 800ms var(--ease-out), visibility 0s; }
+.lcr[data-track] .lcr-slide:not([data-on]) img.lcr-media { scale: 1; }
+.lcr[data-track][data-dragging] .lcr-slide { transition: none; }
+/* at fractional widths the seam between two launches can show a hairline of the page: fill it dark */
+.lcr[data-track] .lcr-slide { box-shadow: 1px 0 0 #111214, -1px 0 0 #111214; }
+/* the side areas' hover shade does not slide with the launches: it steps aside while they move */
+.lcr[data-track]:is([data-sliding], [data-dragging]) .lcr-side::before { opacity: 0; transition: opacity 120ms ease; }
+.lcr-peekhit[data-side='l'] { left: auto; right: 100%; }
+.lcr-peekhit { position: absolute; top: 0; bottom: 0; left: 100%; width: var(--gut, 0px); padding: 0; border: 0; background: none; cursor: pointer; opacity: var(--ui, 1); }
+.lcr[data-track] .lcr-sub a {
+  display: block; width: max-content; margin-top: 16px; padding: 7px 12px; border-radius: 4px;
+  background: rgb(255 255 255 / .16); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  text-decoration: none; transition: background-color 200ms ease;
+}
+.lcr[data-track] .lcr-sub a:hover { opacity: 1; background: rgb(255 255 255 / .26); }
+
 .lcr[data-alt] .lcr-btn:hover { color: #fff; background: rgb(255 255 255 / .08); border-color: rgb(255 255 255 / .4); }
 
 @media (max-width: 759px) {

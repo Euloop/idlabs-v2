@@ -12,7 +12,14 @@ import Clusters from './tool-motion/Clusters';
 /* Motion (the "Motion" layout, White): in place of the two screenshots, one window per tool
    playing a walkthrough of the tool's own UI (tool-motion/), a loop per turn of the cycle. */
 const LOOPS = [Classifier, Weighted, Velocity, Clusters];
-const MOTION_RECT = { x: 384, y: 96, w: 552, h: 284 };
+/* Motion: the walkthrough window, as large as the card allows beside a narrower text column (the
+   client: all the text on the left, the walkthrough bigger). 720:370, centred on the card's height. */
+const MOTION_RECT = { x: 306, y: 68.5, w: 642, h: 330 };
+/* Motion Scroll (scroll): no cycle — once the card is in, the section stays pinned and the scroll
+   moves through the tools, PER screens each; each tool's walkthrough plays on its own clock (from
+   its start when the tool comes up, looping while it stays). The active name's bar shows how far
+   through its stretch you are; a name click scrolls to that tool. Phones (no pin) keep the cycle. */
+const PER = 1.0, HOLD_AT = 0.86; // a screen per tool (was 1.6: the client found it long)
 
 /* Analytical tools, "Collage" layout (/home-2; option to Graph, Device and Stack). Figma
    "Tool section variant 4" (163:713, white) and "… - paper light theme" (165:762). A collage of
@@ -201,7 +208,7 @@ function Scraps({ blur = false }: { blur?: boolean }) {
 
 export type CollageTheme = 'white' | 'gather' | 'paper' | 'dark';
 
-export default function ToolsCollage({ theme = 'white', motion = false, intro = 'small' }: { theme?: CollageTheme; motion?: boolean; intro?: 'small' | 'large' }) {
+export default function ToolsCollage({ theme = 'white', motion = false, scroll = false, intro = 'small' }: { theme?: CollageTheme; motion?: boolean; scroll?: boolean; intro?: 'small' | 'large' }) {
   const ref = useRef<HTMLElement>(null);
   const [active, setActive] = useState(0);
   const [inView, setInView] = useState(false);
@@ -213,6 +220,8 @@ export default function ToolsCollage({ theme = 'white', motion = false, intro = 
   // White: during the build the panel (views, leaders, notes) is drawn by the scroll (data-static);
   // once a tool is switched (cycle or click) the panel plays its own timed draw-in as usual
   const [switched, setSwitched] = useState(false);
+  // Motion Scroll: tools passed since the card came in (null: not scroll driven, e.g. phones)
+  const [scrollU, setScrollU] = useState<number | null>(null);
 
   /* Paper: the paper comes in over the whole screen as a theme change, not as a sheet with a hard
      top edge. A fixed wash of the paper (first in the body, so under the page's rails) fades in
@@ -271,7 +280,7 @@ export default function ToolsCollage({ theme = 'white', motion = false, intro = 
     const pin = s.querySelector<HTMLElement>('.tcl-pin');
     let raf = 0, last = performance.now(), y = NaN;
     const put = (k: string, val: number) => s.style.setProperty(k, val.toFixed(4));
-    const frame = (now: number) => {
+    let frame = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
       const vh = window.innerHeight;
@@ -337,8 +346,10 @@ export default function ToolsCollage({ theme = 'white', motion = false, intro = 
         SCRAPS.forEach((_, i) => {
           const a = T.scrap0 + i * T.scrapStep;
           put(`--a-s${i}`, smooth(spanT(y, a, a + T.scrapLen)));
-          // the drift: deeper scraps move a little more as the section scrolls on
-          s.style.setProperty(`--a-d${i}`, `${(-(Math.max(yDrift, T.drift0 - 1.2) - T.drift0) * 26 * DEPTH[i]).toFixed(1)}px`);
+          // the drift: deeper scraps move a little more as the section scrolls on (Motion Scroll:
+          // they settle and stay put once the card is in, while the tools change)
+          const yd = scroll ? Math.min(yDrift, T.drift0) : yDrift;
+          s.style.setProperty(`--a-d${i}`, `${(-(Math.max(yd, T.drift0 - 1.2) - T.drift0) * 26 * DEPTH[i]).toFixed(1)}px`);
         });
         put('--a-card', smooth(spanT(y, T.cardA, T.cardB)));
         for (let k = 0; k < 4; k++) { const a = T.inA + k * T.inStep; put(`--a-c${k}`, smooth(spanT(y, a, a + T.inLen))); }
@@ -349,6 +360,16 @@ export default function ToolsCollage({ theme = 'white', motion = false, intro = 
       raf = inRange && Math.abs(goal - y) > 0.0005 ? requestAnimationFrame(frame) : 0;
     };
     const kick = () => { if (!raf) { last = performance.now(); raf = requestAnimationFrame(frame); } };
+    // Motion Scroll reads the same glided value: where in the run of tools the scroll is
+    const inner = frame;
+    frame = (now: number) => {
+      inner(now);
+      // the card takes clicks only once it is in (before, its link sat invisibly under the line)
+      s.toggleAttribute('data-built', phone.matches || y >= T.cardA + 0.2);
+      // "2B+ data points" lights once the line is typed (as "500M posts/week")
+      introRef.current?.light?.(phone.matches ? 1 : spanT(y, T.typeB, T.typeB + 0.22));
+      if (scroll) setScrollU(phone.matches ? null : Math.min(4 - 1e-4, Math.max(0, (y - T.live) / PER)));
+    };
     window.addEventListener('scroll', kick, { passive: true });
     window.addEventListener('resize', kick);
     frame(performance.now());
@@ -359,7 +380,7 @@ export default function ToolsCollage({ theme = 'white', motion = false, intro = 
       s.style.removeProperty('--a-home'); s.style.removeProperty('--a-dash');
       SCRAPS.forEach((_, i) => ['s', 'd', 't', 'k', 'o'].forEach((v) => s.style.removeProperty(`--a-${v}${i}`)));
     };
-  }, [immersive, gather]);
+  }, [immersive, gather, scroll]);
 
   // Paper dark is its own dark band under the fixed header: while it is behind the wordmark's
   // line, the header turns light, as over the footer (html[data-over-dark], footer.css).
@@ -391,17 +412,20 @@ export default function ToolsCollage({ theme = 'white', motion = false, intro = 
   const running = inView && !paused;
   const next = () => { setSwitched(true); setActive((a) => (a + 1) % TOOLS.length); };
 
-  const t = TOOLS[active];
+  const driven = scroll && scrollU !== null;
+  const idx = driven ? Math.min(TOOLS.length - 1, Math.floor(scrollU)) : active;
+  const local = driven ? scrollU - idx : 0;
+  const t = TOOLS[idx];
   const r = motion ? { a: MOTION_RECT, b: MOTION_RECT } : place(t);
-  const Loop = LOOPS[active];
+  const Loop = LOOPS[idx];
   const cycleMs = motion ? LOOP * 1000 : CYCLE_MS;
   const l = leaders(r, motion ? 360 : NOTE_W);
   const noteA = motion ? t.mA : t.noteA, noteB = motion ? t.mB : t.noteB;
 
   return (
-    <section ref={ref} className="tcl" data-theme-tc={theme} data-immersive={immersive || undefined} data-gather={gather || undefined} data-motion={motion || undefined} data-intro={intro} data-foot="/Analytical Tools" aria-label="Analytical tools">
+    <section ref={ref} className="tcl" data-theme-tc={theme} data-immersive={immersive || undefined} data-gather={gather || undefined} data-motion={motion || undefined} data-scroll={scroll || undefined} data-intro={intro} data-foot="/Analytical Tools" aria-label="Analytical tools">
       <div className="tcl-pin">
-      {immersive && <ScrollText ref={introRef} className="tcl-intro" text={INTRO} />}
+      {immersive && <ScrollText ref={introRef} className="tcl-intro" text={INTRO} hl="2B+ data points" />}
       <div className="frame tcl-frame">
         <div className="tcl-box" ref={boxRef}>
           <Scraps />
@@ -413,18 +437,29 @@ export default function ToolsCollage({ theme = 'white', motion = false, intro = 
                 backdrop-filter, which drops the blended scraps in some browsers) */}
             <Scraps blur />
             <h2 className="tcl-title tcl-in0">/Analytical Tool</h2>
-            <p key={`lead-${active}`} className="tcl-lead tcl-in1">{t.lead}</p>
+            {!motion && <p key={`lead-${idx}`} className="tcl-lead tcl-in1">{t.lead}</p>}
 
             <ul className="tcl-list tcl-in2" role="tablist" aria-label="Tools">
               {TOOLS.map((tool, i) => (
                 <li key={tool.name} role="presentation">
-                  <button type="button" role="tab" id={`tcl-tab-${i}`} aria-selected={i === active} aria-controls="tcl-panel"
-                    className="tcl-name" onClick={() => { if (i !== active) setSwitched(true); setActive(i); }}>
+                  <button type="button" role="tab" id={`tcl-tab-${i}`} aria-selected={i === idx} aria-controls="tcl-panel"
+                    className="tcl-name" onClick={() => {
+                      if (driven) { // scroll to that tool's stretch
+                        const s = ref.current;
+                        if (s) window.scrollTo({ top: s.getBoundingClientRect().top + window.scrollY + (T_WHITE.live + i * PER + 0.04) * window.innerHeight, behavior: 'smooth' });
+                        return;
+                      }
+                      if (i !== active) setSwitched(true); setActive(i);
+                    }}>
                     {tool.name}
-                    {i === active && (
+                    {i === idx && (
                       <span className="tcl-prog" aria-hidden="true">
+                        {driven ? (
+                          <span className="tcl-prog-fill" style={{ animation: 'none', transform: `scaleX(${Math.min(1, local / HOLD_AT).toFixed(4)})` }} />
+                        ) : (
                         <span key={active} className="tcl-prog-fill" data-run={running || undefined}
                           style={{ animationDuration: `${cycleMs}ms` }} onAnimationEnd={next} />
+                        )}
                       </span>
                     )}
                   </button>
@@ -432,14 +467,14 @@ export default function ToolsCollage({ theme = 'white', motion = false, intro = 
               ))}
             </ul>
 
-            <div key={active} data-static={(immersive && !switched) || undefined} id="tcl-panel" role="tabpanel" aria-labelledby={`tcl-tab-${active}`} className="tcl-panel tcl-in3">
+            <div key={idx} data-static={(immersive && (driven ? idx === 0 : !switched)) || undefined} id="tcl-panel" role="tabpanel" aria-labelledby={`tcl-tab-${idx}`} className="tcl-panel tcl-in3">
               {/* the pointer resting on the tool's views holds the cycle (someone is reading them) */}
               <a className="tcl-shots" href={t.href} target="_blank" rel="noopener noreferrer" aria-label={`Try ${t.name} (opens in a new tab)`}
                 onPointerEnter={() => setPaused(true)} onPointerLeave={() => setPaused(false)}>
                 {motion ? (
                   <div className="tcl-shot tcl-motion" style={{ left: v(r.a.x), top: v(r.a.y), width: v(r.a.w), height: v(r.a.h), '--i': 0 } as CSSProperties}>
                     {/* one clock with the cycle bar: both run, hold and restart together */}
-                    <Loop playing={running} />
+                    <Loop playing={driven ? inView : running} />
                   </div>
                 ) : (['b', 'a'] as const).map((k, i) => {
                   const p = r[k], s = t[k];
@@ -451,6 +486,14 @@ export default function ToolsCollage({ theme = 'white', motion = false, intro = 
                 })}
               </a>
 
+              {motion ? (
+                // Motion: the lead and the notes run as one column on the left, no leaders
+                <div className="tcl-mnotes">
+                  <p key={`lead-${idx}`} className="tcl-lead tcl-in1">{t.lead}</p>
+                  <p className="tcl-note tcl-note-a" style={{ '--i': 0 } as CSSProperties}>{noteA}</p>
+                  <p className="tcl-note tcl-note-b" style={{ '--i': 1 } as CSSProperties}>{noteB}</p>
+                </div>
+              ) : (<>
               <svg className="tcl-lines" viewBox="0 0 972 467" preserveAspectRatio="none" aria-hidden="true">
                 <path className="tcl-line" d={l.a.d} pathLength={1} style={{ '--i': 0 } as CSSProperties} />
                 <path className="tcl-line" d={l.b.d} pathLength={1} style={{ '--i': 1 } as CSSProperties} />
@@ -460,6 +503,7 @@ export default function ToolsCollage({ theme = 'white', motion = false, intro = 
 
               <p className="tcl-note tcl-note-a" style={{ right: v(972 - l.a.note.right), bottom: v(467 - l.a.note.bottom), width: v(l.a.note.width), '--i': 0 } as CSSProperties}>{noteA}</p>
               <p className="tcl-note tcl-note-b" style={{ left: v(l.b.note.left), top: v(l.b.note.top), width: v(l.b.note.width), '--i': 1 } as CSSProperties}>{noteB}</p>
+              </>)}
             </div>
           </div>
         </div>

@@ -1,10 +1,10 @@
 'use client';
 
-import { Av, C, Card, Cursor, Frame, eout, fmt, keys, lerp, loopFade, rng, seg, useLoop } from './shared';
+import { Av, C, Card, Frame, eout, fmt, lerp, loopFade, rng, seg, useLoop } from './shared';
 
 /* Engagement Classifier: the "Rate vs baseline" plot. Every post starts at its own baseline (its
-   first 15 minutes) and runs right as it ages; most sink, a few climb into the green. The pointer
-   finds the one that climbed furthest and its card opens (the app's own hover card). Right: the
+   first 15 minutes) and runs right as it ages; most sink, a few climb into the green. The one that
+   climbed furthest has its card open (the app's own hover card). Right: the
    counts and the classifier's calls filling in. */
 
 const PX0 = 70, PX1 = 494, PY0 = 80, PY1 = 320;
@@ -61,13 +61,11 @@ function partial(pts: [number, number][], p: number) {
   return a;
 }
 
-export default function Classifier({ playing }: { playing: boolean }) {
-  const t = useLoop(playing, 7);
+export default function Classifier({ playing, time }: { playing: boolean; time?: number }) {
+  const t = useLoop(playing, 7, time);
   const fade = loopFade(t);
   const grow = eout(seg(t, 0.6, 4.1));
-  const tip = Math.min(eout(seg(t, 5.2, 5.55)), 1 - seg(t, 8.7, 9.05));
-  const cx = keys(t, [[4.2, 660], [5.1, HX + 2]]), cy = keys(t, [[4.2, 330], [5.1, HY + 3]]);
-  const co = Math.min(seg(t, 4.1, 4.4), 1 - seg(t, 9.0, 9.3));
+  const tip = Math.min(eout(seg(t, 5.2, 5.55)), 1 - seg(t, 8.85, 9.2));
   const tx = HX - 224, ty = HY + 14;
 
   return (
@@ -177,7 +175,6 @@ export default function Classifier({ playing }: { playing: boolean }) {
           );
         })}
 
-        {co > 0 && <Cursor x={cx} y={cy} o={co} />}
       </g>
     </Frame>
   );

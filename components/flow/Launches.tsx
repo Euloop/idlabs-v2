@@ -15,11 +15,12 @@ import LaunchesFloat from './LaunchesFloat';
      float2    Float II: the same, its words "Launches" / "we have done", no headline over the field,
                and the reel with a smaller reach, a mono line under it and side prev / next areas
    Light page; normal scroll; the last section, so it closes the page's corners. */
-export type LaunchesVariant = 'cloud' | 'grid' | 'box' | 'carousel' | 'slider' | 'float' | 'float2';
+export type LaunchesVariant = 'cloud' | 'grid' | 'box' | 'carousel' | 'slider' | 'float' | 'float2' | 'float3' | 'float4';
 export default function Launches({ variant = 'cloud' }: { variant?: LaunchesVariant }) {
-  if (variant === 'float' || variant === 'float2') return (
+  if (variant === 'float' || variant === 'float2' || variant === 'float3' || variant === 'float4') return (
     <section className="lc" data-variant={variant} data-foot="/Launches" aria-labelledby="lc-title">
-      <LaunchesFloat alt={variant === 'float2'} />
+      {/* keyed: each variant gets a fresh float (its scroll loop reads alt / card once, at mount) */}
+      <LaunchesFloat key={variant} alt={variant !== 'float'} card={variant === 'float3' || variant === 'float4'} track={variant === 'float4'} />
     </section>
   );
   return (
