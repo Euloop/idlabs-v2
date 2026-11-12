@@ -92,7 +92,9 @@ const HERO_SLIDE = Math.max(0, REEL.indexOf(TILES[HERO]?.l as Launch));
 const FIELD = 3.2, ZOOM = [3.2, 3.9], REEL_IN = [3.82, 3.98], REEL_UI = [3.95, 4.2];
 
 
-export default function LaunchesFloat() {
+/* alt (Float II): the words read "Launches" / "we have done"; no headline over the field (it stays
+   for screen readers); the reel in its alt dress (LaunchesReel.tsx). */
+export default function LaunchesFloat({ alt = false }: { alt?: boolean }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLElement | null)[]>([]);
@@ -293,12 +295,16 @@ export default function LaunchesFloat() {
           })}
         </div>
         <p className="lcf-word" ref={leftRef} aria-hidden="true">Launches</p>
-        <p className="lcf-word" ref={rightRef} aria-hidden="true">2B+ views</p>
-        <div className="lcf-head" ref={headRef}>
-          <h2 id="lc-title" className="lcf-title">2B+ views across the launches we’ve done for our clients</h2>
-        </div>
+        <p className="lcf-word" ref={rightRef} aria-hidden="true">{alt ? 'we have done' : '2B+ views'}</p>
+        {alt ? (
+          <h2 id="lc-title" className="sr-only">Launches we have done for our clients</h2>
+        ) : (
+          <div className="lcf-head" ref={headRef}>
+            <h2 id="lc-title" className="lcf-title">2B+ views across the launches we’ve done for our clients</h2>
+          </div>
+        )}
         <div className="lcf-reel" ref={reelRef}>
-          <LaunchesReel on={reelOn} start={HERO_SLIDE} />
+          <LaunchesReel on={reelOn} start={HERO_SLIDE} alt={alt} />
         </div>
       </div>
     </div>

@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, type CSSProperties } from 'react';
 import ScrollText, { type ScrollTextHandle } from './ScrollText';
+import PaperPage from './immersive/PaperPage';
+import { PAPER_TEXT } from './immersive/paperText';
 import './sections.css';
 
 /* Section 3 · Research paper. Figma 130:3569 (layout, our style); the paper build and its
@@ -42,6 +44,26 @@ export const PAPERS: PaperProps[] = [
   },
 ];
 
+/* cover "paper" (/home-2's Paper tab): the paper's real first page (immersive/PaperPage.tsx) as
+   the front page, at US Letter proportions and punched like the site's front page (the black
+   behind it shows through the holes), over the site's textured back page. */
+export function PaperCover({ title, figs, href = '#', index }: PaperProps & { index: number }) {
+  return (
+    <a className="pp pp-letter" href={href} target="_blank" rel="noopener noreferrer" aria-label={`${title} ${AUTHORS}, ${LAB} (PDF, opens in a new tab)`}>
+      <span className="pp-box" aria-hidden="true">
+        <span className="pp-page pp-back">
+          <img className="pp-abs" src={`${A}paper-back.svg`} alt="" style={{ '--iw': 276.097, '--ih': 357.3, '--il': 0, '--it': 0 } as CSSProperties} />
+        </span>
+        <span className="pp-page pp-front">
+          <PaperPage paper={PAPER_TEXT[index]} fig={figs[0].src} stack={false} holes />
+        </span>
+      </span>
+    </a>
+  );
+}
+
+export type Cover = 'site' | 'paper';
+
 export function Paper({ title, figs, href = '#' }: PaperProps) {
   return (
     <a className="pp" href={href} target="_blank" rel="noopener noreferrer" aria-label={`${title} ${AUTHORS}, ${LAB} (PDF, opens in a new tab)`}>
@@ -73,7 +95,7 @@ export function Paper({ title, figs, href = '#' }: PaperProps) {
 
 /* lead: replaces "Read our published findings" with a paragraph (on /home-2, Section 2's part 3
    line moves here); it types in the same way. */
-export default function SectionThree({ lead }: { lead?: string } = {}) {
+export default function SectionThree({ lead, cover = 'site' }: { lead?: string; cover?: Cover } = {}) {
   const sectionRef = useRef<HTMLElement>(null);
   const readRef = useRef<ScrollTextHandle>(null);
   useEffect(() => {
@@ -119,7 +141,7 @@ export default function SectionThree({ lead }: { lead?: string } = {}) {
             )}
             <div className="s3-band">
               <div className="s3-papers">
-                {PAPERS.map((p) => <Paper key={p.title} {...p} />)}
+                {PAPERS.map((p, i) => cover === 'paper' ? <PaperCover key={p.title} {...p} index={i} /> : <Paper key={p.title} {...p} />)}
               </div>
             </div>
           </div>

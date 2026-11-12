@@ -181,12 +181,15 @@ section.tcl[data-theme-tc='dark'] .tcl-name:hover { color: #fff; opacity: .8; }
    the middle first, then the collage builds behind it. */
 section.tcl[data-immersive] { height: 450svh; } /* pinned 3.5 screens: read, build (done at 2.7), a short hold */
 .tcl-intro {
-  position: absolute; left: 50%; top: 50%; z-index: 5; margin: 0; width: min(460px, calc(100% - 48px));
+  position: absolute; left: 50%; top: 50%; z-index: 5; margin: 0; width: min(506px, calc(100% - 48px)); /* 506: the same lines at the 0.06em spacing */
   translate: -50% calc(-50% - (1 - var(--a-text, 1)) * 36px);
   opacity: var(--a-text, 1); pointer-events: none;
-  font-family: var(--mono); font-size: 12px; line-height: 1.5; text-transform: uppercase; text-align: center;
+  font-family: var(--mono); font-size: 12px; line-height: 1.5; letter-spacing: 0.06em; text-transform: uppercase; text-align: center;
   color: #1f1f1f; text-wrap: pretty;
 }
+/* 20px intro (Motion's Intro tab, ?toolsIntro=large): the column widened in step, same lines */
+section.tcl[data-intro='large'] .tcl-intro { width: min(767px, calc(100% - 48px)); font-size: 20px; line-height: 1.45; letter-spacing: normal; }
+
 /* the paper ground fills the rectangle after the pictures, opening from its centre (under the
    scraps, inside the box's isolation, so their blends still work) */
 section.tcl[data-immersive] .tcl-box { background: transparent; }
@@ -265,4 +268,15 @@ section.tcl[data-gather] .tcl-frame::before {
   .tcl-shot:first-child { display: none; }
   .tcl-lines, .tcl-dot { display: none; }
   .tcl-note { position: static; width: auto !important; }
+}
+
+/* Motion (data-motion): one window per tool, a walkthrough of the tool's UI (tool-motion/) */
+.tcl-motion { overflow: hidden; border-radius: calc(6 * var(--u)); box-shadow: 0 0 0 1px rgb(0 0 0 / .07), 0 calc(10 * var(--u)) calc(30 * var(--u)) rgb(40 30 10 / .10); background: #fbfaf8; }
+.tm { display: block; width: 100%; height: 100%; font-family: var(--sans); font-weight: 400; text-transform: none; letter-spacing: normal; }
+.tm text { font-family: var(--sans); }
+.tm .tm-m, .tm .tm-m tspan, .tm tspan.tm-m { font-family: var(--mono); }
+.tm .tm-title { font-size: 15px; font-weight: 450; fill: #1c1b19; }
+section.tcl[data-motion] .tcl-note { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+@media (max-width: 719px) {
+  section.tcl[data-motion] .tcl-shot.tcl-motion { display: block; aspect-ratio: 720 / 370; }
 }

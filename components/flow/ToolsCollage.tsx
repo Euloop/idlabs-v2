@@ -3,6 +3,16 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import ScrollText, { type ScrollTextHandle } from '../ScrollText';
 import './tools-collage.css';
+import { LOOP } from './tool-motion/shared';
+import Classifier from './tool-motion/Classifier';
+import Weighted from './tool-motion/Weighted';
+import Velocity from './tool-motion/Velocity';
+import Clusters from './tool-motion/Clusters';
+
+/* Motion (the "Motion" layout, White): in place of the two screenshots, one window per tool
+   playing a walkthrough of the tool's own UI (tool-motion/), a loop per turn of the cycle. */
+const LOOPS = [Classifier, Weighted, Velocity, Clusters];
+const MOTION_RECT = { x: 384, y: 96, w: 552, h: 284 };
 
 /* Analytical tools, "Collage" layout (/home-2; option to Graph, Device and Stack). Figma
    "Tool section variant 4" (163:713, white) and "… - paper light theme" (165:762). A collage of
@@ -26,6 +36,8 @@ type Tool = {
   noteA: string; noteB: string;
   /* row: b | a side by side (b on the left); col: a over b */
   layout: 'row' | 'col';
+  /* Motion: the notes on the walkthrough's leaders (what the loop shows; two lines at most) */
+  mA: string; mB: string;
 };
 
 const S = (f: string, w: number, h: number, alt: string): Shot => ({ src: `/assets/tools/${f}.webp`, w, h, alt });
@@ -40,6 +52,8 @@ const TOOLS: Tool[] = [
     noteA: 'The classifier takes a post’s engagement rate in its first 15 minutes as a baseline and measures its performance after against it.',
     noteB: 'This lets us predict how far a post will go within 30 minutes.',
     layout: 'row',
+    mA: 'Every post is measured against its own first 15 minutes. Most sink below that baseline.',
+    mB: 'The few that climb are called viral or emerging within 30 minutes.',
   },
   {
     name: 'Weighted Engagement Scoring',
@@ -50,6 +64,8 @@ const TOOLS: Tool[] = [
     noteA: 'Weighted Engagement scores each interaction by who performed it -their influence, their cluster, the kind of action.',
     noteB: 'Weights every engagement by the engager’s influence',
     layout: 'col',
+    mA: 'Each interaction is scored by who made it: their influence, their cluster, the action.',
+    mB: 'The score shows which people, and which actions, it came from.',
   },
   {
     name: 'Post Velocity',
@@ -60,6 +76,8 @@ const TOOLS: Tool[] = [
     noteA: 'A steep curve in the first 6 hours is the strongest predictor of a breakout.',
     noteB: 'Combined with the Classifier, it tells us how a launch/post will perform within its first 30 minutes.',
     layout: 'col',
+    mA: 'Views are sampled every 30 seconds, so the curve shows acceleration as it happens.',
+    mB: 'At +42m this post runs ×11.5 a typical one: a projected 31h shelf life.',
   },
   {
     name: 'Cluster Penetration',
@@ -70,6 +88,8 @@ const TOOLS: Tool[] = [
     noteA: 'When a post goes out, we can see which clusters it reached',
     noteB: 'and how much of each it covered.',
     layout: 'col',
+    mA: 'We see which clusters a post reached, and how much of each it covered.',
+    mB: 'Here one quote at +5h carried a post out of Founders into five new clusters.',
   },
 ];
 
@@ -97,14 +117,14 @@ function place(t: Tool): { a: Rect; b: Rect } {
    across to the note's line. Notes are 12px on an 18px line (LINE = half of it); the lower
    note is narrowed when needed so it ends NOTE_EDGE inside the card's right edge. */
 const RUN = 48, SLANT_X = 8, SLANT_Y = 34, SLANT_YB = 24, CLEAR_A = 11, CLEAR_B = 9, TEXT_GAP = 10, NOTE_W = 300, NOTE_EDGE = 20, LINE = 9;
-function leaders(r: { a: Rect; b: Rect }) {
+function leaders(r: { a: Rect; b: Rect }, wA = NOTE_W) {
   const da = { x: r.a.x + r.a.w * 0.8, y: r.a.y - CLEAR_A };
   const ya = da.y - SLANT_Y, xa0 = da.x - SLANT_X - RUN;
   const db = { x: r.b.x + r.b.w * 0.42, y: r.b.y + r.b.h + CLEAR_B };
   const yb = db.y + SLANT_YB, xb1 = db.x + SLANT_X + RUN / 2;
   const left = xb1 + TEXT_GAP;
   return {
-    a: { d: `M${xa0} ${ya} H${da.x - SLANT_X} L${da.x} ${da.y}`, dot: da, note: { right: xa0 - TEXT_GAP, bottom: ya + LINE, width: NOTE_W } },
+    a: { d: `M${xa0} ${ya} H${da.x - SLANT_X} L${da.x} ${da.y}`, dot: da, note: { right: xa0 - TEXT_GAP, bottom: ya + LINE, width: wA } },
     b: { d: `M${db.x} ${db.y} L${db.x + SLANT_X} ${yb} H${xb1}`, dot: db, note: { left, top: yb - LINE, width: Math.min(NOTE_W, 972 - NOTE_EDGE - left) } },
   };
 }
@@ -181,7 +201,7 @@ function Scraps({ blur = false }: { blur?: boolean }) {
 
 export type CollageTheme = 'white' | 'gather' | 'paper' | 'dark';
 
-export default function ToolsCollage({ theme = 'white' }: { theme?: CollageTheme }) {
+export default function ToolsCollage({ theme = 'white', motion = false, intro = 'small' }: { theme?: CollageTheme; motion?: boolean; intro?: 'small' | 'large' }) {
   const ref = useRef<HTMLElement>(null);
   const [active, setActive] = useState(0);
   const [inView, setInView] = useState(false);
@@ -372,11 +392,14 @@ export default function ToolsCollage({ theme = 'white' }: { theme?: CollageTheme
   const next = () => { setSwitched(true); setActive((a) => (a + 1) % TOOLS.length); };
 
   const t = TOOLS[active];
-  const r = place(t);
-  const l = leaders(r);
+  const r = motion ? { a: MOTION_RECT, b: MOTION_RECT } : place(t);
+  const Loop = LOOPS[active];
+  const cycleMs = motion ? LOOP * 1000 : CYCLE_MS;
+  const l = leaders(r, motion ? 360 : NOTE_W);
+  const noteA = motion ? t.mA : t.noteA, noteB = motion ? t.mB : t.noteB;
 
   return (
-    <section ref={ref} className="tcl" data-theme-tc={theme} data-immersive={immersive || undefined} data-gather={gather || undefined} data-foot="/Analytical Tools" aria-label="Analytical tools">
+    <section ref={ref} className="tcl" data-theme-tc={theme} data-immersive={immersive || undefined} data-gather={gather || undefined} data-motion={motion || undefined} data-intro={intro} data-foot="/Analytical Tools" aria-label="Analytical tools">
       <div className="tcl-pin">
       {immersive && <ScrollText ref={introRef} className="tcl-intro" text={INTRO} />}
       <div className="frame tcl-frame">
@@ -401,7 +424,7 @@ export default function ToolsCollage({ theme = 'white' }: { theme?: CollageTheme
                     {i === active && (
                       <span className="tcl-prog" aria-hidden="true">
                         <span key={active} className="tcl-prog-fill" data-run={running || undefined}
-                          style={{ animationDuration: `${CYCLE_MS}ms` }} onAnimationEnd={next} />
+                          style={{ animationDuration: `${cycleMs}ms` }} onAnimationEnd={next} />
                       </span>
                     )}
                   </button>
@@ -413,7 +436,12 @@ export default function ToolsCollage({ theme = 'white' }: { theme?: CollageTheme
               {/* the pointer resting on the tool's views holds the cycle (someone is reading them) */}
               <a className="tcl-shots" href={t.href} target="_blank" rel="noopener noreferrer" aria-label={`Try ${t.name} (opens in a new tab)`}
                 onPointerEnter={() => setPaused(true)} onPointerLeave={() => setPaused(false)}>
-                {(['b', 'a'] as const).map((k, i) => {
+                {motion ? (
+                  <div className="tcl-shot tcl-motion" style={{ left: v(r.a.x), top: v(r.a.y), width: v(r.a.w), height: v(r.a.h), '--i': 0 } as CSSProperties}>
+                    {/* one clock with the cycle bar: both run, hold and restart together */}
+                    <Loop playing={running} />
+                  </div>
+                ) : (['b', 'a'] as const).map((k, i) => {
                   const p = r[k], s = t[k];
                   return (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -430,8 +458,8 @@ export default function ToolsCollage({ theme = 'white' }: { theme?: CollageTheme
               <span className="tcl-dot" style={{ left: v(l.a.dot.x), top: v(l.a.dot.y), '--i': 0 } as CSSProperties} aria-hidden="true" />
               <span className="tcl-dot" style={{ left: v(l.b.dot.x), top: v(l.b.dot.y), '--i': 1 } as CSSProperties} aria-hidden="true" />
 
-              <p className="tcl-note tcl-note-a" style={{ right: v(972 - l.a.note.right), bottom: v(467 - l.a.note.bottom), width: v(l.a.note.width), '--i': 0 } as CSSProperties}>{t.noteA}</p>
-              <p className="tcl-note tcl-note-b" style={{ left: v(l.b.note.left), top: v(l.b.note.top), width: v(l.b.note.width), '--i': 1 } as CSSProperties}>{t.noteB}</p>
+              <p className="tcl-note tcl-note-a" style={{ right: v(972 - l.a.note.right), bottom: v(467 - l.a.note.bottom), width: v(l.a.note.width), '--i': 0 } as CSSProperties}>{noteA}</p>
+              <p className="tcl-note tcl-note-b" style={{ left: v(l.b.note.left), top: v(l.b.note.top), width: v(l.b.note.width), '--i': 1 } as CSSProperties}>{noteB}</p>
             </div>
           </div>
         </div>

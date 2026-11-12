@@ -77,6 +77,11 @@ html[data-theme='night'] .s3-band { --grid: #363636; }
    paper), scaled to Figma 130:3569 (×1.123) and the page unit: --k. */
 .pp { --k: calc(1.123 * var(--px)); display: block; width: calc(310.25 * var(--k)); height: calc(347 * var(--k)); }
 .pp-box { position: relative; display: block; width: 100%; height: 100%; }
+/* the Paper cover (SectionThree's PaperCover): pages at US Letter proportions (276.1 × 357.3),
+   the front drawn by immersive/PaperPage.tsx with --u = one of its 816 units */
+.pp-letter { height: calc(367 * var(--k)); }
+.pp-letter .pp-page { height: calc(357.3 * var(--k)); }
+.pp-letter .pp-front { --u: calc(276.1 * var(--k) / 816); background: none; } /* the holes are cut through: the back page shows */
 .pp-page { position: absolute; display: block; width: calc(276.1 * var(--k)); height: calc(336.979 * var(--k)); overflow: clip; }
 .pp-back { left: calc(4.357 * var(--k)); top: calc(6.471 * var(--k)); rotate: -1.5deg; }
 .pp-front { left: calc(20.49 * var(--k)); top: 0; background: #000; box-shadow: calc(-3.43 * var(--k)) calc(3.43 * var(--k)) calc(11.233 * var(--k)) rgba(0, 0, 0, 0.15); }

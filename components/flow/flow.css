@@ -168,7 +168,8 @@ body:has(.s2-flow) .s3-pin { height: auto; }
    only a little space. Clear space below it before the research band. */
 .s3-lead {
   align-self: center; margin: 0 auto; width: min(100%, 548px);
-  font-family: var(--mono); font-size: 12px; line-height: 1.6; text-transform: uppercase;
+  /* now just "Read our published findings": the Services heading's size (services-cards.css .svc-label) */
+  font-family: var(--mono); font-size: 20px; line-height: 1.3; letter-spacing: 0.02em; text-transform: uppercase;
   text-align: justify; text-align-last: center; hyphens: none; color: #1f1f1f; text-wrap: pretty; pointer-events: auto;
 }
 body:has(.s2-flow) .s3-lead + .s3-band { margin-top: calc(56 * var(--px)); }
@@ -374,3 +375,29 @@ html[data-theme='night'] body:has(.s2-flow) .lcg { --lcg-ink: #8f8f8f; }
 /* Nothing on /home-2 may widen the page sideways (floating pieces, zooms): a sideways scroll would
    shift the content against the fixed frame rules. clip (not hidden) keeps sticky sections working. */
 html:has(body .s2-flow), body:has(.s2-flow) { overflow-x: clip; }
+
+/* Research lab line (/home-2, ResearchLab.tsx): its own screen between Section 2 and the papers.
+   The stage pins for the typing and the highlight, then scrolls on (a half-screen stage, centred). A short centred column of
+   12px mono caps; "500M posts/week" gets a black bar that wipes in left to right (--hl, 0 → 1),
+   its letters turning white as the bar passes (.lit). No corners of its own: with a half-screen
+   stage they would float mid-screen; Section 2's bottom pair marks the boundary. */
+/* The stage is half a screen (not a full one), held in the middle of the screen: the section
+   before sits right above the line as it comes up and the papers follow as soon as it lets go.
+   Held for 100svh of scrolling (height 150svh = the 50svh stage + the hold). */
+.rl { position: relative; z-index: 1; height: 150svh; }
+.rl-pin { position: sticky; top: 25svh; height: 50svh; display: grid; }
+.rl-frame {
+  position: relative; margin-inline: auto; height: 50svh; min-height: 280px; display: grid; place-items: center;
+}
+.rl-text {
+  margin: 0; width: min(100% - 32px, 322px); text-align: center; /* 322: the same four lines at the wider spacing */
+  font-family: var(--mono); font-size: 12px; line-height: 1.6; letter-spacing: 0.06em; text-transform: uppercase; color: #3a3a3a;
+}
+.rl-hl {
+  white-space: nowrap; padding: 2px 4px; margin-inline: -1px;
+  background: linear-gradient(#1f1f1f, #1f1f1f) no-repeat 0 0 / calc(var(--hl, 0) * 100%) 100%;
+}
+.rl-hl .tc.lit { color: #fff; transition: opacity 120ms linear, color 120ms linear; }
+/* Large (the 20px tab): same four lines, a wider column */
+.rl[data-size='large'] .rl-text { width: min(100% - 32px, 520px); font-size: 20px; line-height: 1.45; letter-spacing: 0.02em; }
+.rl[data-size='large'] .rl-hl { padding: 2px 6px; margin-inline: -2px; }

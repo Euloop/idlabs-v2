@@ -53,7 +53,7 @@ html[data-theme='night'] .lcf { --lcf-ink: #ebebeb; --lcf-mute: #6a6a6a; --lcf-b
 
 /* This variant leaves the frame: no frame box, so no corner marks. The section clips nothing
    itself (the stage does). */
-body:has(.s2-flow) .lc[data-variant='float'] { overflow: visible; }
+body:has(.s2-flow) .lc:is([data-variant='float'], [data-variant='float2']) { overflow: visible; }
 
 /* Margin lines: dashed from the section's top edge down. The section is paper (it covers the
    page's fixed solid pair where it is), and draws its own dashed pair at the same place: a
@@ -122,10 +122,50 @@ html[data-theme='night'] .lcf-rails::before, html[data-theme='night'] .lcf-rails
 .lcr-count { font-family: var(--mono); font-size: 12px; letter-spacing: .04em; font-variant-numeric: tabular-nums; min-width: 6.5ch; text-align: center; }
 @keyframes lcr-in { from { opacity: 0; translate: 0 10px; } }
 
+/* Float II (data-alt): a smaller reach, the line under it in mono; prev / next areas at each side */
+.lcr[data-alt] .lcr-reach { font-size: clamp(24px, 2.5vw, 42px); line-height: 1.05; }
+.lcr[data-alt] .lcr-sub { margin-top: 10px; font-family: var(--mono); font-size: 12px; line-height: 1.6; letter-spacing: .01em; }
+.lcr-side {
+  position: absolute; top: 0; bottom: 0; width: min(22vw, 320px); padding: 0; border: 0; background: none; color: #fff; cursor: pointer;
+  opacity: var(--ui, 1);
+}
+.lcr-side[data-side='l'] { left: 0; }
+.lcr-side[data-side='r'] { right: 0; }
+.lcr-side::before {
+  content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity 420ms var(--ease-out);
+  background: linear-gradient(90deg, rgb(0 0 0 / .42), rgb(0 0 0 / .14) 55%, transparent);
+}
+.lcr-side[data-side='r']::before { background: linear-gradient(270deg, rgb(0 0 0 / .42), rgb(0 0 0 / .14) 55%, transparent); }
+.lcr-side-chev {
+  position: absolute; top: 50%; translate: 0 -50%; display: grid; place-items: center; width: 44px; height: 44px;
+  opacity: .5; transition: opacity 260ms ease, translate 360ms var(--ease-out);
+}
+.lcr-side[data-side='l'] .lcr-side-chev { left: max(16px, 2.6vw); }
+.lcr-side[data-side='r'] .lcr-side-chev { right: max(16px, 2.6vw); }
+.lcr-side:hover::before, .lcr-side:focus-visible::before { opacity: 1; }
+.lcr-side:hover .lcr-side-chev, .lcr-side:focus-visible .lcr-side-chev { opacity: 1; }
+.lcr-side[data-side='l']:hover .lcr-side-chev { translate: -3px -50%; }
+.lcr-side[data-side='r']:hover .lcr-side-chev { translate: 3px -50%; }
+.lcr-side:focus-visible { outline: none; }
+.lcr-side:focus-visible .lcr-side-chev { outline: 1px solid #fff; outline-offset: 2px; }
+/* the caption and the controls stay above the side areas */
+.lcr[data-alt] .lcr-cap, .lcr[data-alt] .lcr-nav { z-index: 1; }
+.lcr[data-alt] .lcr-nav { gap: 6px; }
+/* aligned with the header: left with the wordmark, right with the last nav link (--al / --ar, set in LaunchesReel.tsx) */
+@media (min-width: 760px) {
+  .lcr[data-alt] .lcr-cap { left: var(--al, max(24px, 5.8vw)); }
+  .lcr[data-alt] .lcr-nav { right: var(--ar, max(24px, 5.8vw)); }
+}
+.lcr[data-alt] .lcr-btn { width: 32px; height: 32px; color: rgb(255 255 255 / .62); border-color: rgb(255 255 255 / .18); }
+.lcr[data-alt] .lcr-btn svg { width: 12px; height: 12px; }
+.lcr[data-alt] .lcr-btn:hover { color: #fff; background: rgb(255 255 255 / .08); border-color: rgb(255 255 255 / .4); }
+
 @media (max-width: 759px) {
   .lcr-cap { right: 24px; bottom: 120px; }
   .lcr-nav { left: 24px; right: auto; bottom: 40px; gap: 12px; }
   .lcr-sub { font-size: 14px; }
+  .lcr[data-alt] .lcr-sub { font-size: 12px; }
+  .lcr-side { width: 18vw; }
 }
 @media (prefers-reduced-motion: reduce) {
   .lcr-slide, .lcr-slide img.lcr-media { transition: none; }

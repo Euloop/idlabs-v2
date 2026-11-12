@@ -12,12 +12,14 @@ import LaunchesFloat from './LaunchesFloat';
      slider    one big slide centred, prev / next either side (LaunchesSlides.tsx)
      float     a loading teaser that scatters into a full-width floating field (LaunchesFloat.tsx);
                leaves the frame, so it renders without it
+     float2    Float II: the same, its words "Launches" / "we have done", no headline over the field,
+               and the reel with a smaller reach, a mono line under it and side prev / next areas
    Light page; normal scroll; the last section, so it closes the page's corners. */
-export type LaunchesVariant = 'cloud' | 'grid' | 'box' | 'carousel' | 'slider' | 'float';
+export type LaunchesVariant = 'cloud' | 'grid' | 'box' | 'carousel' | 'slider' | 'float' | 'float2';
 export default function Launches({ variant = 'cloud' }: { variant?: LaunchesVariant }) {
-  if (variant === 'float') return (
+  if (variant === 'float' || variant === 'float2') return (
     <section className="lc" data-variant={variant} data-foot="/Launches" aria-labelledby="lc-title">
-      <LaunchesFloat />
+      <LaunchesFloat alt={variant === 'float2'} />
     </section>
   );
   return (

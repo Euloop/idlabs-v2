@@ -1,6 +1,9 @@
 'use client';
 
 import { useRef } from 'react';
+import OptionTabs, { useOption } from '../flow/OptionTabs';
+import PaperPage, { PAGE_H, PAGE_W } from './PaperPage';
+import { PAPER_TEXT } from './paperText';
 import { Paper, PAPERS as COVERS } from '../SectionThree';
 import '../sections.css';
 import { AUTHORS, LAB, PAPERS } from './data';
@@ -12,16 +15,28 @@ import { lerp, put, range, setCaption, setDark, smooth, useScene } from './engin
    the lights come back up for the software. The covers are the live site's (SectionThree's Paper:
    back page, front page, figures, hover fan), drawn at 2× and scaled down so they stay sharp at
    full height. The dark is the site's own: #2a2c31 with the colour-burned paper texture. The papers
-   tilt toward the pointer and bob gently while they wait. */
+   tilt toward the pointer and bob gently while they wait.
+   Cover tabs at the bottom (home-2's OptionTabs; ?papers=site|sheet|paper): Paper (the default)
+   is the paper's real first page as a printed cover (PaperPage.tsx), Site the live site's cover,
+   Sheet the first one, a white sheet over a back page with lab and year, title, authors, a figure
+   grid and a few ruled lines. */
 
-const K = 2; // cover drawn at 2 × its Figma size
-const PW = 310.25 * K;
-const PH = 347 * K;
+export type CoverVariant = 'site' | 'sheet' | 'paper';
+
+const K = 2; // site cover drawn at 2 × its Figma size
+const COVERS_OPTS: [CoverVariant, string][] = [['paper', 'Paper'], ['site', 'Site'], ['sheet', 'Sheet']];
+const SIZE = {
+  site: { w: 310.25 * K, h: 347 * K, s0: 0.42, cap: 0.5, sF: 0.74 },
+  sheet: { w: 300, h: 388, s0: 0.5, cap: 1.05, sF: 0.82 },
+  paper: { w: PAGE_W, h: PAGE_H, s0: 0.5, cap: 0.4, sF: 0.84 },
+};
 
 export default function Research() {
+  const [cover, pickCover] = useOption<CoverVariant>('papers', COVERS_OPTS, 'paper');
+  const { w: PW, h: PH, s0: S0, cap: CAP, sF: SF } = SIZE[cover];
   const ref = useRef<HTMLElement>(null);
   const night = useRef<HTMLDivElement>(null);
-  const papers = useRef<(HTMLDivElement | null)[]>([]);
+  const papers = useRef<(HTMLElement | null)[]>([]);
   const intro = useRef<HTMLDivElement>(null);
   const notes = useRef<(HTMLDivElement | null)[]>([]);
   const hover = useRef(-1);
@@ -40,8 +55,8 @@ export default function Research() {
     // stage as the next scene arrives, so the hand-off is never empty
     const end = smooth(range(p, 0.84, 1));
 
-    const s0 = mobile ? Math.min((vw * 0.42) / PW, (vh * 0.3) / PH) : Math.min(0.5, (vh * 0.42) / PH);
-    const sF = mobile ? Math.min((vw * 0.78) / PW, (vh * 0.5) / PH) : Math.min((vh * 0.74) / PH, (vw * 0.4) / PW);
+    const s0 = mobile ? Math.min((vw * 0.42) / PW, (vh * 0.3) / PH) : Math.min(CAP, (vh * S0) / PH);
+    const sF = mobile ? Math.min((vw * 0.78) / PW, (vh * 0.5) / PH) : Math.min((vh * SF) / PH, (vw * 0.4) / PW);
     const focus = mobile ? { x: 0, y: -vh * 0.13 } : { x: vw * (0.2 - 0.2 * smooth(range(p, 0.86, 1))), y: 0 };
     const k = 1 - Math.exp(-f.dt * 10);
 
@@ -99,7 +114,7 @@ export default function Research() {
         </div>
 
         <div className="im-papers">
-          {COVERS.map((pp, i) => (
+          {cover === 'site' && COVERS.map((pp, i) => (
             <div
               key={pp.title}
               ref={(el) => { papers.current[i] = el; }}
@@ -111,6 +126,47 @@ export default function Research() {
               <Paper {...pp} />
             </div>
           ))}
+          {cover === 'sheet' && PAPERS.map((pp, i) => (
+            <a
+              key={pp.href}
+              ref={(el) => { papers.current[i] = el; }}
+              className="im-paper"
+              href={pp.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${pp.title} ${AUTHORS}, ${LAB} (PDF, opens in a new tab)`}
+              style={{ width: PW, height: PH, marginLeft: -PW / 2, marginTop: -PH / 2 }}
+              onPointerEnter={() => { hover.current = i; setCaption({ title: pp.short, meta: AUTHORS, hint: 'Read the paper ↗' }); }}
+              onPointerLeave={() => { hover.current = -1; setCaption(null); }}
+            >
+              <span className="im-paper-back" aria-hidden="true" />
+              <span className="im-paper-sheet" aria-hidden="true">
+                <span className="im-paper-head"><span>{LAB}</span><span>2026</span></span>
+                <span className="im-paper-title">{pp.title}</span>
+                <span className="im-paper-meta">{AUTHORS}</span>
+                <span className="im-paper-figs">
+                  {pp.figs.map((src) => <img key={src} src={src} alt="" draggable={false} />)}
+                </span>
+                <span className="im-paper-lines"><i /><i /><i /><i /></span>
+              </span>
+            </a>
+          ))}
+          {cover === 'paper' && PAPERS.map((pp, i) => (
+            <a
+              key={pp.href}
+              ref={(el) => { papers.current[i] = el; }}
+              className="im-paper"
+              href={pp.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${pp.title} ${AUTHORS}, ${LAB} (PDF, opens in a new tab)`}
+              style={{ width: PW, height: PH, marginLeft: -PW / 2, marginTop: -PH / 2 }}
+              onPointerEnter={() => { hover.current = i; setCaption({ title: pp.short, meta: AUTHORS, hint: 'Read the paper ↗' }); }}
+              onPointerLeave={() => { hover.current = -1; setCaption(null); }}
+            >
+              <PaperPage paper={PAPER_TEXT[i]} fig={pp.figs[0]} />
+            </a>
+          ))}
         </div>
 
         {PAPERS.map((pp, i) => (
@@ -120,6 +176,10 @@ export default function Research() {
           </div>
         ))}
       </div>
+      <OptionTabs
+        groups={[{ label: 'Paper cover', options: COVERS_OPTS, value: cover, onChange: (v) => pickCover(v as CoverVariant) }]}
+        selector="#im-research" label="Research options"
+      />
     </section>
   );
 }

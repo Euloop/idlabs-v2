@@ -9,7 +9,7 @@ import { useEffect } from 'react';
    so the two never fight (no flicker). It also writes the theme itself when the lock changes. */
 const DARK = 'section[data-lights-down], section.sv[data-tone="dark"], section.iso[data-mode="dark"]';// real sections only (the funnel diagram draws SVG circles with class "tg"); the footer is always
 // dark on its own and takes no part, so the section before it keeps the theme to the end
-const SECTIONS = '.hero, section.s2, section.s3, section.tg, section.tk, section.tcl, section.iso, section.sv, section.lc';
+const SECTIONS = '.hero, section.s2, section.rl, section.s3, section.tg, section.tk, section.tcl, section.iso, section.sv, section.lc';
 
 export default function ThemeDriver() {
   useEffect(() => {

@@ -1,0 +1,60 @@
+/* The "Paper" cover (PaperPage.tsx): the paper's real first page dressed as a printed cover.
+   Laid out on a US Letter page of 816 × 1056 units; --u is one unit (1px unless the host sets it:
+   /home-2 sizes it from its page unit, /home-3 draws at 1px and scales the whole page). */
+.pg, .pg-under { position: absolute; inset: 0; display: block; }
+.pg-under { background: #f3f1ec; transform: translate(calc(9 * var(--u, 1px)), calc(8 * var(--u, 1px))) rotate(0.8deg); box-shadow: 0 calc(30 * var(--u, 1px)) calc(60 * var(--u, 1px)) calc(-40 * var(--u, 1px)) rgb(0 0 0 / 0.5); }
+.pg-under-2 { background: #ebe8e1; transform: translate(calc(-8 * var(--u, 1px)), calc(14 * var(--u, 1px))) rotate(-1.6deg); }
+.pg {
+  overflow: hidden; padding: calc(58 * var(--u, 1px)) calc(80 * var(--u, 1px)) 0;
+  background: #fff linear-gradient(100deg, rgb(0 0 0 / 0.018), transparent 6% 94%, rgb(0 0 0 / 0.012));
+  box-shadow: 0 0 0 calc(1 * var(--u, 1px)) rgb(0 0 0 / 0.05), 0 calc(60 * var(--u, 1px)) calc(110 * var(--u, 1px)) calc(-50 * var(--u, 1px)) rgb(0 0 0 / 0.55);
+  color: #141414; text-align: left;
+}
+.pg span { display: block; }
+.pg-staple { position: absolute; left: calc(30 * var(--u, 1px)); top: calc(26 * var(--u, 1px)); width: calc(44 * var(--u, 1px)); height: calc(4 * var(--u, 1px)); border-radius: calc(2 * var(--u, 1px)); transform: rotate(-38deg); background: linear-gradient(#d9d9d9, #8f8f8f); box-shadow: 0 calc(1 * var(--u, 1px)) calc(1 * var(--u, 1px)) rgb(0 0 0 / 0.25); }
+.pg-id {
+  position: absolute; left: calc(48 * var(--u, 1px)); top: 50%; transform: translate(-50%, -50%) rotate(-90deg);
+  font: 600 calc(22 * var(--u, 1px))/1 var(--sans); letter-spacing: 0.02em; color: #c9c9c9; white-space: nowrap;
+}
+.pg-mast { display: flex !important; justify-content: space-between; padding-bottom: calc(9 * var(--u, 1px)); margin-bottom: calc(30 * var(--u, 1px)); border-bottom: calc(1.5 * var(--u, 1px)) solid #141414; font: 500 calc(11 * var(--u, 1px))/1 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; }
+.pg-mast span { display: inline; }
+.pg-title { font: 700 calc(29 * var(--u, 1px))/1.24 var(--wordmark); text-align: center; text-wrap: balance; letter-spacing: -0.005em; margin: 0 calc(12 * var(--u, 1px)) calc(26 * var(--u, 1px)); }
+.pg-authors { font: 700 calc(13.5 * var(--u, 1px))/1.3 var(--sans); margin-bottom: calc(7 * var(--u, 1px)); }
+.pg-affil { font: 400 calc(9.5 * var(--u, 1px))/1.45 var(--sans); color: #2b2b2b; margin-bottom: calc(20 * var(--u, 1px)); }
+.pg sup { font-size: 0.7em; line-height: 0; vertical-align: 0.5em; }
+.pg-abstract { font: 650 calc(10.5 * var(--u, 1px))/1.48 var(--sans); text-align: justify; hyphens: auto; margin-bottom: calc(16 * var(--u, 1px)); }
+.pg-keys { font: 400 calc(11 * var(--u, 1px))/1.3 var(--wordmark); color: #555; padding-bottom: calc(14 * var(--u, 1px)); margin-bottom: calc(18 * var(--u, 1px)); border-bottom: calc(1 * var(--u, 1px)) solid #d6d4cf; }
+.pg-body { position: relative; height: calc(386 * var(--u, 1px)); overflow: hidden; columns: 2; column-gap: calc(28 * var(--u, 1px)); column-fill: auto; }
+.pg-p { font: 400 calc(11.4 * var(--u, 1px))/1.46 var(--wordmark); text-align: justify; hyphens: auto; text-indent: 1.4em; }
+.pg-first { text-indent: 0; }
+.pg-drop { display: inline !important; float: left; font: 400 calc(54 * var(--u, 1px))/0.82 var(--wordmark); margin: calc(4 * var(--u, 1px)) calc(6 * var(--u, 1px)) 0 0; }
+.pg-fig { position: absolute; right: 0; bottom: 0; width: calc(50% - calc(14 * var(--u, 1px))); height: 52%; padding-top: calc(12 * var(--u, 1px)); background: #fff; }
+.pg-fig img { display: block; width: 100%; height: 100%; object-fit: cover; outline: calc(1 * var(--u, 1px)) solid #e4e2dd; }
+.pg-num { position: absolute; left: 0; right: 0; bottom: calc(30 * var(--u, 1px)); text-align: center; font: 400 calc(11 * var(--u, 1px))/1 var(--wordmark); }
+
+/* holes: eight punched holes down the left edge (as on the site's front page, paper-front.svg),
+   cut out of the page so whatever lies behind (the back page, the grid) shows through. Each hole
+   gets a soft shadow inside, cast by the sheet's edge (light from the top left: .pg-holes, under
+   the page), and a faint pressed rim around it (.pg[data-holes]::after). One hole per 135-unit tile. */
+.pg[data-holes], .pg-holes {
+  --hu: var(--u, 1px);
+  --hx: calc(24 * var(--hu)); --hy: calc(67.5 * var(--hu)); --hr: calc(9.5 * var(--hu));
+  --tile: 100% calc(135 * var(--hu)); --tile-at: 0 calc(-8.5 * var(--hu));
+}
+.pg[data-holes] {
+  --hole: radial-gradient(circle var(--hr) at var(--hx) var(--hy), transparent 96%, #000 100%);
+  -webkit-mask: var(--hole) var(--tile-at) / var(--tile) repeat-y;
+  mask: var(--hole) var(--tile-at) / var(--tile) repeat-y;
+}
+.pg[data-holes]::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(circle calc(var(--hr) + 2.2 * var(--hu)) at var(--hx) var(--hy),
+      transparent 80%, rgb(0 0 0 / 0.16) 81.5%, rgb(0 0 0 / 0.05) 88%, transparent 100%)
+    var(--tile-at) / var(--tile) repeat-y;
+}
+.pg-holes {
+  position: absolute; inset: 0; display: block; pointer-events: none;
+  background: radial-gradient(circle var(--hr) at calc(var(--hx) + 2 * var(--hu)) calc(var(--hy) + 2.6 * var(--hu)),
+      transparent 50%, rgb(0 0 0 / 0.14) 80%, rgb(0 0 0 / 0.42) 99%, transparent 100%)
+    var(--tile-at) / var(--tile) repeat-y;
+}

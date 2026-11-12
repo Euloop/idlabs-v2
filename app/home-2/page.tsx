@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import Hero from '../../components/Hero';
 import Section2Options from '../../components/flow/Section2Options';
-import SectionThree from '../../components/SectionThree';
+import ResearchOptions from '../../components/flow/ResearchOptions';
+import ResearchLab from '../../components/flow/ResearchLab';
 import ToolsOptions from '../../components/flow/ToolsOptions';
 import SiteChrome from '../../components/SiteChrome';
 import ServicesOptions from '../../components/flow/ServicesOptions';
@@ -21,9 +22,6 @@ export const metadata: Metadata = {
   referrer: 'no-referrer',
 };
 
-const RESEARCH_LEAD =
-  'Our research lab backpropagates 500M posts/week to analyse how the algorithm treats each post as it goes through the sourcing and ranking stages. The dominant patterns that emerge fine-tune how we game ‘sourcing’ and ensure every post or launch we do goes consistently viral. Read our findings here';
-
 export default function Home2() {
   return (
     <>
@@ -33,8 +31,11 @@ export default function Home2() {
       {/* One Section 2 at a time, in the style picked with the switch at the bottom (or ?style=).
           The page stays light after the hero: the dark tools and services copies are hidden. */}
       <Section2Options />
-      {/* Section 2's closing line leads the research papers here. */}
-      <SectionThree lead={RESEARCH_LEAD} />
+      {/* The research lab's line on its own screen (typed in, "500M posts/week" highlighted). */}
+      <ResearchLab />
+      {/* The papers under "Read our published findings"; Paper · Site cover tabs at the bottom
+          (?research=). */}
+      <ResearchOptions lead="Read our published findings" />
       {/* Hidden: <ToolsIntro /> (its line sits under the iso device) and the dark copies
           <SectionFour />, <SectionFourIso />, <Services />. Section 3 doesn't pin here (flow.css). */}
       {/* The tools in one of two layouts (Graph · Device tabs at the bottom, ?tools=). */}
