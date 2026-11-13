@@ -151,41 +151,44 @@ html[data-intro='fade'][data-loader='zoom'] .sl-golden,
 html[data-intro='fade'][data-loader='zoom'] .sl-g-bold { opacity: 0; transition: opacity 450ms var(--ease-out); }
 html[data-intro='fade'][data-loader='zoom'] .sl-g-thin { opacity: 0; }
 
-/* ───────── The drawn logo (StartLoader <Ink>, after the recording) ─────────
-   Each letter's outline draws (a hairline, left to right, 65ms apart), then fills in solid as its
-   outline goes. Held until its moment: Zoom's halves with the opening (html[data-sl-ready]); Fade's
-   ending logo once the golden ratio has gone (.sl[data-end]). Base state is the finished letter. */
+/* ───────── The drawn logo (StartLoader <Ink>) ─────────
+   As identitylabs.com's own (its Framer component, read from the live site), per letter n:
+   the outline draws (pathLength 0 → 1) from n × 100ms over 600ms easeInOut; the fill comes in from
+   n × 100 + 800 over 400ms easeIn, under the still-drawn outline; the outline then goes, from
+   n × 100 + 1600 over 200ms. Outline 0.3 units at 20%, fill the wordmark's #4a4a4a. The whole
+   logo is drawn by ~2.3s. Held until its moment: Zoom's halves with the opening
+   (html[data-sl-ready]); Fade's ending logo with the golden ratio going (.sl[data-end]). Base
+   state is the finished letter. */
 .sl-ink { display: none; overflow: visible; color: #4a4a4a; } /* the wordmark's own colour (wordmark.svg) */
 .sl-ink path {
-  /* line weight in the wordmark's units (≈0.65px at the logo's ×1.25, 0.7 at ×1.4): non-scaling-stroke
-     would measure the dash in screen px and break the outline into dashes */
-  fill: currentColor; stroke: currentColor; stroke-width: 0.5;
+  /* in the wordmark's units; non-scaling-stroke would measure the dash in screen px and break it */
+  fill: currentColor; stroke: currentColor; stroke-width: 0.3; --ink-line: 0.2;
   stroke-dasharray: 1; stroke-opacity: 0;
-  animation: sl-ink-draw 520ms cubic-bezier(.45, 0, .25, 1) calc(var(--ink-at, 0ms) + var(--i) * 65ms) backwards paused,
-             sl-ink-fill 450ms var(--ease-out) calc(var(--ink-at, 0ms) + 520ms + var(--i) * 65ms) paused;
+  --n: calc(var(--ink-at, 0ms) + var(--i) * 100ms);
+  animation: sl-ink-draw 600ms cubic-bezier(.42, 0, .58, 1) var(--n) backwards paused,
+             sl-ink-fill 400ms cubic-bezier(.42, 0, 1, 1) calc(var(--n) + 800ms) backwards paused,
+             sl-ink-line 200ms linear calc(var(--n) + 1600ms) backwards paused;
 }
 html[data-sl-ready] .sl-logo path, .sl[data-end] .sl-endlogo path { animation-play-state: running; }
-@keyframes sl-ink-draw {
-  from { stroke-dashoffset: 1; stroke-opacity: 1; fill-opacity: 0; }
-  to { stroke-dashoffset: 0; stroke-opacity: 1; fill-opacity: 0; }
-}
-@keyframes sl-ink-fill { from { fill-opacity: 0; stroke-opacity: 1; } to { fill-opacity: 1; stroke-opacity: 0; } }
+@keyframes sl-ink-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes sl-ink-fill { from { fill-opacity: 0; } to { fill-opacity: 1; } }
+@keyframes sl-ink-line { from { stroke-opacity: var(--ink-line); } to { stroke-opacity: 0; } }
 
 /* Zoom: the logo instead of the words — drawn in the middle, then split to the edges (the same
-   spring), its halves overlapping 2 units (2.5px at ×1.25) where the L tucks under the y. Everything after it
-   moves later: the split at 1450 (the last letters still filling), the image at 1700, the caption
-   at 2200 (StartLoaderRun's hold to match). */
-html[data-intro='zoom'] .sl { --sl-gap: -2.5px; }
+   spring), its halves overlapping 2 units (3px at ×1.5) where the L tucks under the y. Everything after it
+   moves later: the split at 2100 (the last letters still filling), the image at 2350, the caption
+   at 2850 (StartLoaderRun's hold to match). */
+html[data-intro='zoom'] .sl { --sl-gap: -3px; }
 html[data-intro='zoom'] .sl-word { display: none; }
 html[data-intro='zoom'] .sl-logo { display: block; }
 .sl-logo.sl-l { left: 28px; translate: 0 -50%; }
 .sl-logo.sl-r { left: auto; right: 28px; translate: 0 -50%; }
-html[data-intro='zoom'] .sl-logo { animation-delay: 0ms, 1450ms; animation-duration: 1ms, 1000ms; }
+html[data-intro='zoom'] .sl-logo { animation-delay: 0ms, 2100ms; animation-duration: 1ms, 1000ms; }
 html[data-intro='zoom'] .sl-frame:first-child,
 html[data-intro='zoom'] .sl-frame:first-child::before,
 html[data-intro='zoom'] .sl-frame:first-child::after,
-html[data-intro='zoom'] .sl-frame:first-child img { animation-delay: 1700ms; }
-html[data-intro='zoom'] .sl-caption { animation-delay: 2200ms; }
+html[data-intro='zoom'] .sl-frame:first-child img { animation-delay: 2350ms; }
+html[data-intro='zoom'] .sl-caption { animation-delay: 2850ms; }
 
 /* Fade: at the end the logo draws in the image slot as the golden ratio fades out of it — the two
    cross, so there is no empty beat between them — with the words either side and the caption staying

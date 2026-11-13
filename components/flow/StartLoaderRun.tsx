@@ -6,8 +6,8 @@ import { useEffect } from 'react';
    cuts land on exact frames. All times in ms. */
 const T = {
   hold: 2900, // from the start of the opening (words in the middle, parting on a spring, the image opening at 1000) to the first cut
-  holdLogo: 3600, // the same with the drawn logo (Zoom): it draws first, the image opens at 1700
-  endLogo: 2250, // Fade: from the logo starting (as the golden ratio fades) to the white lifting: drawn by ~1.7s, then held
+  holdLogo: 4250, // the same with the drawn logo (Zoom): it draws first (~2.3s), the image opens at 2350
+  endLogo: 2900, // Fade: from the logo starting (as the golden ratio fades) to the white lifting: drawn by ~2.5s, then held
   cut: 120, // each showreel image (hard cuts)
   passes: 1, // times through the reel (the first image is not repeated at the very start)
   golden: 650, // the golden ratio holds before the zoom

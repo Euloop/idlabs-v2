@@ -60,8 +60,8 @@ function Ink({ paths, x, w, scale, from = 0, className }: { paths: string[]; x: 
     </svg>
   );
 }
-const LOGO = 1.25; // the split logo, × the 103 × 23 wordmark (129 × 29)
-const END_LOGO = 1.4; // the Fade ending's logo, in the image slot (144 × 32)
+const LOGO = 1.5; // the split logo, × the 103 × 23 wordmark (155 × 35)
+const END_LOGO = 1.65; // the Fade ending's logo, in the image slot (170 × 38)
 
 const BOOT = `(function(){var d=document.documentElement,q=new URLSearchParams(location.search).get('intro');d.dataset.intro=q==='fade'?'fade':'zoom';if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;d.dataset.loader='run';try{history.scrollRestoration='manual'}catch(e){}scrollTo(0,0)})()`;
 
