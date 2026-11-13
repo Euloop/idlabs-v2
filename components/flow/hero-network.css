@@ -1,0 +1,41 @@
+/* /home-4: "Our Network" (HeroNetwork.tsx) — under the hero's clients, both intro variants.
+   Not a Figma frame; plain px, matching the site's other below-hero sections' rhythm. */
+
+.hn { padding-block: 96px 112px; }
+.hn-frame { min-height: 0; }
+
+.hn-title {
+  margin: 0 0 24px; text-align: center;
+  font-family: var(--mono); font-weight: 400; font-size: 12px; line-height: 1.4; letter-spacing: 0.08em; text-transform: uppercase;
+  color: #4a4a4a;
+}
+
+.hn-card {
+  position: relative; background: #fafafa;
+  /* rule to rule, out over the frame's padding; it paints over the page's fixed rules, so it draws
+     its own left and right edges in their colour (#e0e0e0) */
+  border: 1px solid #e0e0e0;
+  margin-inline: calc(-1 * var(--pad));
+}
+.hn-tick { position: absolute; width: 8px; height: 8px; background: #d9d9d9; }
+.hn-tick-tl { left: 0; top: 0; translate: -50% -50%; }
+.hn-tick-tr { right: 0; top: 0; translate: 50% -50%; }
+.hn-tick-bl { left: 0; bottom: 0; translate: -50% 50%; }
+.hn-tick-br { right: 0; bottom: 0; translate: 50% 50%; }
+
+.hn-grid {
+  list-style: none; margin: 0; padding: 56px 32px;
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
+  row-gap: 44px; column-gap: 16px;
+}
+.hn-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
+.hn-name { margin: 0; font-family: var(--mono); font-weight: 400; font-size: 13px; line-height: 1.4; color: #2a2a2a; }
+.hn-role { margin: 0; font-family: var(--mono); font-weight: 400; font-size: 12px; line-height: 1.4; color: #949494; }
+
+@media (max-width: 959px) {
+  .hn { padding-block: 72px 80px; }
+  .hn-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 40px 20px; row-gap: 32px; }
+}
+@media (max-width: 639px) {
+  .hn-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 32px 16px; row-gap: 28px; }
+}

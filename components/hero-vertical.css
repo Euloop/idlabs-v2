@@ -66,18 +66,15 @@
 .hv-body li { position: relative; padding-left: calc(18 * var(--px)); }
 .hv-body li::before { content: '\2022'; position: absolute; left: calc(6 * var(--px)); }
 
-/* Logos: each centred on its column and row (HeroVertical.tsx: PLACED), scaled to the common
-   visual size (--s) */
-.hv-logos { list-style: none; position: absolute; inset: 0; pointer-events: none; }
-.hv-logo-slot {
-  position: absolute;
-  left: calc(var(--cx) * var(--px)); top: calc(var(--cy) * var(--px));
-  width: calc(var(--w) * var(--px)); height: calc(var(--h) * var(--px));
-  translate: -50% -50%; scale: var(--s, 1);
-  animation: rise 700ms var(--ease-out) var(--d, 0ms) both;
-  pointer-events: auto;
+/* One logo's own visual (HeroVertical.tsx: LogoVisual) — sized and, for a design-kind logo,
+   scaled here (not on its wrapper), so the same markup works both absolutely positioned (Zoom,
+   the golden-ratio grid below) and centred in a plain grid cell (Fade, HeroClients further down).
+   A logo-slot's wrapper is left to shrink to this box, so translate(-50%,-50%) still centres it
+   on (cx,cy) before the scale (applied after, around that same point). */
+.hv-logo {
+  position: relative; display: block; overflow: clip;
+  width: calc(var(--w) * var(--px)); height: calc(var(--h) * var(--px)); scale: var(--s, 1);
 }
-.hv-logo { position: absolute; inset: 0; display: block; overflow: clip; }
 .hv .part { position: absolute; display: block; }
 .hv .part > img { position: absolute; inset: 0; width: 100%; height: 100%; }
 .hv-lv {
@@ -88,20 +85,85 @@
   -webkit-mask-position: calc(var(--mx) * var(--px)) calc(var(--my) * var(--px)); mask-position: calc(var(--mx) * var(--px)) calc(var(--my) * var(--px));
   -webkit-mask-size: calc(15.795 * var(--px)) calc(15.97 * var(--px)); mask-size: calc(15.795 * var(--px)) calc(15.97 * var(--px));
 }
-
-/* The rest of the launch clients: a logo (its file as a mask, in the logos' grey) or the name in
-   type, centred on their column and row */
-.hv-more {
-  position: absolute; left: calc(var(--cx) * var(--px)); top: calc(var(--cy) * var(--px)); translate: -50% -50%;
-  display: flex; align-items: center;
-  font-family: var(--sans); font-weight: 500; font-size: calc(var(--fs, 15) * 1px); letter-spacing: -0.02em; line-height: 1;
-  color: #989898; white-space: nowrap;
-  animation: rise 700ms var(--ease-out) var(--d, 0ms) both;
-}
 .hv-more-mark {
   display: block; width: calc(var(--w) * 1px); height: calc(var(--h) * 1px);
-  background: currentColor;
+  background: currentColor; color: #989898;
   -webkit-mask: var(--src) center / contain no-repeat; mask: var(--src) center / contain no-repeat;
+}
+.hv-lockup { display: flex; align-items: center; gap: 6px; }
+.hv-text-mark {
+  display: block;
+  font-family: var(--sans); font-weight: 500; font-size: calc(var(--fs, 15) * 1px); letter-spacing: -0.02em; line-height: 1;
+  color: #989898; white-space: nowrap;
+}
+
+/* Logos: each centred on its column and row (HeroVertical.tsx: PLACED). Zoom only (hidden for
+   Fade, below); a design-kind logo's slot is just .hv-logo's own shrink-wrapped box. */
+.hv-logos { list-style: none; position: absolute; inset: 0; pointer-events: none; }
+.hv-logo-slot, .hv-more {
+  position: absolute;
+  left: calc(var(--cx) * var(--px)); top: calc(var(--cy) * var(--px)); translate: -50% -50%;
+  animation: rise 700ms var(--ease-out) var(--d, 0ms) both;
+  pointer-events: auto;
+}
+.hv-more { display: flex; align-items: center; }
+
+/* Zoom: "Our Clients" heading the logo grid (Fade's card has its own, .hv-clients-title): centred
+   in the top of the logos' band, between the square's bottom line (605.9) and the first row (700) */
+.hv-zoom-title {
+  position: absolute; left: 50%; top: calc(636 * var(--px)); translate: -50% -50%; margin: 0;
+  font-family: var(--mono); font-weight: 400; font-size: 12px; line-height: 1.4; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--hv-ink); white-space: nowrap;
+}
+html[data-intro='fade'] .hv-zoom-title { display: none; }
+/* Zoom: room under the construction before Our Network — as Fade has under its clients card (192) */
+html:not([data-intro='fade']) .hero.hv { padding-bottom: 96px; }
+
+/* /home-4 keeps the hero on screen as the page turns light: the clients and the network section
+   follow straight on (globals.css fades .hero out at the light switch, for / and /home-2, where
+   Section 2 takes over from it) */
+html[data-theme='light'] .hero.hv { opacity: 1; }
+
+/* ───────── Fade (html[data-intro='fade'], HeroIntroOptions): the clean hero — no construction,
+   no golden-ratio grid. The copy sits in a plain centred column; below it, the clients are a
+   titled card (HeroClients in HeroVertical.tsx) instead of the grid above (hidden). Not Figma
+   positions, so plain px; works at every width, in place of Zoom's own narrow-screen rules
+   below. ───────── */
+html[data-intro='fade'] .hv-main {
+  /* the copy starts where it does in Zoom: the construction's top (as .hv-main above) plus the
+     copy's own offset in the square (~29) */
+  height: auto; margin-top: calc(max(28px, 100svh - 56px - 748.813px) + 29px); padding-bottom: 96px;
+  display: flex; flex-direction: column; align-items: center;
+}
+html[data-intro='fade'] .hv-golden {
+  position: relative; top: auto; left: auto; translate: none;
+  width: min(656px, 100%); height: auto;
+  display: flex; flex-direction: column; align-items: center; gap: 64px;
+}
+html[data-intro='fade'] .hv-construction, html[data-intro='fade'] .hv-logos { display: none; }
+/* the lower markers mark the construction's bottom line, which Fade doesn't have */
+html[data-intro='fade'] .hv-main > .tick { display: none; }
+html[data-intro='fade'] .hv-copy { position: relative; left: auto; top: auto; translate: none; width: min(512px, 100%); }
+
+/* The clients card (Fade only — Zoom's own grid stays the default, above) */
+.hv-clients { display: none; width: 100%; }
+html[data-intro='fade'] .hv-clients { display: block; }
+.hv-clients-title {
+  margin: 0 0 24px; text-align: center;
+  font-family: var(--mono); font-weight: 400; font-size: 12px; line-height: 1.4; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--hv-ink);
+  animation: rise 700ms var(--ease-out) both;
+}
+.hvc-grid {
+  list-style: none; margin: 0; padding: 64px 40px;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  row-gap: 64px; column-gap: 24px;
+  background: #fafafa;
+  animation: rise 700ms var(--ease-out) 60ms both;
+}
+.hvc-cell { display: flex; align-items: center; justify-content: center; animation: rise 700ms var(--ease-out) var(--d, 0ms) both; }
+@media (max-width: 639px) {
+  .hvc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 40px 20px; row-gap: 44px; }
 }
 
 /* ───────── Narrow screens (<960): the construction can't hold the copy at a readable size.
@@ -111,6 +173,7 @@
   .hv-main { height: auto; margin-top: 8px; padding-bottom: 48px; --tick-y: 100%; }
   .hv-golden { position: relative; left: auto; translate: none; width: auto; height: auto; }
   .hv-construction { display: none; }
+  .hv-zoom-title { position: static; translate: none; text-align: center; margin: 32px 0 16px; }
   .hv-copy {
     position: relative; left: auto; top: auto; translate: none; width: auto;
     gap: 28px; padding: 28px 24px 40px; border: 1px solid var(--hv-line);
@@ -137,5 +200,5 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hv-construction, .hv-li, .hv-logo-slot, .hv-more { animation: none; }
+  .hv-construction, .hv-li, .hv-logo-slot, .hv-more, .hv-clients-title, .hvc-grid, .hvc-cell { animation: none; }
 }

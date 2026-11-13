@@ -1,0 +1,14 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="124" height="210" viewBox="-0.36 -0.36 124 210" fill="none" xmlns="http://www.w3.org/2000/svg">
+<!-- golden.svg (Figma 184:290) with 1px strokes for the loader's hold at 208 tall: the 0.28px original drops edges there. Right and bottom lines moved onto 122.14 / 208.14 (≤0.47px), exactly 122 / 208 from the left and top ones, so all four render crisp; margin so they are not clipped. -->
+<g id="Frame 2147224395">
+<path id="Vector" d="M0.140884 208.14L0.140923 0.14061L122.14 0.140945" stroke-width="1" stroke="#4A4A4A"/>
+<path id="Vector_2" d="M122.14 208.14L0.140732 208.14" stroke-width="1" stroke="#4A4A4A"/>
+<path id="Vector_3" d="M122.14 208.14V0.14183" stroke-width="1" stroke="#4A4A4A"/>
+<path id="Vector_4" d="M122.14 128.604H0.144722" stroke-width="1" stroke="#4A4A4A"/>
+<path id="Vector_5" d="M75.7087 208.14V128.605" stroke-width="1" stroke="#4A4A4A"/>
+<path id="Vector_6" d="M122.14 158.932H75.7117" stroke-width="1" stroke="#4A4A4A"/>
+<path id="Vector_7" d="M93.5478 158.932V128.606" stroke-width="1" stroke="#4A4A4A"/>
+<path id="Vector_8" d="M122.14 0.140625C89.9825 0.140625 58.8827 13.6751 35.9526 37.7666C13.0226 61.8582 0.14061 94.5333 0.14061 128.604C0.14061 149.661 8.10211 169.855 22.2737 184.744C36.4452 199.634 55.666 208.14 75.7076 208.14C88.094 208.14 99.973 202.829 108.732 193.627C117.49 184.424 122.14 171.944 122.14 158.93C122.14 154.947 121.664 151.004 120.213 147.325C118.763 143.645 116.637 140.302 113.956 137.486C111.276 134.67 108.094 132.436 104.592 130.912C101.09 129.388 97.337 128.604 93.5466 128.604C88.8154 128.604 84.2779 130.579 80.9325 134.093C77.587 137.608 75.7076 142.376 75.7076 147.346" stroke-width="1" stroke="#4A4A4A"/>
+<path id="Vector_9" d="M91.1105 158.429C91.1105 157.098 92.1894 156.019 93.5204 156.019C94.8513 156.019 95.9303 157.098 95.9303 158.429C95.9303 159.761 94.8513 160.84 93.5204 160.84C92.1894 160.84 91.1105 159.761 91.1105 158.429Z" fill="#4A4A4A"/>
+</g>
+</svg>

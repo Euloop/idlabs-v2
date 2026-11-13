@@ -2,6 +2,8 @@
    Vertical positions are taken from the frame's middle (y 416): slot 303–511, side words 407–425,
    caption 33px off the bottom. */
 
+/* the zoom's curve: a soft start, then a long glide that settles onto the hero (no sudden stop) */
+:root { --sl-settle: cubic-bezier(.5, 0, 0, 1); }
 .sl { display: none; }
 html[data-loader='run'] .sl,
 html[data-loader='zoom'] .sl,
@@ -17,35 +19,64 @@ html[data-loader='run'], html[data-loader='zoom'] { overflow: hidden; }
    after it instead of hidden under it. The hero's construction skips its draw-in: the loader's
    golden ratio lands on it already drawn. */
 html[data-loader='run'] body *:not(.sl, .sl *),
-html[data-loader='zoom'] body *:not(.sl, .sl *) { animation-play-state: paused !important; }
+html[data-loader='zoom']:not([data-sl-land]) body *:not(.sl, .sl *) { animation-play-state: paused !important; }
+
+/* The hero's entrance after the loader: let go while the zoom is still in its final glide
+   (html[data-sl-land], StartLoaderRun), with the stagger pressed to ~30% and the moves a little
+   shorter — its first-load timing, played after a 6s loader, reads as slow. Without the loader
+   (reduced motion) the hero keeps its own timing. */
+html[data-loader] .hv-li { animation-duration: 800ms; animation-delay: calc(var(--d, 0ms) * 0.3 - 60ms); }
+html[data-loader] .hv .rise, html[data-loader] .hv-logo-slot, html[data-loader] .hv-more {
+  animation-duration: 600ms; animation-delay: calc(var(--d, 0ms) * 0.3 - 60ms);
+}
 html[data-loader] .hv-construction { animation: none; }
 /* ...and stays hidden while the loader runs: otherwise it shows, faint and full size, through the white
    as it lifts, before the zoom lands on it */
 html[data-loader='run'] .hv-construction, html[data-loader='zoom'] .hv-construction { visibility: hidden; }
 
-/* The opening, once the first image has loaded (html[data-sl-ready], set inline before hydration):
-   the frame opens from a line across its middle — two white shutters part, up and down — as the image
-   fades in and settles from a slight zoom; then the words either side and the caption fade up out of
-   a soft blur. Held at their first frame until then. Transforms and opacity only, so it runs on the
-   compositor, smooth even while the page is still hydrating (clip-path stutters there). Text moves
-   with transform — translate already places it. */
+/* The opening, once the first image has loaded (html[data-sl-ready], set inline before hydration —
+   with --l-dx/--r-dx/--dy: how far each word sits from the centre, measured there):
+   1. ENGINEERING VIRALITY fade in together, side by side in the middle of the screen;
+   2. they part to the left and right edges, and as they go the image opens from a line across its
+      middle (two white shutters part, up and down), fading in and settling from a slight zoom — once
+      the words are clear of it;
+   3. the caption fades up.
+   Held at their first frame until then. Transforms and opacity only, so it runs on the compositor —
+   smooth even while the page is still hydrating. Text moves with transform; translate places it. */
+.sl-side {
+  animation: sl-fade 600ms var(--ease-out) 0ms backwards paused,
+             sl-split 1000ms var(--ease-out) 750ms backwards paused;
+}
+/* the split on a spring: stiffness 72, damping 13.7, mass 1 (ζ 0.81) — quick off the mark, gliding
+   in to the edges with a ~1.4% overshoot, settled at 1000ms. Sampled into linear(); browsers
+   without it keep the ease-out above. */
+@supports (animation-timing-function: linear(0, 1)) {
+  .sl-side { animation-timing-function: var(--ease-out), linear(0, 0.0143, 0.052, 0.1062, 0.1713, 0.2429, 0.3174, 0.392, 0.4646, 0.5338, 0.5985, 0.6581, 0.7122, 0.7607, 0.8037, 0.8413, 0.8739, 0.9019, 0.9255, 0.9454, 0.9617, 0.9751, 0.9858, 0.9942, 1.0007, 1.0056, 1.0091, 1.0115, 1.0129, 1.0137, 1.0139, 1.0136, 1.0131, 1.0123, 1.0114, 1.0104, 1.0094, 1.0083, 1.0073, 1.0064, 1.0055, 1.0047, 1.0039, 1.0033, 1.0027, 1.0022, 1.0017, 1.0013, 1); }
+}
+.sl-l { --dx: var(--l-dx, 0px); }
+.sl-r { --dx: var(--r-dx, 0px); }
 .sl-frame:first-child::before, .sl-frame:first-child::after {
   content: ''; position: absolute; left: 0; right: 0; height: calc(50% + 1px); background: #fff;
-  animation: sl-shutter 1000ms cubic-bezier(.45, 0, .1, 1) 0ms both paused;
+  animation: sl-shutter 1000ms cubic-bezier(.45, 0, .1, 1) 1000ms both paused;
 }
 .sl-frame:first-child::before { top: 0; --to: -100%; }
 .sl-frame:first-child::after { bottom: 0; --to: 100%; }
-.sl-frame:first-child img { animation: sl-settle 1400ms var(--ease-out) 0ms backwards paused; }
-.sl-side, .sl-caption { animation: sl-text 1000ms var(--ease-out) var(--d, 0ms) backwards paused; }
+.sl-frame:first-child img { animation: sl-settle 1400ms var(--ease-out) 1000ms backwards paused; }
+/* the frame itself is hidden until then: its closed (white) shutters would cover the words while they
+   are still in the middle — by 1000 the spring has them well clear of it */
+.sl-frame:first-child { animation: sl-fade 1ms linear 1000ms backwards paused; }
+.sl-caption { animation: sl-rise 900ms var(--ease-out) 1600ms backwards paused; }
+html[data-sl-ready] .sl-frame:first-child,
 html[data-sl-ready] .sl-frame:first-child::before,
 html[data-sl-ready] .sl-frame:first-child::after,
 html[data-sl-ready] .sl-frame:first-child img,
 html[data-sl-ready] .sl-side, html[data-sl-ready] .sl-caption { animation-play-state: running; }
-.sl-l { --d: 550ms; } .sl-r { --d: 680ms; } .sl-caption { --d: 860ms; }
 .sl-side, .sl-caption { transition: opacity 300ms var(--ease-out); }
+@keyframes sl-fade { from { opacity: 0; } }
+@keyframes sl-split { from { transform: translate(var(--dx), var(--dy, 0px)); } }
 @keyframes sl-shutter { to { transform: translateY(var(--to)); } }
 @keyframes sl-settle { from { opacity: 0; transform: scale(1.18); } 40% { opacity: 1; } }
-@keyframes sl-text { from { opacity: 0; transform: translateY(10px); filter: blur(4px); } }
+@keyframes sl-rise { from { opacity: 0; transform: translateY(10px); } }
 
 .sl-side {
   position: absolute; top: 50%; translate: -50% -50%;
@@ -80,14 +111,31 @@ html[data-sl-ready] .sl-side, html[data-sl-ready] .sl-caption { animation-play-s
   transform-origin: 0 0; transform: scale(0.21225); /* 208.141 / 980.663 */
   /* centred by margin, not translate: the CSS minifier folds `translate` into `transform`, which the zoom overwrites */
   position: absolute; top: 0; left: 0; margin-left: -61.318px; /* half the scaled width */
-  transition: transform 1100ms cubic-bezier(.76, 0, .18, 1), opacity 1100ms cubic-bezier(.76, 0, .18, 1);
+  transition: transform 850ms var(--sl-settle), opacity 850ms var(--sl-settle);
 }
 html[data-loader='zoom'] .sl, html[data-loader='done'] .sl {
-  background: transparent; transition: background-color 700ms cubic-bezier(.5, 0, .2, 1) 150ms;
+  background: transparent; transition: background-color 540ms cubic-bezier(.5, 0, .2, 1) 115ms;
 }
 html[data-loader='zoom'] .sl-side, html[data-loader='zoom'] .sl-caption,
 html[data-loader='done'] .sl-side, html[data-loader='done'] .sl-caption { opacity: 0; }
 html[data-loader='zoom'] .sl-golden { opacity: 0.12; }
+
+/* The two layers. The design's thin lines (.sl-g-thin) fill the scaled box, unseen while it holds.
+   The 1px ones (golden-bold.svg, its 124 × 210 viewBox from -0.36) sit beside the box at 1:1,
+   its corner 0.36px up and left of the box's; StartLoaderRun puts that corner on a whole pixel, so all
+   four edges are one crisp pixel. In the zoom they scale with the box (about the box's corner) and
+   hand over early, while the lines are still small. */
+.sl-g-thin { position: absolute; inset: 0; display: block; width: 100%; height: 100%; max-width: none; opacity: 0;
+  transition: opacity 300ms cubic-bezier(.4, 0, .6, 1); }
+.sl-g-bold {
+  position: absolute; top: 0; left: 0; margin-left: -61.678px; margin-top: -0.36px; /* the box's margin − 0.36 */
+  display: block; width: 124px; height: 210px; max-width: none; visibility: hidden; /* whole px: an SVG <img> rasterises at whole px, so a fractional size stretches it */
+  transform-origin: 0.36px 0.36px;
+  transition: transform 850ms var(--sl-settle), opacity 300ms cubic-bezier(.4, 0, .6, 1);
+}
+.sl-golden[data-on] + .sl-g-bold { visibility: visible; }
+html[data-loader='zoom'] .sl-g-thin { opacity: 1; }
+html[data-loader='zoom'] .sl-g-bold { opacity: 0; }
 
 /* narrow screens: the side words sit above the slot, at the gutters */
 @media (max-width: 640px) {
@@ -95,3 +143,53 @@ html[data-loader='zoom'] .sl-golden { opacity: 0.12; }
   .sl-l { left: 16px; }
   .sl-r { left: auto; right: 16px; }
 }
+
+/* Fade (?intro=fade, HeroIntroOptions): the golden ratio does not zoom — it fades away where it is,
+   with the white, onto the clean hero: no construction behind the copy (with or without the loader). */
+html[data-intro='fade'] .hv-construction { display: none; }
+html[data-intro='fade'][data-loader='zoom'] .sl-golden,
+html[data-intro='fade'][data-loader='zoom'] .sl-g-bold { opacity: 0; transition: opacity 450ms var(--ease-out); }
+html[data-intro='fade'][data-loader='zoom'] .sl-g-thin { opacity: 0; }
+
+/* ───────── The drawn logo (StartLoader <Ink>, after the recording) ─────────
+   Each letter's outline draws (a hairline, left to right, 65ms apart), then fills in solid as its
+   outline goes. Held until its moment: Zoom's halves with the opening (html[data-sl-ready]); Fade's
+   ending logo once the golden ratio has gone (.sl[data-end]). Base state is the finished letter. */
+.sl-ink { display: none; overflow: visible; color: #4a4a4a; } /* the wordmark's own colour (wordmark.svg) */
+.sl-ink path {
+  /* line weight in the wordmark's units (≈0.65px at the logo's ×1.25, 0.7 at ×1.4): non-scaling-stroke
+     would measure the dash in screen px and break the outline into dashes */
+  fill: currentColor; stroke: currentColor; stroke-width: 0.5;
+  stroke-dasharray: 1; stroke-opacity: 0;
+  animation: sl-ink-draw 520ms cubic-bezier(.45, 0, .25, 1) calc(var(--ink-at, 0ms) + var(--i) * 65ms) backwards paused,
+             sl-ink-fill 450ms var(--ease-out) calc(var(--ink-at, 0ms) + 520ms + var(--i) * 65ms) paused;
+}
+html[data-sl-ready] .sl-logo path, .sl[data-end] .sl-endlogo path { animation-play-state: running; }
+@keyframes sl-ink-draw {
+  from { stroke-dashoffset: 1; stroke-opacity: 1; fill-opacity: 0; }
+  to { stroke-dashoffset: 0; stroke-opacity: 1; fill-opacity: 0; }
+}
+@keyframes sl-ink-fill { from { fill-opacity: 0; stroke-opacity: 1; } to { fill-opacity: 1; stroke-opacity: 0; } }
+
+/* Zoom: the logo instead of the words — drawn in the middle, then split to the edges (the same
+   spring), its halves overlapping 2 units (2.5px at ×1.25) where the L tucks under the y. Everything after it
+   moves later: the split at 1450 (the last letters still filling), the image at 1700, the caption
+   at 2200 (StartLoaderRun's hold to match). */
+html[data-intro='zoom'] .sl { --sl-gap: -2.5px; }
+html[data-intro='zoom'] .sl-word { display: none; }
+html[data-intro='zoom'] .sl-logo { display: block; }
+.sl-logo.sl-l { left: 28px; translate: 0 -50%; }
+.sl-logo.sl-r { left: auto; right: 28px; translate: 0 -50%; }
+html[data-intro='zoom'] .sl-logo { animation-delay: 0ms, 1450ms; animation-duration: 1ms, 1000ms; }
+html[data-intro='zoom'] .sl-frame:first-child,
+html[data-intro='zoom'] .sl-frame:first-child::before,
+html[data-intro='zoom'] .sl-frame:first-child::after,
+html[data-intro='zoom'] .sl-frame:first-child img { animation-delay: 1700ms; }
+html[data-intro='zoom'] .sl-caption { animation-delay: 2200ms; }
+
+/* Fade: at the end the logo draws in the image slot as the golden ratio fades out of it — the two
+   cross, so there is no empty beat between them — with the words either side and the caption staying
+   up. It holds, then fades away with them and the white. */
+html[data-intro='fade'] .sl-endlogo { display: block; position: absolute; left: 50%; top: calc(50% - 9px); translate: -50% -50%; }
+.sl[data-end] .sl-golden, .sl[data-end] .sl-g-bold { opacity: 0; transition: opacity 550ms var(--ease-out); }
+html[data-loader='zoom'] .sl-endlogo { opacity: 0; transition: opacity 450ms var(--ease-out); }

@@ -11,7 +11,7 @@ import Clusters from './tool-motion/Clusters';
 
 /* Motion (the "Motion" layout, White): in place of the two screenshots, one window per tool
    playing a walkthrough of the tool's own UI (tool-motion/), a loop per turn of the cycle. */
-const LOOPS = [Classifier, Weighted, Velocity, Clusters];
+export const LOOPS = [Classifier, Weighted, Velocity, Clusters];
 /* Motion: the walkthrough window, as large as the card allows beside a narrower text column (the
    client: all the text on the left, the walkthrough bigger). 720:370, centred on the card's height. */
 const MOTION_RECT = { x: 306, y: 68.5, w: 642, h: 330 };
@@ -49,7 +49,7 @@ type Tool = {
 
 const S = (f: string, w: number, h: number, alt: string): Shot => ({ src: `/assets/tools/${f}.webp`, w, h, alt });
 
-const TOOLS: Tool[] = [
+export const TOOLS: Tool[] = [
   {
     name: 'Engagement Classifier',
     href: 'https://graphs-seven-pi.vercel.app/tools/classifier',

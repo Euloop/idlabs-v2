@@ -3,7 +3,7 @@ import './hero-vertical.css';
 
 /* /home-4 hero — Figma "new hero light theme" (183:3). The golden construction stood upright
    (577 × 980, centred in the frame): the headline and body copy sit in its large square, the client
-   logos of the launch reel's clients in a 4 × 5 grid filling the band under it, down to the construction's
+   logos of 16 launch-reel clients in a 4 × 4 grid filling the band under it, down to the construction's
    bottom line, which is the hero's bottom edge (the whole drawing shows; it runs on below the
    first screen). Drawn 1:1 — no scaling to fit the screen. Light only. Same page material, rails and .hero wrapper as Hero.tsx, so the theme
    switch and Section 2 work unchanged. Positions are Figma px inside the construction (× --px). */
@@ -17,33 +17,26 @@ type Masked = Part & { box: string; mx: number; my: number };
    the same area (AREA, px²) — a wide wordmark comes out lower, a compact one taller — rather than
    all at one height, which makes long wordmarks look big and short ones small. `boost` lifts a
    light, thin-stroked logo a little so it carries the same weight as the rest, and eases a heavy,
-   solid one (Stripe, Deel, Matic) down.
+   solid one (Deel, Matic) down.
      design  the eight in Figma 183:34: the box (w × h) holding its parts by inset; vw × vh is the
              ink inside it (the exported SVG's size)
      file    a launch client's logo file (/assets/clients, as LaunchesSlides.tsx), masked in grey;
              ratio from its viewBox
-     text    a launch client with no logo file yet: its name set in type, the font size from the
-             same area rule (clamped) */
+     lockup  an icon file next to the name in type, where that is the brand's own header lockup
+             (Fish Audio)
+     text    a client with no logo file: its name set in type, the font size from the same area
+             rule (clamped). None in use now. */
 type Logo =
   | { kind: 'design'; name: string; w: number; h: number; vw: number; vh: number; parts: Part[]; masked?: Masked[]; boost?: number }
   | { kind: 'file'; name: string; src: string; ratio: number; boost?: number }
+  | { kind: 'lockup'; name: string; src: string; ratio: number }
   | { kind: 'text'; name: string };
 
 const AREA = 1300;
 
-// From Figma 183:34 (Cursor, Ramp and OpenAI left out: only the launch reel's clients here).
+// From Figma 183:34 (Cursor, Ramp, OpenAI, Lovable and Stripe left out: 16 of the launch reel's
+// clients, with room around them).
 const DESIGN: Logo[] = [
-  {
-    kind: 'design', name: 'Lovable', w: 93.115, h: 16.761, vw: 93.115, vh: 16.2,
-    parts: [{ src: 'lovable-word.svg', inset: '1.04% 0 3.67% 22.6%' }],
-    masked: [
-      { box: '-12.57% 81.08% -14.28% -4.04%', mx: 3.764, my: 2.103, src: 'lovable-g1.svg', inset: '-9.56% -9.51%' },
-      { box: '-47.37% 76.59% 20.51% -6%', mx: 5.591, my: 7.935, src: 'lovable-g2.svg', inset: '-9.56% -7.42%' },
-      { box: '-51.6% 77.42% 40.19% -0.38%', mx: 0.357, my: 8.645, src: 'lovable-g3.svg', inset: '-10.89% -9.51%' },
-      { box: '-22.12% 84.19% 45.82% 2%', mx: -1.862, my: 3.703, src: 'lovable-g4.svg', inset: '-15.9% -15.81%' },
-    ],
-  },
-  { kind: 'design', name: 'Stripe', w: 68.126, h: 32.473, vw: 52.4, vh: 21.863, boost: 0.86, parts: [{ src: 'stripe.svg', inset: '16.19% 11.54% 16.49% 11.55%' }] },
   {
     kind: 'design', name: 'Airwallex', w: 102.088, h: 13.952, vw: 102.088, vh: 13.952,
     parts: [
@@ -55,39 +48,36 @@ const DESIGN: Logo[] = [
   { kind: 'design', name: 'Deel', w: 53.124, h: 18.389, vw: 53.122, vh: 17.986, boost: 0.9, parts: [{ src: 'deel.svg', inset: '0.01% 0 2.18% 0' }] },
 ];
 
-// The rest of the launch reel's clients (LaunchesCloud.tsx); Airwallex, Deel, Gamma and Lovable are
-// in DESIGN.
+// The rest of the launch reel's clients (LaunchesCloud.tsx); Airwallex, Deel and Gamma are in
+// DESIGN. Lovable, Akai and Icon left out (16 in all).
 const MORE: Logo[] = [
   { kind: 'file', name: 'Cartesia', src: 'cartesia.svg', ratio: 579 / 83, boost: 1.04 },
-  { kind: 'text', name: 'Triple Whale' },
   { kind: 'file', name: 'Matic Robots', src: 'matic.svg', ratio: 181 / 52, boost: 0.9 },
-  { kind: 'text', name: 'Superblocks' },
-  { kind: 'text', name: 'Lindy' },
   { kind: 'file', name: 'PlayerZero', src: 'playerzero.svg', ratio: 2551 / 373, boost: 1.04 },
-  { kind: 'text', name: 'Enterpret' },
   { kind: 'file', name: 'PolyAI', src: 'polyai.svg', ratio: 120 / 36 },
   { kind: 'file', name: 'Pocket FM', src: 'pocketfm.svg', ratio: 340 / 53 },
-  { kind: 'text', name: 'Fish Audio' },
   { kind: 'file', name: 'Wispr Flow', src: 'wispr.svg', ratio: 446 / 125 },
-  { kind: 'text', name: 'Freehand' },
-  { kind: 'text', name: 'Anything' },
-  { kind: 'text', name: 'Akai' },
-  { kind: 'text', name: 'Icon' },
+  // from each company's own site header (November 2026)
+  { kind: 'file', name: 'Triple Whale', src: 'triplewhale.svg', ratio: 1030 / 150 },
+  { kind: 'file', name: 'Superblocks', src: 'superblocks.svg', ratio: 137 / 26 },
+  { kind: 'file', name: 'Lindy', src: 'lindy.svg', ratio: 78 / 26 },
+  { kind: 'file', name: 'Enterpret', src: 'enterpret.svg', ratio: 120 / 24 },
+  { kind: 'file', name: 'Freehand', src: 'freehand.svg', ratio: 164 / 35 },
+  { kind: 'file', name: 'Anything', src: 'anything.svg', ratio: 1165 / 305 },
+  { kind: 'lockup', name: 'Fish Audio', src: 'fishaudio-mark.svg', ratio: 434.6 / 160.9 },
 ];
 
 /* Placement, in the construction's px. Four even columns across its 577 width (centres at 1/8,
-   3/8, 5/8, 7/8) and five even rows filling the band under the square (606 → 980), each logo in
-   the middle of its cell. The first two rows sit above the line through the spiral's eye (748.8,
-   the bottom of the screen); the other three are below the fold. ORDER: the launch-video clients
-   from the design first, then logos and type-set names interleaved. */
+   3/8, 5/8, 7/8) and four even rows filling the band under the square (660 → 980, under its title), each logo in
+   the middle of its cell. ORDER: the clients from the design first. */
 const COLS = [1, 3, 5, 7].map((k) => (577.663 * k) / 8);
-const ROWS = Array.from({ length: 5 }, (_, r) => 605.923 + ((979.999 - 605.923) * (r + 0.5)) / 5);
+// (the band's top 54 — 606 → 660 — holds the "Our Clients" title, .hv-zoom-title)
+const ROWS = Array.from({ length: 4 }, (_, r) => 660 + ((979.999 - 660) * (r + 0.5)) / 4);
 const ORDER = [
-  'Airwallex', 'Lovable', 'Stripe', 'Gamma',
-  'Deel', 'Triple Whale', 'Matic Robots', 'Superblocks',
-  'Cartesia', 'Lindy', 'PolyAI', 'Enterpret',
-  'Fish Audio', 'PlayerZero', 'Freehand', 'Pocket FM',
-  'Anything', 'Wispr Flow', 'Akai', 'Icon',
+  'Airwallex', 'Gamma', 'Deel', 'Triple Whale',
+  'Cartesia', 'Matic Robots', 'Superblocks', 'PolyAI',
+  'Lindy', 'PlayerZero', 'Enterpret', 'Pocket FM',
+  'Fish Audio', 'Wispr Flow', 'Freehand', 'Anything',
 ];
 const BY_NAME = new Map([...DESIGN, ...MORE].map((l) => [l.name, l]));
 const PLACED = ORDER.map((name, i) => ({ l: BY_NAME.get(name)!, cx: COLS[i % 4], cy: ROWS[Math.floor(i / 4)] }));
@@ -114,6 +104,58 @@ function LogoPart({ src: s, inset }: Part) {
     <span className="part" style={{ inset }}>
       <img src={src(s)} alt="" />
     </span>
+  );
+}
+
+/* One logo's visual (design box, file mask or type-set name), no position of its own — used both
+   in the golden-ratio grid (Zoom) and the plain card grid (Fade, HeroClients). */
+function LogoVisual({ l }: { l: Logo }) {
+  if (l.kind === 'design') {
+    return (
+      <span className="hv-logo" role="img" aria-label={l.name} style={vars({ '--w': l.w, '--h': l.h, '--s': fit(l.vw, l.vh, l.boost) })}>
+        {l.parts.map((p) => <LogoPart key={p.src} {...p} />)}
+        {l.masked?.map((m) => (
+          <span className="hv-lv" key={m.src} style={{ inset: m.box, ...vars({ '--mx': m.mx, '--my': m.my }) }}>
+            <LogoPart src={m.src} inset={m.inset} />
+          </span>
+        ))}
+      </span>
+    );
+  }
+  if (l.kind === 'file') {
+    const k = fit(l.ratio, 1, l.boost); // ink of 1 × ratio, scaled to the area
+    return <span className="hv-more-mark" role="img" aria-label={l.name} style={vars({ '--src': `url('/assets/clients/${l.src}')`, '--w': l.ratio * k, '--h': k })} />;
+  }
+  if (l.kind === 'lockup') {
+    return (
+      <span className="hv-lockup" role="img" aria-label={l.name}>
+        <span className="hv-more-mark" style={vars({ '--src': `url('/assets/clients/${l.src}')`, '--w': l.ratio * 11, '--h': 11 })} />
+        <span className="hv-text-mark" aria-hidden="true" style={vars({ '--fs': 14 })}>{l.name}</span>
+      </span>
+    );
+  }
+  return <span className="hv-text-mark" style={vars({ '--fs': textSize(l.name) })}>{l.name}</span>;
+}
+
+/* /home-4, Fade (html[data-intro='fade']): the clients as a titled card (Zoom keeps the
+   golden-ratio grid above; this renders alongside it and the two are shown one at a time by CSS)
+   — a centred "Our Clients" label, then the 16 logos in a plain 4-column grid on a soft grey
+   card. The same logos and order as the golden-ratio grid (ORDER, above). */
+function HeroClients() {
+  return (
+    <div className="hv-clients">
+      <p className="hv-clients-title">Our Clients</p>
+      <ul className="hvc-grid" aria-label="Clients">
+        {ORDER.map((name, i) => {
+          const l = BY_NAME.get(name)!;
+          return (
+            <li className="hvc-cell" key={l.name} style={delay(i * 40)}>
+              <LogoVisual l={l} />
+            </li>
+          );
+        })}
+      </ul>
+    </div>
   );
 }
 
@@ -178,37 +220,20 @@ export default function HeroVertical() {
                 </div>
               </div>
 
+              {/* Zoom: the grid's title, as Fade's card has — at the top of the logos' band, under the square */}
+              <p className="hv-zoom-title rise" style={delay(1200)}>Our Clients</p>
               <ul className="hv-logos" aria-label="Clients">
-                {PLACED.map(({ l, cx, cy }, i) => {
-                  const at = { '--cx': cx, '--cy': cy, '--d': `${1240 + i * 40}ms` };
-                  if (l.kind === 'design') {
-                    return (
-                      <li className="hv-logo-slot" key={l.name} style={vars({ ...at, '--w': l.w, '--h': l.h, '--s': fit(l.vw, l.vh, l.boost) })}>
-                        <span className="hv-logo" role="img" aria-label={l.name}>
-                          {l.parts.map((p) => <LogoPart key={p.src} {...p} />)}
-                          {l.masked?.map((m) => (
-                            <span className="hv-lv" key={m.src} style={{ inset: m.box, ...vars({ '--mx': m.mx, '--my': m.my }) }}>
-                              <LogoPart src={m.src} inset={m.inset} />
-                            </span>
-                          ))}
-                        </span>
-                      </li>
-                    );
-                  }
-                  if (l.kind === 'file') {
-                    const k = fit(l.ratio, 1, l.boost); // ink of 1 × ratio, scaled to the area
-                    return (
-                      <li className="hv-more" key={l.name} style={vars(at)}>
-                        <span className="hv-more-mark" role="img" aria-label={l.name}
-                          style={vars({ '--src': `url('/assets/clients/${l.src}')`, '--w': l.ratio * k, '--h': k })} />
-                      </li>
-                    );
-                  }
-                  return (
-                    <li className="hv-more hv-more-text" key={l.name} style={vars({ ...at, '--fs': textSize(l.name) })}>{l.name}</li>
-                  );
-                })}
+                {PLACED.map(({ l, cx, cy }, i) => (
+                  <li className={l.kind === 'design' ? 'hv-logo-slot' : 'hv-more'} key={l.name}
+                    style={vars({ '--cx': cx, '--cy': cy, '--d': `${1240 + i * 40}ms` })}>
+                    <LogoVisual l={l} />
+                  </li>
+                ))}
               </ul>
+
+              {/* Fade only (html[data-intro='fade']): the same clients as a titled card, shown in
+                  place of the golden-ratio grid above */}
+              <HeroClients />
             </div>
 
             <Ticks />
