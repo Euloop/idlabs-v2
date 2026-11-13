@@ -88,3 +88,7 @@ body:has(.s2-flow) .svc { transition: --c-line 400ms ease, --c-ink 400ms ease, -
   .svc[data-layout='columns'] .svc-cell + .svc-cell { border-left: 0; border-top: 1px solid var(--c-line); }
   .svc .svc-title { font-size: 16px; }
 }
+
+/* /home-4 (the page with the vertical hero): more room above "Our services" — it heads its section
+   with no padding of its own, and came up close under the tools' caption */
+body:has(.hero.hv) section.svc { margin-top: 96px; }

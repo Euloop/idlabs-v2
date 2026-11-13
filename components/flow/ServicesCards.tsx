@@ -9,7 +9,7 @@ import './services-cards.css';
               solid [Learn More] button at the foot of each cell
      cards    three separate hairline cards with a gap, a solid rounded number badge, the title in
               mono caps, the copy below, and a plain [Work with us] link at the foot
-   The label "Our forward-deployed services" sits centred above. Copy: the client's, word for word
+   The label "Our services" sits centred above. Copy: the client's, word for word
    (as in Services.tsx). Same section shell as the others (.sv: corners, theme, lights-up). */
 
 export type CardsLayout = 'columns' | 'cards';
@@ -61,7 +61,7 @@ export default function ServicesCards({ light = true, layout }: { light?: boolea
       <div className="sv-pin">
         <div className="frame sv-frame">
           <div className="sv-inner svc-inner">
-            <h2 id="svc-title" className="svc-label">Our forward&#8209;deployed services</h2>
+            <h2 id="svc-title" className="svc-label">Our services</h2>
             <ol className="svc-grid">
               {SERVICES.map((s, i) => (
                 <li key={s.title} className="svc-cell" style={{ '--i': i } as CSSProperties}>

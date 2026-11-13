@@ -8,7 +8,9 @@ import './tools-showcase.css';
 
 /* Analytical tools, "Showcase" layout (/home-2 and /home-4 Tools tabs). Two pinned screens:
 
-   1. The intro (`intro`), a screen of its own, the text typed in by the scroll:
+   1. The intro (`intro`) — not pinned: it scrolls with the page, the text typed in by the scroll,
+      done as it reaches the middle of the screen; the tools' names come up at the bottom of the
+      screen just then, never before the text is complete:
         typed     the line we had (Motion's intro): the client's whole sentence in 12px mono caps,
                   then a black bar wipes across "2B+ data points"
         headline  its first clause as a headline ("We turned this research into software, built on
@@ -18,9 +20,6 @@ import './tools-showcase.css';
       it, centred, the tool's lead and what the walkthrough shows (the client's copy). The stage
       holds for HOLD screens before the page scrolls on. The tools cycle, one loop each (LOOP s),
       while it is on screen; a click picks one; the pointer on the window holds it.
-   Headline: while the intro holds, the top of the tools screen (its names and a strip of the
-   colour field, --peek) already shows at the bottom of the screen, then rises into place. The tools
-   stage is sticky at both ends: `bottom` keeps it from sinking below that peek, `top` holds it.
    Sizes are Figma px × --px (the frame's unit). */
 
 export type ShowcaseIntro = 'typed' | 'headline';
@@ -44,8 +43,9 @@ export default function ToolsShowcase({ intro = 'typed' }: { intro?: ShowcaseInt
   const [inView, setInView] = useState(false);
   const [held, setHeld] = useState(false);
 
-  // The intro, driven by the scroll: 0 as its screen starts coming up, 1 once it has been
-  // pinned for a little while; scrolling back un-types it.
+  // The intro, driven by the scroll: 0 as its text comes up over the bottom of the screen, 1 as it
+  // reaches the middle (the intro isn't pinned: it scrolls with the page); scrolling back un-types it.
+  // The space under it keeps the tools' names below the fold until then.
   useEffect(() => {
     const el = introRef.current;
     if (!el) return;
@@ -54,7 +54,9 @@ export default function ToolsShowcase({ intro = 'typed' }: { intro?: ShowcaseInt
     const apply = () => {
       raf = 0;
       const vh = window.innerHeight;
-      const p = reduce ? 1 : clamp((0.8 * vh - el.getBoundingClientRect().top) / (1.2 * vh));
+      const r = (el.querySelector('.tsi-typed, .tsi-split') ?? el).getBoundingClientRect();
+      const mid = r.top + r.height / 2; // the text's own middle
+      const p = reduce ? 1 : clamp((0.95 * vh - mid) / (0.45 * vh));
       if (intro === 'typed') {
         textRef.current?.set(range(p, 0, 0.75));
         textRef.current?.light?.(range(p, 0.78, 0.95));
@@ -73,18 +75,6 @@ export default function ToolsShowcase({ intro = 'typed' }: { intro?: ShowcaseInt
     window.addEventListener('resize', onScroll);
     return () => { cancelAnimationFrame(raf); window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); };
   }, [intro]);
-
-  // Headline: how much of the tools screen peeks in under the intro — down to 36px into the field
-  useEffect(() => {
-    const sec = sectionRef.current, st = stageRef.current;
-    const field = st?.querySelector<HTMLElement>('.tsc-field');
-    if (!sec || !st || !field) return;
-    const measure = () => sec.style.setProperty('--peek', `${Math.round(field.getBoundingClientRect().top - st.getBoundingClientRect().top + 36)}px`);
-    measure();
-    const ro = new ResizeObserver(measure);
-    ro.observe(st);
-    return () => ro.disconnect();
-  }, []);
 
   // The tools stage on screen: it covers the middle of the screen
   useEffect(() => {

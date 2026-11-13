@@ -36,6 +36,11 @@ html[data-theme='night'] .lcf { --lcf-ink: #ebebeb; --lcf-mute: #6a6a6a; --lcf-b
   color: var(--lcf-ink); opacity: 0; translate: 0 var(--lift, 0px);
 }
 
+/* /home-4 (the page with the vertical hero): "Launches" / "we have done" in Season Mix, the hero
+   headline's face. TRIAL build, as in hero-vertical.css — swap for the licensed files before launch. */
+@font-face { font-family: 'Season Mix'; src: url('/experiment/fonts/season-mix-regular.otf') format('opentype'); font-weight: 400; font-style: normal; font-display: swap; }
+body:has(.hero.hv) .lcf-word { font-family: 'Season Mix', var(--serif); letter-spacing: -0.02em; }
+
 /* the headline, in the field's opening; a soft paper glow keeps it readable over passing tiles */
 .lcf-head {
   position: absolute; left: 50%; top: 50%; z-index: 500; width: min(620px, 78vw); text-align: center; opacity: 0;
@@ -125,6 +130,8 @@ html[data-theme='night'] .lcf-rails::before, html[data-theme='night'] .lcf-rails
 /* Float II (data-alt): a smaller reach, the line under it in mono; prev / next areas at each side */
 /* Float II: IBM Plex Mono at Profound's stat size (56px on a 64px line, smaller on narrow screens) */
 .lcr[data-alt] .lcr-reach { font-family: var(--mono); font-size: clamp(34px, 3.9vw, 56px); line-height: 1.14; letter-spacing: -0.02em; text-transform: uppercase; }
+/* Float III / IV (the reel in a card): the reach a size down, to suit the smaller card */
+.lcr[data-alt][data-card] .lcr-reach { font-size: clamp(24px, 2.6vw, 38px); }
 /* the post link: no underline, the arrow says it */
 .lcr[data-alt] .lcr-sub a { text-decoration: none; }
 .lcr[data-alt] .lcr-sub a:hover { opacity: 1; color: #fff; }

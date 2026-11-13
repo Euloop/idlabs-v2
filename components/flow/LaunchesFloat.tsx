@@ -94,13 +94,34 @@ const HERO_SLIDE = Math.max(0, REEL.indexOf(TILES[HERO]?.l as Launch));
 const FIELD = 3.2, ZOOM = [3.2, 4.3], REEL_IN = [4.22, 4.38], REEL_UI = [4.35, 4.6];
 
 
-/* alt (Float II): the words read "Launches" / "we have done"; no headline over the field (it stays
+/* alt (Float II): the words read "Launches we" / "have done"; no headline over the field (it stays
    for screen readers); the reel in its alt dress (LaunchesReel.tsx).
    card (Float III): the zoom settles the launch in the centre between the margin lines (the frame's
    width, 16:9) instead of filling the screen; the rest of the field fades away under it, and the
    reel takes the card's place with prev / next chevrons in the side margins. */
 /* track (Float IV): the card as a track of launches, the next one peeking in past the right margin
    (tryprofound.com's story cards). */
+// The width of one word space in an element's font, plus its tracking (cached per font; it changes
+// when the web font swaps in).
+let spaceCtx: CanvasRenderingContext2D | null = null;
+const spaceCache = new Map<string, number>();
+function spaceOf(el: HTMLElement | null) {
+  if (!el) return 0;
+  const cs = getComputedStyle(el);
+  const font = `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`;
+  const ls = parseFloat(cs.letterSpacing) || 0;
+  const key = `${font}|${ls}|${document.fonts?.status}`;
+  let w = spaceCache.get(key);
+  if (w === undefined) {
+    spaceCtx ??= document.createElement('canvas').getContext('2d');
+    if (!spaceCtx) return 0;
+    spaceCtx.font = font;
+    w = spaceCtx.measureText(' ').width + ls;
+    spaceCache.set(key, w);
+  }
+  return w;
+}
+
 export default function LaunchesFloat({ alt = false, card = false, track = false }: { alt?: boolean; card?: boolean; track?: boolean }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -245,7 +266,9 @@ export default function LaunchesFloat({ alt = false, card = false, track = false
       // the words: together in the centre before the load, pushed apart as the wave opens;
       // they fade as the scatter starts.
       const gap = Math.max(10, W * 0.008);
-      const wordOff = gap + (ribW / 2 + cardH * 0.95 + gap) * g;
+      // together they read as one line: half a word space each side of the centre, in the words' own
+      // font (each word's box already carries its last letter's tracking); apart, as before
+      const wordOff = spaceOf(leftRef.current) / 2 + (ribW / 2 + cardH * 0.95 + gap) * g;
       // together, the pair is centred as a whole (the two words differ in length); as the wave opens
       // between them they part evenly around it
       const lw = leftRef.current?.offsetWidth ?? 0, rw = rightRef.current?.offsetWidth ?? 0;
@@ -315,8 +338,8 @@ export default function LaunchesFloat({ alt = false, card = false, track = false
             );
           })}
         </div>
-        <p className="lcf-word" ref={leftRef} aria-hidden="true">Launches</p>
-        <p className="lcf-word" ref={rightRef} aria-hidden="true">{alt ? 'we have done' : '2B+ views'}</p>
+        <p className="lcf-word" ref={leftRef} aria-hidden="true">{alt ? 'Launches we' : 'Launches'}</p>
+        <p className="lcf-word" ref={rightRef} aria-hidden="true">{alt ? 'have done' : '2B+ views'}</p>
         {alt ? (
           <h2 id="lc-title" className="sr-only">Launches we have done for our clients</h2>
         ) : (

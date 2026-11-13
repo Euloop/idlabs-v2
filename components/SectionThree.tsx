@@ -47,7 +47,7 @@ export const PAPERS: PaperProps[] = [
 /* cover "paper" (/home-2's Paper tab): the paper's real first page (immersive/PaperPage.tsx) as
    the front page, at US Letter proportions and punched like the site's front page (the black
    behind it shows through the holes), over the site's textured back page. */
-export function PaperCover({ title, figs, href = '#', index }: PaperProps & { index: number }) {
+export function PaperCover({ title, figs, href = '#', index, holes = true }: PaperProps & { index: number; holes?: boolean }) {
   return (
     <a className="pp pp-letter" href={href} target="_blank" rel="noopener noreferrer" aria-label={`${title} ${AUTHORS}, ${LAB} (PDF, opens in a new tab)`}>
       <span className="pp-box" aria-hidden="true">
@@ -55,7 +55,7 @@ export function PaperCover({ title, figs, href = '#', index }: PaperProps & { in
           <img className="pp-abs" src={`${A}paper-back.svg`} alt="" style={{ '--iw': 276.097, '--ih': 357.3, '--il': 0, '--it': 0 } as CSSProperties} />
         </span>
         <span className="pp-page pp-front">
-          <PaperPage paper={PAPER_TEXT[index]} fig={figs[0].src} stack={false} holes />
+          <PaperPage paper={PAPER_TEXT[index]} fig={figs[0].src} stack={false} holes={holes} />
         </span>
       </span>
     </a>
@@ -95,7 +95,8 @@ export function Paper({ title, figs, href = '#' }: PaperProps) {
 
 /* lead: replaces "Read our published findings" with a paragraph (on /home-2, Section 2's part 3
    line moves here); it types in the same way. */
-export default function SectionThree({ lead, cover = 'site' }: { lead?: string; cover?: Cover } = {}) {
+// holes: the Paper cover's punched holes (on by default; /home-4 turns them off)
+export default function SectionThree({ lead, cover = 'site', holes = true }: { lead?: string; cover?: Cover; holes?: boolean } = {}) {
   const sectionRef = useRef<HTMLElement>(null);
   const readRef = useRef<ScrollTextHandle>(null);
   useEffect(() => {
@@ -141,7 +142,7 @@ export default function SectionThree({ lead, cover = 'site' }: { lead?: string; 
             )}
             <div className="s3-band">
               <div className="s3-papers">
-                {PAPERS.map((p, i) => cover === 'paper' ? <PaperCover key={p.title} {...p} index={i} /> : <Paper key={p.title} {...p} />)}
+                {PAPERS.map((p, i) => cover === 'paper' ? <PaperCover key={p.title} {...p} index={i} holes={holes} /> : <Paper key={p.title} {...p} />)}
               </div>
             </div>
           </div>

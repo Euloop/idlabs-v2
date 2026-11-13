@@ -12,10 +12,16 @@
 
 .hn-card {
   position: relative; background: #fafafa;
-  /* rule to rule, out over the frame's padding; it paints over the page's fixed rules, so it draws
-     its own left and right edges in their colour (#e0e0e0) */
-  border: 1px solid #e0e0e0;
+  /* rule to rule, out over the frame's padding (under 960; wider, as wide as the clients, below).
+     No border and no corner squares: a plain grey card */
   margin-inline: calc(-1 * var(--pad));
+}
+.hn-tick { display: none; }
+/* as wide as the clients above it, centred: Zoom's golden construction (577.663), Fade's card
+   (min(656px, 100%)) — wide screens; under 960 both run full width as before */
+@media (min-width: 960px) {
+  .hn-card { width: 577.663px; max-width: 100%; margin-inline: auto; }
+  html[data-intro='fade'] .hn-card { width: 656px; }
 }
 .hn-tick { position: absolute; width: 8px; height: 8px; background: #d9d9d9; }
 .hn-tick-tl { left: 0; top: 0; translate: -50% -50%; }
@@ -25,7 +31,7 @@
 
 .hn-grid {
   list-style: none; margin: 0; padding: 56px 32px;
-  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
   row-gap: 44px; column-gap: 16px;
 }
 .hn-cell { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }

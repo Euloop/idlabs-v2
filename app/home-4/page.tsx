@@ -48,7 +48,7 @@ export default function Home4() {
       <HeroNetwork />
       <SectionTwo noOutro compact />
       <ResearchLab />
-      <SectionThree lead="Read our published findings" cover="paper" />
+      <SectionThree lead="Read our published findings" cover="paper" holes={false} />
       <MonoTrail selector="section.s3 .s3-band" />
       {/* tools: Showcase (default) or Motion, bottom tabs (?tools=) */}
       <ToolsOptions only={['showcase', 'motion']} />
