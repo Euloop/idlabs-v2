@@ -1,0 +1,97 @@
+/* /home-4 start loader (StartLoader.tsx) — Figma 184:117 / 135 / 152 / 174, a 1280 × 832 frame drawn 1:1.
+   Vertical positions are taken from the frame's middle (y 416): slot 303–511, side words 407–425,
+   caption 33px off the bottom. */
+
+.sl { display: none; }
+html[data-loader='run'] .sl,
+html[data-loader='zoom'] .sl,
+html[data-loader='done'] .sl:not([data-show='gone']) {
+  display: block; position: fixed; inset: 0; z-index: 2000;
+  background: #fff; pointer-events: none;
+  font-family: var(--mono); font-weight: 400; font-size: 12px; line-height: 1.5; text-transform: uppercase;
+}
+html[data-loader='run'] .sl { pointer-events: auto; }
+html[data-loader='run'], html[data-loader='zoom'] { overflow: hidden; }
+
+/* Hold every page animation (hero entrance, header, rails) until the loader lands, so they play
+   after it instead of hidden under it. The hero's construction skips its draw-in: the loader's
+   golden ratio lands on it already drawn. */
+html[data-loader='run'] body *:not(.sl, .sl *),
+html[data-loader='zoom'] body *:not(.sl, .sl *) { animation-play-state: paused !important; }
+html[data-loader] .hv-construction { animation: none; }
+/* ...and stays hidden while the loader runs: otherwise it shows, faint and full size, through the white
+   as it lifts, before the zoom lands on it */
+html[data-loader='run'] .hv-construction, html[data-loader='zoom'] .hv-construction { visibility: hidden; }
+
+/* The opening, once the first image has loaded (html[data-sl-ready], set inline before hydration):
+   the frame opens from a line across its middle — two white shutters part, up and down — as the image
+   fades in and settles from a slight zoom; then the words either side and the caption fade up out of
+   a soft blur. Held at their first frame until then. Transforms and opacity only, so it runs on the
+   compositor, smooth even while the page is still hydrating (clip-path stutters there). Text moves
+   with transform — translate already places it. */
+.sl-frame:first-child::before, .sl-frame:first-child::after {
+  content: ''; position: absolute; left: 0; right: 0; height: calc(50% + 1px); background: #fff;
+  animation: sl-shutter 1000ms cubic-bezier(.45, 0, .1, 1) 0ms both paused;
+}
+.sl-frame:first-child::before { top: 0; --to: -100%; }
+.sl-frame:first-child::after { bottom: 0; --to: 100%; }
+.sl-frame:first-child img { animation: sl-settle 1400ms var(--ease-out) 0ms backwards paused; }
+.sl-side, .sl-caption { animation: sl-text 1000ms var(--ease-out) var(--d, 0ms) backwards paused; }
+html[data-sl-ready] .sl-frame:first-child::before,
+html[data-sl-ready] .sl-frame:first-child::after,
+html[data-sl-ready] .sl-frame:first-child img,
+html[data-sl-ready] .sl-side, html[data-sl-ready] .sl-caption { animation-play-state: running; }
+.sl-l { --d: 550ms; } .sl-r { --d: 680ms; } .sl-caption { --d: 860ms; }
+.sl-side, .sl-caption { transition: opacity 300ms var(--ease-out); }
+@keyframes sl-shutter { to { transform: translateY(var(--to)); } }
+@keyframes sl-settle { from { opacity: 0; transform: scale(1.18); } 40% { opacity: 1; } }
+@keyframes sl-text { from { opacity: 0; transform: translateY(10px); filter: blur(4px); } }
+
+.sl-side {
+  position: absolute; top: 50%; translate: -50% -50%;
+  color: #1f1f1f; letter-spacing: 0.96px; white-space: nowrap;
+}
+.sl-l { left: 71.5px; }
+.sl-r { left: calc(100% - 50.5px); }
+
+.sl-caption {
+  position: absolute; left: 50%; bottom: 33px; translate: -50% 0;
+  width: min(515px, calc(100% - 32px));
+  color: #808080; text-align: center; text-wrap: pretty;
+}
+
+/* The slot: 208 tall, centred on x; each frame its own width. One shows at a time — a hard cut. */
+.sl-slot { position: absolute; left: 50%; top: calc(50% - 113px); width: 0; height: 208px; }
+.sl-frame { position: absolute; top: 0; left: 0; translate: -50% 0; }
+.sl-frame, .sl-golden { visibility: hidden; }
+.sl-frame { height: 208px; overflow: hidden; }
+.sl-frame img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.sl-golden { display: block; max-width: none; }
+/* the one on (StartLoaderRun moves data-on: a hard cut) */
+.sl-frame[data-on], .sl-golden[data-on] { visibility: visible; }
+
+/* Zoom: the white lifts off the page, the words go, and the drawing scales from its top-left onto
+   the hero's construction (StartLoaderRun sets the transform), easing to the hero's 12% grey. */
+/* Drawn at the hero's size (577.663 × 980.663) and scaled down to the 208 slot, so the zoom only
+   ever scales it back up to 1:1 — the lines stay sharp all the way (scaled up from 208, Chrome
+   stretches a bitmap of 0.28px strokes and they break into dashes). */
+.sl-golden {
+  width: 577.663px; height: 980.663px;
+  transform-origin: 0 0; transform: scale(0.21225); /* 208.141 / 980.663 */
+  /* centred by margin, not translate: the CSS minifier folds `translate` into `transform`, which the zoom overwrites */
+  position: absolute; top: 0; left: 0; margin-left: -61.318px; /* half the scaled width */
+  transition: transform 1100ms cubic-bezier(.76, 0, .18, 1), opacity 1100ms cubic-bezier(.76, 0, .18, 1);
+}
+html[data-loader='zoom'] .sl, html[data-loader='done'] .sl {
+  background: transparent; transition: background-color 700ms cubic-bezier(.5, 0, .2, 1) 150ms;
+}
+html[data-loader='zoom'] .sl-side, html[data-loader='zoom'] .sl-caption,
+html[data-loader='done'] .sl-side, html[data-loader='done'] .sl-caption { opacity: 0; }
+html[data-loader='zoom'] .sl-golden { opacity: 0.12; }
+
+/* narrow screens: the side words sit above the slot, at the gutters */
+@media (max-width: 640px) {
+  .sl-side { top: calc(50% - 145px); translate: 0 -50%; }
+  .sl-l { left: 16px; }
+  .sl-r { left: auto; right: 16px; }
+}

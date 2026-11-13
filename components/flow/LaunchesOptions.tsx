@@ -13,12 +13,14 @@ const VARIANTS: [Variant, string][] = [['float2', 'Float II'], ['float3', 'Float
 // The last section: from when its top reaches the middle of the screen.
 const arrived = (r: DOMRect, vh: number) => r.top <= vh * 0.5;
 
-export default function LaunchesOptions() {
-  const [variant, pick] = useOption<Variant>('launches', VARIANTS, 'float2');
+// `only`: a page that offers just some of the variants (/home-4: Float II, III, IV); the first is the default
+export default function LaunchesOptions({ only }: { only?: Variant[] } = {}) {
+  const options = only ? VARIANTS.filter(([id]) => only.includes(id)) : VARIANTS;
+  const [variant, pick] = useOption<Variant>('launches', options, options[0][0]);
   return (
     <>
       <Launches variant={variant} />
-      <OptionTabs groups={[{ label: 'Launches layout', options: VARIANTS, value: variant, onChange: (v) => pick(v as Variant) }]}
+      <OptionTabs groups={[{ label: 'Launches layout', options, value: variant, onChange: (v) => pick(v as Variant) }]}
         selector="section.lc" label="Launches options" when={arrived} />
     </>
   );

@@ -1,0 +1,141 @@
+/* /home-4 hero (HeroVertical.tsx) — Figma "new hero light theme" 183:3.
+   Drawn 1:1: --px is pinned to 1px here, so nothing zooms to fit the screen (32px headline, 12px
+   copy, at any window size); bigger windows just get more white around it. The header is 56 on
+   this page (flow.css), the construction starts at y 84 or lower (see .hv-main) and runs its full 980, its
+   bottom line on the hero's bottom edge — the hero is exactly that tall, no clipping. */
+
+/* Season Mix: TRIAL build (Figma's headline face), as in experiment.css — swap for the licensed
+   files before launch. */
+@font-face { font-family: 'Season Mix'; src: url('/experiment/fonts/season-mix-regular.otf') format('opentype'); font-weight: 400; font-style: normal; font-display: swap; }
+
+.hero.hv, .hv .frame { --px: 1px; min-height: 0; }
+.hv { --hv-ink: #4a4a4a; --hv-pale: #ccc; --hv-line: #ebebeb; }
+/* the header's markers sit at y 63 in this design (59–67 on the rules) */
+.hv .site-header { --tick-y: calc(63 * var(--px)); }
+
+.hv-main {
+  position: relative;
+  /* The line through the spiral's eye (y 748.8 in the construction) sits on the bottom of the
+     screen, as in the design (84 + 748.8 = its 832 frame); the rows of logos under it are below
+     the fold. Taller screens get more space above; on short ones the construction keeps y 84
+     (28 under the 56 header) and that line drops below the fold. */
+  margin-top: max(28px, 100svh - 56px - 748.813px);
+  height: calc(980.663 * var(--px)); /* the whole construction: its bottom line is the hero's bottom */
+  --tick-y: calc(100% - 0.66px); /* lower markers on that bottom line */
+}
+
+/* The construction box: 577 × 980, centred in the frame */
+.hv-golden {
+  position: absolute; top: 0; left: 50%; translate: -50% 0;
+  width: calc(577.663 * var(--px)); height: calc(980.663 * var(--px));
+}
+.hv-construction {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  pointer-events: none; user-select: none;
+  /* drawn outward from the spiral's eye (440.8, 748.8) */
+  animation: hv-reveal 1800ms var(--ease-out) 150ms both;
+}
+@keyframes hv-reveal {
+  from { clip-path: circle(0% at 76.3% 76.36%); }
+  to { clip-path: circle(150% at 76.3% 76.36%); }
+}
+
+/* Copy in the large square: 512 wide from x 33, centred on y 280 (Figma: 30% / 30%, 50% − 52px) */
+.hv-copy {
+  position: absolute; left: calc(33 * var(--px)); top: calc(280 * var(--px)); translate: 0 -50%;
+  width: calc(512 * var(--px));
+  display: flex; flex-direction: column; gap: calc(32 * var(--px));
+  color: var(--hv-ink);
+}
+.hv-headline {
+  font-family: 'Season Mix', var(--sans); font-weight: 400;
+  font-size: calc(32 * var(--px)); line-height: 1.3; letter-spacing: -0.02em;
+  color: var(--hv-ink);
+}
+.hv-line { display: block; overflow: hidden; padding-bottom: 0.12em; margin-bottom: -0.12em; }
+.hv-line:first-child { color: var(--hv-pale); }
+.hv-li { display: block; animation: word 950ms var(--ease-out) var(--d, 0ms) both; }
+
+.hv-body {
+  display: flex; flex-direction: column; gap: calc(20 * var(--px));
+  font-family: var(--mono); font-weight: 400;
+  font-size: calc(12 * var(--px)); line-height: 1.5; letter-spacing: 0.01em;
+  text-transform: uppercase; text-wrap: pretty;
+}
+.hv-body ul { list-style: none; margin-top: 1.5em; }
+.hv-body li { position: relative; padding-left: calc(18 * var(--px)); }
+.hv-body li::before { content: '\2022'; position: absolute; left: calc(6 * var(--px)); }
+
+/* Logos: each centred on its column and row (HeroVertical.tsx: PLACED), scaled to the common
+   visual size (--s) */
+.hv-logos { list-style: none; position: absolute; inset: 0; pointer-events: none; }
+.hv-logo-slot {
+  position: absolute;
+  left: calc(var(--cx) * var(--px)); top: calc(var(--cy) * var(--px));
+  width: calc(var(--w) * var(--px)); height: calc(var(--h) * var(--px));
+  translate: -50% -50%; scale: var(--s, 1);
+  animation: rise 700ms var(--ease-out) var(--d, 0ms) both;
+  pointer-events: auto;
+}
+.hv-logo { position: absolute; inset: 0; display: block; overflow: clip; }
+.hv .part { position: absolute; display: block; }
+.hv .part > img { position: absolute; inset: 0; width: 100%; height: 100%; }
+.hv-lv {
+  position: absolute; display: block;
+  -webkit-mask: url('/assets/hero-v/lovable-mask.svg') no-repeat;
+  mask: url('/assets/hero-v/lovable-mask.svg') no-repeat;
+  mask-mode: alpha;
+  -webkit-mask-position: calc(var(--mx) * var(--px)) calc(var(--my) * var(--px)); mask-position: calc(var(--mx) * var(--px)) calc(var(--my) * var(--px));
+  -webkit-mask-size: calc(15.795 * var(--px)) calc(15.97 * var(--px)); mask-size: calc(15.795 * var(--px)) calc(15.97 * var(--px));
+}
+
+/* The rest of the launch clients: a logo (its file as a mask, in the logos' grey) or the name in
+   type, centred on their column and row */
+.hv-more {
+  position: absolute; left: calc(var(--cx) * var(--px)); top: calc(var(--cy) * var(--px)); translate: -50% -50%;
+  display: flex; align-items: center;
+  font-family: var(--sans); font-weight: 500; font-size: calc(var(--fs, 15) * 1px); letter-spacing: -0.02em; line-height: 1;
+  color: #989898; white-space: nowrap;
+  animation: rise 700ms var(--ease-out) var(--d, 0ms) both;
+}
+.hv-more-mark {
+  display: block; width: calc(var(--w) * 1px); height: calc(var(--h) * 1px);
+  background: currentColor;
+  -webkit-mask: var(--src) center / contain no-repeat; mask: var(--src) center / contain no-repeat;
+}
+
+/* ───────── Narrow screens (<960): the construction can't hold the copy at a readable size.
+   The copy and the logos stack in the frame, each in a hairline box (the construction's lines),
+   the logos in a grid; the drawing itself is left out. ───────── */
+@media (max-width: 959px) {
+  .hv-main { height: auto; margin-top: 8px; padding-bottom: 48px; --tick-y: 100%; }
+  .hv-golden { position: relative; left: auto; translate: none; width: auto; height: auto; }
+  .hv-construction { display: none; }
+  .hv-copy {
+    position: relative; left: auto; top: auto; translate: none; width: auto;
+    gap: 28px; padding: 28px 24px 40px; border: 1px solid var(--hv-line);
+  }
+  .hv-headline { font-size: clamp(26px, 7cqw, 32px); }
+  .hv-body { font-size: 12px; gap: 20px; max-width: 512px; }
+  .hv-body li { padding-left: 18px; }
+  .hv-body li::before { left: 6px; }
+  .hv-logos {
+    position: relative; inset: auto;
+    display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); row-gap: 28px;
+    padding: 32px 12px; border: 1px solid var(--hv-line); border-top: 0;
+  }
+  .hv-more { position: relative; left: auto; top: auto; translate: none; justify-self: center; }
+  .hv-logo-slot { position: relative; left: auto; top: auto; translate: none; justify-self: center; align-self: center; width: calc(var(--w) * 1px); height: calc(var(--h) * 1px); }
+  .hv-lv {
+    -webkit-mask-position: calc(var(--mx) * 1px) calc(var(--my) * 1px); mask-position: calc(var(--mx) * 1px) calc(var(--my) * 1px);
+    -webkit-mask-size: 15.795px 15.97px; mask-size: 15.795px 15.97px;
+  }
+}
+@media (max-width: 559px) {
+  .hv-copy { padding: 24px 16px 32px; }
+  .hv-logos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hv-construction, .hv-li, .hv-logo-slot, .hv-more { animation: none; }
+}
