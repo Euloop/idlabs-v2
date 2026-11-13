@@ -8,9 +8,9 @@ import './tools-showcase.css';
 
 /* Analytical tools, "Showcase" layout (/home-2 and /home-4 Tools tabs). Two pinned screens:
 
-   1. The intro (`intro`) — not pinned: it scrolls with the page, the text typed in by the scroll,
-      done as it reaches the middle of the screen; the tools' names come up at the bottom of the
-      screen just then, never before the text is complete:
+   1. The intro (`intro`), the text typed in by the scroll. Typed line: a pinned screen of its own,
+      as it always was. Headline: not pinned — it scrolls with the page, done as it reaches the
+      middle of the screen, the tools' names coming up at the bottom of the screen just then:
         typed     the line we had (Motion's intro): the client's whole sentence in 12px mono caps,
                   then a black bar wipes across "2B+ data points"
         headline  its first clause as a headline ("We turned this research into software, built on
@@ -54,13 +54,17 @@ export default function ToolsShowcase({ intro = 'typed' }: { intro?: ShowcaseInt
     const apply = () => {
       raf = 0;
       const vh = window.innerHeight;
-      const r = (el.querySelector('.tsi-typed, .tsi-split') ?? el).getBoundingClientRect();
-      const mid = r.top + r.height / 2; // the text's own middle
-      const p = reduce ? 1 : clamp((0.95 * vh - mid) / (0.45 * vh));
       if (intro === 'typed') {
+        // Typed line, as it was: the intro pinned; 0 as its screen starts coming up, 1 once it has
+        // been pinned for a little while
+        const p = reduce ? 1 : clamp((0.8 * vh - el.getBoundingClientRect().top) / (1.2 * vh));
         textRef.current?.set(range(p, 0, 0.75));
         textRef.current?.light?.(range(p, 0.78, 0.95));
       } else {
+        // Headline: not pinned; 0 as its text comes up over the bottom of the screen, 1 at the middle
+        const r = (el.querySelector('.tsi-split') ?? el).getBoundingClientRect();
+        const mid = r.top + r.height / 2;
+        const p = reduce ? 1 : clamp((0.95 * vh - mid) / (0.45 * vh));
         textRef.current?.set(range(p, 0, 0.6));
         if (subRef.current) {
           const k = range(p, 0.55, 0.85);

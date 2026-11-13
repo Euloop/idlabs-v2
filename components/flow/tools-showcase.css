@@ -1,6 +1,6 @@
 /* Analytical tools, Showcase layout (ToolsShowcase.tsx). Light page. Figma px × --px. */
 
-/* The intro (.tsi): not pinned — it scrolls with the page, its text typed in on the way up and
+/* The intro (.tsi), Headline: not pinned — it scrolls with the page, its text typed in on the way up and
    done as it reaches the middle of the screen; the space under it is set so the tools' names come
    up at the bottom of the screen just then (not before). Then the tools stage (.tsc-pin, sticky in
    the whole section), held by the spacer after it (.tsc-hold). */
@@ -9,6 +9,11 @@
 .tsc-hold { height: 80svh; }        /* tools: holds 0.8 screen before the page scrolls on */
 .tsi-pin { height: auto; }
 .tsi-frame { height: auto; padding-bottom: 150px; }
+/* Typed line keeps its original pinned intro: two screens, the line typed in over the arrival, then
+   held in the middle of the screen */
+.tsc[data-intro='typed'] .tsi { padding-top: 0; height: 200svh; }
+.tsc[data-intro='typed'] .tsi-pin { position: sticky; top: 0; height: 100svh; overflow: clip; }
+.tsc[data-intro='typed'] .tsi-frame { height: 100%; padding-bottom: 0; }
 .tsc-pin { position: sticky; top: 0; height: 100svh; overflow: clip; }
 .tsi-frame, .tsc-frame { min-height: 0; height: 100%; display: flex; flex-direction: column; justify-content: center; }
 /* the tools stage: centred in the screen under the fixed header (56) */
@@ -103,6 +108,7 @@
 @keyframes tsc-in { from { opacity: 0; translate: 0 6px; } }
 
 @media (max-width: 959px) {
+  .tsc[data-intro='typed'] .tsi { height: 160svh; }
   .tsi { padding-top: 40svh; }
   .tsc-hold { height: 0; }
   .tsc { padding-bottom: 0; }
