@@ -216,6 +216,7 @@ html[data-sl-open='logo'] .sl-caption { animation-delay: 3850ms; }
    image: with every image animating its own layer the browser moves ~45 layers a frame and drops
    frames, which shows as a cut held too long. A cut is only a visibility switch inside a moving layer. */
 html[data-sl-end='reel'] .sl-stage { position: absolute; top: 0; left: -65.78px; width: 131.56px; height: 208px; overflow: hidden; }
+
 .sl-zoom { position: absolute; inset: 0; will-change: transform; }
 .sl-stage .sl-frame { top: 0; left: 0; translate: none; }
 .sl-gframe { height: 208px; }

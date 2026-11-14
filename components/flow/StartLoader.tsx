@@ -97,23 +97,50 @@ const VB_H = 200;
 const G_H = 208;
 const G_W = (VB_W * G_H) / VB_H; // 131.56
 
+
 /* The construction, in the frame's px: squares cut from the golden rectangle in turn — top, left,
    bottom, right — each with a quarter arc, which together make the spiral. */
 const PHI = (1 + Math.sqrt(5)) / 2;
+// The bulge (as the reference: each picture a slightly convex screen) is baked into the /hero images
+// (assets/loader/bulged): in the frame's own −1…1 coordinates a point at radius ρ goes to
+// ρ·(1 + 0.08(1 − ρ²/2)) — the centre 8% larger, the corners in place, so the frame stays a plain,
+// filled rectangle while straight lines in the picture bow gently out. The spiral and its
+// construction go through the same warp, here, so they stay on the images' own spirals; no filter
+// runs in the browser.
+const BULGE_K = 0.08;
+function bulge(x: number, y: number): [number, number] {
+  const u = (x - VB_W / 2) / (VB_W / 2), v = (y - VB_H / 2) / (VB_H / 2);
+  const k = 1 + BULGE_K * (1 - (u * u + v * v) / 2);
+  return [VB_W / 2 + u * k * (VB_W / 2), VB_H / 2 + v * k * (VB_H / 2)];
+}
+// a polyline through the warp: `pts` in the frame's units, warped, as path data
+const f2 = (n: number) => +n.toFixed(2);
+const poly = (pts: [number, number][]) => pts.map(([x, y], i) => { const [X, Y] = bulge(x, y); return `${i ? 'L' : 'M'}${f2(X)} ${f2(Y)}`; }).join('');
+const seg = (x0: number, y0: number, x1: number, y1: number, n = 16): [number, number][] =>
+  Array.from({ length: n + 1 }, (_, i) => [x0 + ((x1 - x0) * i) / n, y0 + ((y1 - y0) * i) / n]);
+// a quarter arc about (cx, cy) from one point to another, the short way round
+const quarter = (cx: number, cy: number, x0: number, y0: number, x1: number, y1: number, n = 24): [number, number][] => {
+  const r = Math.hypot(x0 - cx, y0 - cy), a0 = Math.atan2(y0 - cy, x0 - cx);
+  let d = Math.atan2(y1 - cy, x1 - cx) - a0;
+  if (d > Math.PI) d -= 2 * Math.PI; if (d < -Math.PI) d += 2 * Math.PI;
+  return Array.from({ length: n + 1 }, (_, i) => [cx + r * Math.cos(a0 + (d * i) / n), cy + r * Math.sin(a0 + (d * i) / n)]);
+};
+/* The construction, in the frame's units: squares cut from the golden rectangle in turn — top, left,
+   bottom, right — each with a quarter arc, which together make the spiral; all through the bulge. */
 function construction() {
-  const f = (n: number) => +n.toFixed(2);
   let x = 4, y = 4, w = 192 / PHI, h = 192;
+  const outer = poly([...seg(x, y, x + w, y), ...seg(x + w, y, x + w, y + h).slice(1), ...seg(x + w, y + h, x, y + h).slice(1), ...seg(x, y + h, x, y).slice(1)]);
   const lines: string[] = [];
-  let arc = `M${f(x + w)} ${f(y)}`;
+  const arc: [number, number][] = [];
   for (let i = 0; i < 10; i++) {
     const k = i % 4;
     const s = k % 2 === 0 ? w : h;
-    if (k === 0) { arc += `A${f(s)} ${f(s)} 0 0 0 ${f(x)} ${f(y + s)}`; y += s; h -= s; lines.push(`M${f(x)} ${f(y)}H${f(x + w)}`); }
-    else if (k === 1) { arc += `A${f(s)} ${f(s)} 0 0 0 ${f(x + s)} ${f(y + s)}`; x += s; w -= s; lines.push(`M${f(x)} ${f(y)}V${f(y + h)}`); }
-    else if (k === 2) { arc += `A${f(s)} ${f(s)} 0 0 0 ${f(x + s)} ${f(y + h - s)}`; h -= s; lines.push(`M${f(x)} ${f(y + h)}H${f(x + w)}`); }
-    else { arc += `A${f(s)} ${f(s)} 0 0 0 ${f(x + w - s)} ${f(y)}`; w -= s; lines.push(`M${f(x + w)} ${f(y)}V${f(y + h)}`); }
+    if (k === 0) { arc.push(...quarter(x + s, y + s, x + s, y, x, y + s)); y += s; h -= s; lines.push(poly(seg(x, y, x + w, y))); }
+    else if (k === 1) { arc.push(...quarter(x + s, y, x, y, x + s, y + s)); x += s; w -= s; lines.push(poly(seg(x, y, x, y + h))); }
+    else if (k === 2) { arc.push(...quarter(x, y + h - s, x, y + h, x + s, y + h - s)); h -= s; lines.push(poly(seg(x, y + h, x + w, y + h))); }
+    else { arc.push(...quarter(x + w - s, y + s, x + w, y + s, x + w - s, y)); w -= s; lines.push(poly(seg(x + w, y, x + w, y + h))); }
   }
-  return { lines: lines.join(''), arc };
+  return { outer, lines: lines.join(''), arc: poly(arc) };
 }
 const CON = construction();
 /* Two layers: the construction lines, thin, in difference (dark on light images, light on dark); and
@@ -125,7 +152,7 @@ function Spiral() {
     // the frame; the construction's difference blend reaches the images there
     <>
       <svg className="sl-spiral" viewBox={`0 0 ${VB_W} ${VB_H}`} width={G_W} height={G_H} aria-hidden="true">
-        <rect className="sl-sp-line" x={4} y={4} width={192 / PHI} height={192} />
+        <path className="sl-sp-line" d={CON.outer} />
         <path className="sl-sp-line" d={CON.lines} />
       </svg>
       {/* the flash: a brighter, wider glow of the same arc, flaring on each golden cut and dying away
@@ -171,10 +198,12 @@ const BOOT = (fixed: boolean) => `(function(){var d=document.documentElement,q=n
 
 export default function StartLoader({ fixed = false }: { fixed?: boolean }) {
   const reel = fixed ? REEL_HERO : REEL;
+  // /hero: each image already cropped to the frame and bulged (assets/loader/bulged, by its file name)
+  const bulged = (src: string) => `assets/loader/bulged/${src.split('/').pop()!.replace(/\.\w+$/, '')}.webp`;
   const reelFrames = reel.map((r, i) => (
     <span className="sl-frame" data-on={i === 0 ? '' : undefined} key={r.src} style={{ width: `${fixed ? G_W : r.w}px` }}>
-      <img src={`/${r.src}`} alt="" decoding="async" fetchPriority={i === 0 ? 'high' : 'auto'}
-        style={r.crop ? (fixed ? { height: `${r.crop}%`, objectPosition: '50% 0' } : { height: `${r.crop}%`, objectFit: 'fill' }) : undefined} />
+      <img src={`/${fixed ? bulged(r.src) : r.src}`} alt="" decoding="async" fetchPriority={i === 0 ? 'high' : 'auto'}
+        style={r.crop && !fixed ? { height: `${r.crop}%`, objectFit: 'fill' } : undefined} />
     </span>
   ));
   return (
@@ -199,7 +228,7 @@ export default function StartLoader({ fixed = false }: { fixed?: boolean }) {
               <span className="sl-zoom sl-zoom-b">
                 {GOLDEN.map((g, i) => (
                   <span className="sl-frame sl-gframe" key={`${g}-${i}`} style={{ width: `${G_W}px` }}>
-                    <img src={`/assets/loader/golden/${g}.webp`} width={G_W} height={G_H} alt="" decoding="async" />
+                    <img src={`/assets/loader/bulged/g-${g}.webp`} width={G_W} height={G_H} alt="" decoding="async" />
                   </span>
                 ))}
                 <Spiral />
