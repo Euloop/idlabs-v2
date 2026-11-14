@@ -1,0 +1,35 @@
+/* /launches (LaunchesAll in LaunchesSelected.tsx). Light page. Statement in Season Mix,
+   the rest in IBM Plex Mono. */
+@font-face { font-family: 'Season Mix'; src: url('/experiment/fonts/season-mix-regular.otf') format('opentype'); font-weight: 400; font-style: normal; font-display: swap; }
+
+.lc-frame.lsel { --serif: 'Season Mix', 'Times New Roman', serif; text-align: left; justify-content: center; color: #1f1f1f; }
+.lc-frame.lsel-page { justify-content: flex-start; padding-top: calc(var(--box) + 120px); }
+
+.lsel-head { display: grid; grid-template-columns: 1fr minmax(0, 34ch); align-items: end; gap: 12px 32px; padding-inline: calc(9 * var(--px)); margin-bottom: calc(40 * var(--px)); }
+.lsel-label { grid-column: 1 / -1; margin: 0; font-family: var(--mono); font-size: 12px; line-height: 1.5; text-transform: uppercase; color: #8a8a8a; }
+.lsel-title { margin: 0; font-family: var(--serif); font-weight: 400; font-size: calc(40 * var(--px)); line-height: 1.05; letter-spacing: -0.02em; color: #1f1f1f; }
+.lsel-body { margin: 0; justify-self: end; font-family: var(--mono); font-size: 12px; line-height: 1.5; text-transform: uppercase; color: #6b6b6b; }
+
+.lsel-grid { list-style: none; margin: 0; padding: 0 calc(9 * var(--px)); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: calc(36 * var(--px)) calc(16 * var(--px)); }
+.lsel-item { min-width: 0; }
+.lsel-card { display: block; color: inherit; text-decoration: none; }
+.lsel-media { position: relative; aspect-ratio: 16 / 9; overflow: hidden; background: #f4f4f4; }
+.lsel-media :is(img, video) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 700ms cubic-bezier(.2, .7, .2, 1), filter 400ms ease; }
+.lsel-card:is(:hover, :focus-visible) .lsel-media :is(img, video) { transform: scale(1.03); }
+.lsel-blank { position: absolute; inset: 0; display: grid; place-items: center; font-family: var(--mono); font-size: 12px; text-transform: uppercase; color: #9a9a9a; }
+
+.lsel-meta { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: baseline; padding-top: 12px; border-top: 1px solid transparent; font-family: var(--mono); font-size: 12px; line-height: 1.5; text-transform: uppercase; }
+.lsel-n { color: #a3a3a3; }
+.lsel-name { display: flex; flex-wrap: wrap; gap: 0 10px; min-width: 0; }
+.lsel-client { color: #1f1f1f; }
+.lsel-what { color: #8a8a8a; }
+.lsel-reach { color: #1f1f1f; white-space: nowrap; }
+
+@media (max-width: 1000px) { .lsel-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) {
+  .lsel-head { grid-template-columns: 1fr; }
+  .lsel-body { justify-self: start; }
+  .lsel-title { font-size: 32px; }
+  .lsel-grid { grid-template-columns: 1fr; gap: 28px; }
+}
+@media (prefers-reduced-motion: reduce) { .lsel-media :is(img, video) { transition: none; } .lsel-card:hover .lsel-media :is(img, video) { transform: none; } }

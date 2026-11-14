@@ -33,7 +33,7 @@ export default function Home4() {
   return (
     <>
       {/* light hero before first paint (HeroLight keeps it and clears it on leaving) */}
-      <script dangerouslySetInnerHTML={{ __html: "document.documentElement.dataset.hero='light'" }} />
+      <script dangerouslySetInnerHTML={{ __html: "var d=document.documentElement;d.dataset.hero='light';d.dataset.clients=new URLSearchParams(location.search).get('clients')==='all'?'all':'picked'" }} />
       {/* page marker: the /home-2 styles key off body:has(.s2-flow) */}
       <span className="s2-flow" hidden />
       {/* the new light hero: the golden construction upright (Figma 183:3) */}
@@ -43,6 +43,7 @@ export default function Home4() {
       <HeroLight />
       {/* loader ending + hero: Zoom (drawn hero) or Fade (clean hero), bottom tabs (?intro=) */}
       <HeroIntroOptions />
+      {/* hidden with the client's 12 (Clients tab, html[data-clients='picked'], the default) */}
       {/* below the hero's clients, both variants: a bordered "Our Network" card — placeholder
           names until the client confirms a real, publishable list (see HeroNetwork.tsx) */}
       <HeroNetwork />
@@ -53,7 +54,8 @@ export default function Home4() {
       {/* tools: Showcase (default) or Motion, bottom tabs (?tools=) */}
       <ToolsOptions only={['showcase', 'motion']} />
       <ServicesCards light layout="columns" />
-      <LaunchesOptions only={['float2', 'float3', 'float4']} />
+      {/* launches: Selected (default: the client's six and See all → /launches) or Float II–IV (?launches=) */}
+      <LaunchesOptions only={['selected', 'float2', 'float3', 'float4']} />
       <SiteFooter />
       <SiteChrome />
       <ThemeDriver />

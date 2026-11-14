@@ -202,3 +202,9 @@ html[data-intro='fade'] .hv-clients { display: block; }
 @media (prefers-reduced-motion: reduce) {
   .hv-construction, .hv-li, .hv-logo-slot, .hv-more, .hv-clients-title, .hvc-grid, .hvc-cell { animation: none; }
 }
+
+/* Clients: the full set (ORDER) everywhere, or the client's 12 (PICKED) where html[data-clients='picked']
+   (/home-4's Clients tab, HeroIntroOptions), which also hides "Our Network" (HeroNetwork). */
+html:not([data-clients='picked']) .hv [data-set='picked'],
+html[data-clients='picked'] .hv [data-set='all'] { display: none !important; }
+html[data-clients='picked'] section.hn { display: none; }

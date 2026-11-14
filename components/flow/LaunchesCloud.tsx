@@ -12,7 +12,7 @@ import { useEffect, useRef } from 'react';
 
 export type Launch = { client: string; what?: string; x?: string; reach?: string; li?: string };
 /* The client's list (post links without tracking parameters). Profound: link to come. */
-const LAUNCHES: Launch[] = [
+export const LAUNCHES: Launch[] = [
   { client: 'Matic Robots', what: 'Launch', reach: '25M+', x: 'https://x.com/maticrobots/status/2087962897267990915', li: 'https://www.linkedin.com/posts/mehulnariyawala_introducing-matic-cues-a-new-way-to-control-activity-7493734976891465728-FqbX' },
   { client: 'Matic Robots', what: 'Design documentary', reach: '10M+', x: 'https://x.com/mehul/status/2089784603737575470' },
   { client: 'Pocket FM', what: 'Product launch', reach: '12M+', x: 'https://x.com/RohanNayak2/status/2101019876269973593', li: 'https://www.linkedin.com/posts/rohan-nayak_introducing-sherpa-the-most-advanced-fiction-activity-7506789825765752832-rHMW' },

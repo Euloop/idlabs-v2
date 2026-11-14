@@ -14,11 +14,16 @@ import OptionTabs, { useOption } from './OptionTabs';
 
 export type Intro = 'zoom' | 'fade';
 const INTROS: [Intro, string][] = [['zoom', 'Zoom'], ['fade', 'Fade']];
+/* Clients (?clients=): the client's 12 in their order with "Our Network" hidden (default), or the
+   earlier 16 with the network card. html[data-clients], set before first paint by /home-4's script. */
+type Clients = 'picked' | 'all';
+const CLIENTS: [Clients, string][] = [['picked', 'Clients 12'], ['all', 'Clients 16 + Network']];
 const onHero = (r: DOMRect, vh: number) => r.top > -vh * 0.25 && r.bottom > vh * 0.6;
 const never = () => false;
 
 export default function HeroIntroOptions() {
   const [intro, pick] = useOption<Intro>('intro', INTROS, 'zoom');
+  const [clients, pickClients] = useOption<Clients>('clients', CLIENTS, 'picked');
   const [heroIn, setHeroIn] = useState(false);
 
   useEffect(() => {
@@ -36,7 +41,10 @@ export default function HeroIntroOptions() {
 
   return (
     <OptionTabs
-      groups={[{ label: 'Hero intro', options: INTROS, value: intro, onChange: (v) => { pick(v as Intro); window.location.reload(); } }]}
+      groups={[
+        { label: 'Hero intro', options: INTROS, value: intro, onChange: (v) => { pick(v as Intro); window.location.reload(); } },
+        { label: 'Clients', options: CLIENTS, value: clients, onChange: (v) => { pickClients(v as Clients); document.documentElement.dataset.clients = v; } },
+      ]}
       selector="div.hero" label="Hero intro options" when={heroIn ? onHero : never} />
   );
 }

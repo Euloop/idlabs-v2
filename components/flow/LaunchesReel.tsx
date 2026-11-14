@@ -17,6 +17,33 @@ export const REEL: Launch[] = PICTURED.filter((l) => l.reach).sort((a, b) => par
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
+/* Each client's logo for the caption, in place of its name (white, through a mask), all at about the
+   same visual area. Akai has no logo file: its name stays, in mono. Fish Audio is its mark and name
+   set together, as the hero's lockup. */
+const LOGO: Record<string, { src: string; ratio: number; boost?: number }> = {
+  'Matic Robots': { src: '/assets/clients/matic.svg', ratio: 181 / 52, boost: 0.9 },
+  'Pocket FM': { src: '/assets/clients/pocketfm.svg', ratio: 340 / 53 },
+  'Fish Audio': { src: '/assets/clients/fishaudio-mark.svg', ratio: 434.6 / 160.9 },
+  'Lovable': { src: '/assets/clients/lovable.svg', ratio: 911 / 155 },
+  'Airwallex': { src: '/assets/clients/airwallex.svg', ratio: 102.088 / 13.952 },
+  'Gamma': { src: '/assets/hero-v/gamma.svg', ratio: 78.5852 / 13.6214 },
+  'Wispr Flow': { src: '/assets/clients/wispr.svg', ratio: 446 / 125 },
+  'Cartesia': { src: '/assets/clients/cartesia.svg', ratio: 579 / 83, boost: 1.04 },
+  'Deel': { src: '/assets/hero-v/deel.svg', ratio: 53.1222 / 17.9855, boost: 0.9 },
+  'PolyAI': { src: '/assets/clients/polyai.svg', ratio: 120 / 36 },
+  'PlayerZero': { src: '/assets/clients/playerzero.svg', ratio: 2551 / 373, boost: 1.04 },
+};
+const AREA = 1900; // px², at the reel's full size (the card variants scale it with --lk)
+function ClientLogo({ client }: { client: string }) {
+  const lg = LOGO[client];
+  if (!lg) return <span className="lcr-client">{client}</span>;
+  const h = Math.min(26, Math.sqrt(AREA / lg.ratio) * (lg.boost ?? 1));
+  const mark = <span className="lcr-logo" role={client === 'Fish Audio' ? undefined : 'img'} aria-label={client === 'Fish Audio' ? undefined : client}
+    style={{ '--src': `url('${lg.src}')`, '--w': (client === 'Fish Audio' ? 11 * lg.ratio : h * lg.ratio).toFixed(1), '--h': (client === 'Fish Audio' ? 11 : h).toFixed(1) } as React.CSSProperties} />;
+  if (client === 'Fish Audio') return <span className="lcr-lockup" role="img" aria-label={client}>{mark}<span className="lcr-lockup-name" aria-hidden="true">Fish Audio</span></span>;
+  return mark;
+}
+
 const Chevron = ({ dir }: { dir: 'l' | 'r' }) => (
   <svg width="14" height="14" viewBox="0 0 12 12" aria-hidden="true">
     <path d={dir === 'l' ? 'M7.5 2.5 4 6l3.5 3.5' : 'M4.5 2.5 8 6 4.5 9.5'} fill="none" stroke="currentColor" strokeWidth="1.2" />
@@ -44,13 +71,19 @@ const Speaker = ({ muted }: { muted: boolean }) => (
 /* track (Float IV, after tryprofound.com's story cards): the launches sit side by side and slide
    across (no crossfade); the next one peeks in past the card's right edge and a click on it moves on.
    Prev / next are Float II's side areas inside the card (a soft dark from that edge on hover, the
-   chevron lights); "Watch the post" is a small button. */
-export default function LaunchesReel({ on, start = 0, alt = false, card = false, track = false }: { on: boolean; start?: number; alt?: boolean; card?: boolean; track?: boolean }) {
+   chevron lights); "Go to post" is a small button. */
+/* list / end (Launches "Selected"): only these launches, in this order, and after them one more slide,
+   `end`, with a button to the page of all launches. The track then runs one way, first to the end
+   slide (no wrap back to the first), and hands the scroll to the page there. */
+export type ReelEnd = { href: string; total: number };
+export default function LaunchesReel({ on, start = 0, alt = false, card = false, track = false, list, end }: { on: boolean; start?: number; alt?: boolean; card?: boolean; track?: boolean; list?: Launch[]; end?: ReelEnd }) {
   const [i, setI] = useState(start);
   const [muted, setMuted] = useState(true);
   const [playing, setPlaying] = useState(true); // Float II: play / pause (kept across launches)
   const videoRef = useRef<HTMLVideoElement>(null);
-  const n = REEL.length;
+  const slides = list ?? REEL;
+  const n = slides.length + (end ? 1 : 0);
+  const last = end ? n - 1 : n; // how far the track goes (with an end slide: to it, and no further)
   /* track (Float IV): one continuous position `pos` (launches from `start`, fractional), eased every
      frame toward `target`, like the page's own smooth scroll. The wheel over the reel, a drag, the
      arrows and the peeks all just move the target; the reel glides there, and only once the wheel
@@ -66,6 +99,7 @@ export default function LaunchesReel({ on, start = 0, alt = false, card = false,
   const go = (d: number) => {
     if (!track) { setI((v) => (v + d + n) % n); return; }
     target.current = Math.round(target.current) + d;
+    if (end) target.current = Math.min(last, Math.max(0, target.current));
     kick.current();
   };
 
@@ -98,6 +132,7 @@ export default function LaunchesReel({ on, start = 0, alt = false, card = false,
     el.removeAttribute('data-dragging');
     const p = g.p0 - g.dx / el.clientWidth;
     target.current = Math.round(p + (g.dx < -60 ? 0.35 : g.dx > 60 ? -0.35 : 0));
+    if (end) target.current = Math.min(last, Math.max(0, target.current));
     vel.current = Math.max(-6, Math.min(6, g.v)); // the throw carries into the spring
     kick.current();
   };
@@ -121,8 +156,8 @@ export default function LaunchesReel({ on, start = 0, alt = false, card = false,
       const p = pos.current;
       slideRefs.current.forEach((sl, k) => {
         if (!sl) return;
-        let d = wrap(k - start - p);
-        if (d > n / 2) d -= n;
+        let d = end ? k - start - p : wrap(k - start - p);
+        if (!end && d > n / 2) d -= n;
         const near = Math.abs(d) < 1.5;
         sl.style.visibility = near ? 'visible' : 'hidden';
         if (near) sl.style.translate = `${(d * 100).toFixed(3)}% 0`;
@@ -160,22 +195,22 @@ export default function LaunchesReel({ on, start = 0, alt = false, card = false,
       if (dy < 0 && t <= 0) return; // at the start, going up: the page's
       e.preventDefault();
       e.stopPropagation(); // the page's smooth scroll (Lenis, on the window) must not see it either
-      target.current = Math.min(n, Math.max(0, t + dy / el.clientWidth));
+      target.current = Math.min(last, Math.max(0, t + dy / el.clientWidth));
       dir = dy > 0 ? 1 : -1;
-      if (target.current >= n) doneRef.current = true; // the cycle is complete: from now on the page's
+      if (target.current >= last) doneRef.current = true; // the cycle is complete: from now on the page's
       window.clearTimeout(idle);
       // once the wheel rests, settle on a launch: the next one the way it was going if it is over a
       // quarter of the way there, else back to the one it left (the spring eases it in)
       idle = window.setTimeout(() => {
         const tt = target.current, f = tt - Math.floor(tt);
-        target.current = Math.min(n, Math.max(0, f < 1e-6 ? tt : dir > 0 ? (f > 0.25 ? Math.ceil(tt) : Math.floor(tt)) : (f < 0.75 ? Math.floor(tt) : Math.ceil(tt))));
+        target.current = Math.min(last, Math.max(0, f < 1e-6 ? tt : dir > 0 ? (f > 0.25 ? Math.ceil(tt) : Math.floor(tt)) : (f < 0.75 ? Math.floor(tt) : Math.ceil(tt))));
         kick.current();
       }, 320);
       kick.current();
     };
     el.addEventListener('wheel', onWheel, { passive: false });
     return () => { el.removeEventListener('wheel', onWheel); window.clearTimeout(idle); cancelAnimationFrame(raf); kick.current = () => {}; };
-  }, [track, n, start]);
+  }, [track, n, start, end, last]);
 
   const onClickCapture = (e: React.MouseEvent) => {
     if (dragged.current) { e.preventDefault(); e.stopPropagation(); dragged.current = false; }
@@ -215,16 +250,17 @@ export default function LaunchesReel({ on, start = 0, alt = false, card = false,
     return () => ro.disconnect();
   }, [alt]);
 
-  const l = REEL[i];
-  const hasVideo = !!LAUNCH_VIDEO[slug(l)];
+  const l = slides[i] as Launch | undefined; // none on the end slide
+  const atEnd = !l;
+  const hasVideo = !!l && !!LAUNCH_VIDEO[slug(l)];
 
   return (
     <div className="lcr" ref={rootRef} data-alt={alt || undefined} data-card={card || undefined} data-track={track || undefined}
-      data-moved={(track && moved) || undefined}
+      data-moved={(track && moved) || undefined} data-end={atEnd || undefined}
       onPointerDown={track ? onDown : undefined} onPointerMove={track ? onMove : undefined} onPointerUp={track ? onUp : undefined}
       onPointerCancel={track ? onUp : undefined} onClickCapture={track ? onClickCapture : undefined}
       role="region" aria-roledescription="carousel" aria-label="Client launches">
-      {REEL.map((s, k) => {
+      {slides.map((s, k) => {
         const active = k === i;
         const video = LAUNCH_VIDEO[slug(s)];
         return (
@@ -241,6 +277,15 @@ export default function LaunchesReel({ on, start = 0, alt = false, card = false,
           </figure>
         );
       })}
+      {end && (
+        <figure ref={(el) => { slideRefs.current[slides.length] = el; }} className="lcr-slide lcr-end" data-on={atEnd || undefined} aria-hidden={!atEnd || undefined}>
+          <div className="lcr-end-in">
+            <p className="lcr-end-k">{end.total} launches · 2B+ views</p>
+            <p className="lcr-end-t">Every launch<br />we’ve done.</p>
+            <a className="lcr-end-btn" href={end.href} tabIndex={on && atEnd ? 0 : -1}>See all launches <span aria-hidden="true">→</span></a>
+          </div>
+        </figure>
+      )}
       {!track && <div className="lcr-shade" aria-hidden="true" />}
       {track && (
         <button type="button" className="lcr-peekhit" data-side="r" onClick={() => go(1)} tabIndex={-1} aria-hidden="true" />
@@ -257,13 +302,15 @@ export default function LaunchesReel({ on, start = 0, alt = false, card = false,
         </button>
       ))}
 
+      {l && (
       <div className="lcr-cap" aria-live="polite">
         <p key={`r-${i}`} className="lcr-reach">{l.reach} views</p>
         <p key={`s-${i}`} className="lcr-sub">
-          {l.client}{l.what ? ` — ${l.what}.` : '.'}{' '}
-          {l.x && <a href={l.x} target="_blank" rel="noopener noreferrer" tabIndex={on ? 0 : -1}>Watch the post <span aria-hidden="true">↗</span></a>}
+          <span className="lcr-who"><ClientLogo client={l.client} />{l.what && <span className="lcr-what">{l.what}</span>}</span>{' '}
+          {l.x && <a href={l.x} target="_blank" rel="noopener noreferrer" tabIndex={on ? 0 : -1}>Go to post <span aria-hidden="true">↗</span></a>}
         </p>
       </div>
+      )}
 
       {alt ? (
         // Float II: prev / next live at the sides; bottom right, play / pause and sound

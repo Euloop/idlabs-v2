@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { PICTURED, RATIO_OF, slug, type Launch } from './LaunchesCloud';
-import LaunchesReel, { REEL } from './LaunchesReel';
+import LaunchesReel, { REEL, type ReelEnd } from './LaunchesReel';
 import { LAUNCH_VIDEO } from './launch-videos';
 import './launches-float.css';
 
@@ -122,7 +122,22 @@ function spaceOf(el: HTMLElement | null) {
   return w;
 }
 
-export default function LaunchesFloat({ alt = false, card = false, track = false }: { alt?: boolean; card?: boolean; track?: boolean }) {
+/* picks (Launches "Selected"): Float IV whose reel holds only these launches, in this order, then an
+   end slide with a button to /launches (`end`). The zoom goes into the first of them: the central
+   tile carries it, swapped with the tile that had it (both 16:9), so the reel opens on it with no cut. */
+export default function LaunchesFloat({ alt = false, card = false, track = false, picks, end }: { alt?: boolean; card?: boolean; track?: boolean; picks?: Launch[]; end?: ReelEnd }) {
+  const reelStart = picks ? 0 : HERO_SLIDE;
+  const heroPic = picks ? picks[0] : REEL[HERO_SLIDE];
+  // each tile's launch (TILES', or with picks the first pick moved onto the hero tile)
+  const tileL = useMemo(() => {
+    const ls = TILES.map((t) => t.l);
+    if (!picks?.length) return ls;
+    const m = TILES.findIndex((t) => !t.dup && t.l && slug(t.l) === slug(picks[0]));
+    const h = ls[HERO];
+    ls[HERO] = picks[0];
+    if (m >= 0 && m !== HERO) ls[m] = h;
+    return ls;
+  }, [picks]);
   const rootRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const cardRefs = useRef<(HTMLElement | null)[]>([]);
@@ -228,7 +243,7 @@ export default function LaunchesFloat({ alt = false, card = false, track = false
           if (z <= 0) { el.style.width = `${p.fw.toFixed(1)}px`; el.style.height = `${p.fh.toFixed(1)}px`; }
           el.style.zIndex = z > 0 ? '950' : String(p.si > 0.5 ? Math.round(tile.d * 100) : 200 + Math.round((1 - p.from) * 100));
           // the sharp picture for the close-up
-          if (z > 0.05 && !heroHd) { heroHd = true; el.querySelector('img')?.setAttribute('src', `/assets/launches/hd/${slug(REEL[HERO_SLIDE])}.webp`); }
+          if (z > 0.05 && !heroHd) { heroHd = true; el.querySelector('img')?.setAttribute('src', `/assets/launches/hd/${slug(heroPic)}.webp`); }
         } else {
           el.style.width = `${p.fw.toFixed(1)}px`;
           el.style.height = `${p.fh.toFixed(1)}px`;
@@ -322,7 +337,8 @@ export default function LaunchesFloat({ alt = false, card = false, track = false
       <div className="frame lcf-rails" aria-hidden="true" />
       <div className="lcf-stage" ref={stageRef}>
         <div className="lcf-space">
-          {TILES.map((tile, i) => {
+          {TILES.map((t, i) => {
+            const tile = { ...t, l: tileL[i] };
             const pic = tile.l ?? PICTURED[i % PICTURED.length];
             const img = <img className="lcf-img" src={`/assets/launches/${slug(pic)}.webp`} alt="" decoding="async" draggable={false} />;
             const ref = (el: HTMLElement | null) => { cardRefs.current[i] = el; };
@@ -348,7 +364,7 @@ export default function LaunchesFloat({ alt = false, card = false, track = false
           </div>
         )}
         <div className="lcf-reel" ref={reelRef}>
-          <LaunchesReel on={reelOn} start={HERO_SLIDE} alt={alt} card={card} track={track} />
+          <LaunchesReel on={reelOn} start={reelStart} alt={alt} card={card} track={track} list={picks} end={end} />
         </div>
       </div>
     </div>

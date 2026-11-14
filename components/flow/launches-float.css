@@ -103,11 +103,11 @@ html[data-theme='night'] .lcf-rails::before, html[data-theme='night'] .lcf-rails
   opacity: var(--ui, 1); translate: 0 calc((1 - var(--ui, 1)) * 18px);
 }
 .lcr-reach {
-  margin: 0; font-family: var(--serif); font-weight: 400; font-size: clamp(56px, 8vw, 132px); line-height: .95; letter-spacing: -0.01em;
+  margin: 0; font-family: 'Season Mix', 'Times New Roman', serif; font-weight: 400; font-size: clamp(40px, 4.6vw, 72px); line-height: .95; letter-spacing: -0.02em;
   animation: lcr-in 700ms var(--ease-out) both;
 }
 .lcr-sub {
-  margin: 18px 0 0; font-family: var(--sans); font-size: 15px; line-height: 1.4; color: rgb(255 255 255 / .72);
+  margin: 18px 0 0; font-family: var(--mono); font-size: 12px; line-height: 1.4; color: rgb(255 255 255 / .72);
   animation: lcr-in 700ms var(--ease-out) 90ms both;
 }
 .lcr-sub a { color: #fff; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
@@ -129,9 +129,9 @@ html[data-theme='night'] .lcf-rails::before, html[data-theme='night'] .lcf-rails
 
 /* Float II (data-alt): a smaller reach, the line under it in mono; prev / next areas at each side */
 /* Float II: IBM Plex Mono at Profound's stat size (56px on a 64px line, smaller on narrow screens) */
-.lcr[data-alt] .lcr-reach { font-family: var(--mono); font-size: clamp(34px, 3.9vw, 56px); line-height: 1.14; letter-spacing: -0.02em; text-transform: uppercase; }
+.lcr[data-alt] .lcr-reach { font-size: clamp(30px, 3vw, 44px); line-height: 1.05; }
 /* Float III / IV (the reel in a card): the reach a size down, to suit the smaller card */
-.lcr[data-alt][data-card] .lcr-reach { font-size: clamp(24px, 2.6vw, 38px); }
+.lcr[data-alt][data-card] .lcr-reach { font-size: clamp(24px, 2.2vw, 32px); }
 /* the post link: no underline, the arrow says it */
 .lcr[data-alt] .lcr-sub a { text-decoration: none; }
 .lcr[data-alt] .lcr-sub a:hover { opacity: 1; color: #fff; }
@@ -203,7 +203,6 @@ html[data-theme='night'] .lcf-rails::before, html[data-theme='night'] .lcf-rails
 @media (max-width: 759px) {
   .lcr-cap { right: 24px; bottom: 120px; }
   .lcr-nav { left: 24px; right: auto; bottom: 40px; gap: 12px; }
-  .lcr-sub { font-size: 14px; }
   .lcr[data-alt] .lcr-sub { font-size: 12px; }
   .lcr-side { width: 18vw; }
 }
@@ -211,3 +210,36 @@ html[data-theme='night'] .lcf-rails::before, html[data-theme='night'] .lcf-rails
   .lcr-slide, .lcr-slide img.lcr-media { transition: none; }
   .lcr-reach, .lcr-sub { animation: none; }
 }
+
+/* The caption's client: its logo (white, masked) in place of the name, then what the launch was
+   (LaunchesReel.tsx, ClientLogo); the reach above in Season Mix, lower case. */
+.lcr-who { display: inline-flex; align-items: center; gap: 12px; vertical-align: middle; flex-wrap: wrap; }
+.lcr-logo {
+  display: inline-block; flex: none; width: calc(var(--w) * 1px * var(--lk, 1)); height: calc(var(--h) * 1px * var(--lk, 1));
+  background: #fff; -webkit-mask: var(--src) center / contain no-repeat; mask: var(--src) center / contain no-repeat;
+}
+.lcr[data-card] { --lk: .85; }
+.lcr-lockup { display: inline-flex; align-items: center; gap: 5px; color: #fff; }
+/* Fish Audio's lockup: its name is part of the logo (set as the hero's lockup, not body type) */
+.lcr-lockup-name { font-family: var(--sans); font-weight: 500; font-size: calc(14px * var(--lk, 1)); letter-spacing: -0.02em; line-height: 1; }
+.lcr-client { color: #fff; text-transform: uppercase; }
+.lcr-what { color: rgb(255 255 255 / .72); }
+
+/* Launches "Selected" (LaunchesReel end): after the six, a last slide — dark, the count, a line in
+   Season Mix and a button to /launches. No next past it: the right side area and peek step away. */
+.lcr-end { background: #111214; display: grid; place-items: center; }
+.lcr-end-in { display: grid; justify-items: center; gap: 22px; text-align: center; padding: 24px; opacity: var(--ui, 1); }
+.lcr-end-k { margin: 0; font-family: var(--mono); font-size: 12px; line-height: 1.5; text-transform: uppercase; color: rgb(255 255 255 / .55); }
+.lcr-end-t { margin: 0; font-family: 'Season Mix', 'Times New Roman', serif; font-weight: 400; font-size: clamp(32px, 3.6vw, 52px); line-height: 1.05; letter-spacing: -0.02em; color: #fff; }
+.lcr-end-btn {
+  display: inline-flex; align-items: center; gap: 10px; height: 40px; padding: 0 18px; margin-top: 6px;
+  border: 1px solid rgb(255 255 255 / .7); color: #fff; text-decoration: none;
+  font-family: var(--mono); font-size: 12px; text-transform: uppercase;
+  transition: background-color 250ms ease, color 250ms ease, border-color 250ms ease;
+}
+.lcr-end-btn span { transition: translate 250ms ease; }
+.lcr-end-btn:is(:hover, :focus-visible) { background: #fff; color: #111214; border-color: #fff; }
+.lcr-end-btn:is(:hover, :focus-visible) span { translate: 3px 0; }
+.lcr[data-end] :is(.lcr-side[data-side='r'], .lcr-peekhit[data-side='r'], .lcr-nav) { visibility: hidden; }
+/* the zoomed card under the reel can show a hairline past the dark end slide's edges: cover it */
+.lcr[data-track] .lcr-slide.lcr-end { box-shadow: 0 0 0 2px #111214; }

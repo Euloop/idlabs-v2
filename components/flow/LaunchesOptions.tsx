@@ -9,7 +9,7 @@ import OptionTabs, { useOption } from './OptionTabs';
    tabs once it is on screen; ?launches=. */
 
 // Hidden for now (the code stays in Launches.tsx): ['carousel', 'Carousel'], ['cloud', 'Cloud'], ['grid', 'Grid'], ['box', 'Box'], ['slider', 'Slider']
-const VARIANTS: [Variant, string][] = [['float2', 'Float II'], ['float3', 'Float III'], ['float4', 'Float IV'], ['float', 'Float']];
+const VARIANTS: [Variant, string][] = [['selected', 'Selected'], ['float2', 'Float II'], ['float3', 'Float III'], ['float4', 'Float IV'], ['float', 'Float']];
 // The last section: from when its top reaches the middle of the screen.
 const arrived = (r: DOMRect, vh: number) => r.top <= vh * 0.5;
 

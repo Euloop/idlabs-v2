@@ -205,7 +205,7 @@ export default function Launches() {
         <div className="im-bleed-text im-on-dark" ref={over} style={{ opacity: 0 }}>
           <div key={slide} className="im-bleed-copy">
             <p className="im-say im-say-xl">{SLIDES[slide].reach} views.</p>
-            <p className="im-sub">{SLIDES[slide].title}{SLIDES[slide].what ? ` — ${SLIDES[slide].what}` : ''}. <a className="im-link" href={SLIDES[slide].href} target="_blank" rel="noopener noreferrer">Watch the post ↗</a></p>
+            <p className="im-sub">{SLIDES[slide].title}{SLIDES[slide].what ? ` — ${SLIDES[slide].what}` : ''}. <a className="im-link" href={SLIDES[slide].href} target="_blank" rel="noopener noreferrer">Go to post ↗</a></p>
           </div>
         </div>
         <div className="im-bleed-nav" ref={nav} style={{ opacity: 0 }}>

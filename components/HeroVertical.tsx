@@ -73,6 +73,10 @@ const MORE: Logo[] = [
   { kind: 'file', name: 'Freehand', src: 'freehand.svg', ratio: 164 / 35 },
   { kind: 'file', name: 'Anything', src: 'anything.svg', ratio: 1165 / 305 },
   { kind: 'lockup', name: 'Fish Audio', src: 'fishaudio-mark.svg', ratio: 434.6 / 160.9 },
+  // for the client's list of 12 (PICKED): from Wikimedia Commons (November 2026)
+  { kind: 'file', name: 'SpaceX', src: 'spacex.svg', ratio: 400 / 50 },
+  { kind: 'file', name: 'Lovable', src: 'lovable.svg', ratio: 911 / 155 },
+  { kind: 'file', name: 'Lightspeed', src: 'lightspeed.svg', ratio: 600.04 / 121.64, boost: 1.2 },
 ];
 
 /* Placement, in the construction's px. Four even columns across its 577 width (centres at 1/8,
@@ -90,6 +94,15 @@ const ORDER = [
 ];
 const BY_NAME = new Map([...DESIGN, ...MORE].map((l) => [l.name, l]));
 const PLACED = ORDER.map((name, i) => ({ l: BY_NAME.get(name)!, cx: COLS[i % 4], cy: ROWS[Math.floor(i / 4)] }));
+/* The client's list (2026-11-14): these 12, in this order, in three rows. Shown in place of ORDER when
+   html[data-clients='picked'] (/home-4's Clients tab, which also hides Our Network); other pages keep ORDER. */
+const PICKED = [
+  'OpenAI', 'SpaceX', 'Andreessen Horowitz', 'Sequoia',
+  'Lovable', 'Kleiner Perkins', 'Lightspeed', 'Wispr Flow',
+  'Deel', 'Airwallex', 'Gamma', 'Matic Robots',
+];
+const ROWS3 = Array.from({ length: 3 }, (_, r) => 660 + ((979.999 - 660) * (r + 0.5)) / 3);
+const PLACED_PICKED = PICKED.map((name, i) => ({ l: BY_NAME.get(name)!, cx: COLS[i % 4], cy: ROWS3[Math.floor(i / 4)] }));
 
 const fit = (vw: number, vh: number, boost = 1) => Math.sqrt(AREA / (vw * vh)) * boost;
 // Inter Medium: ~0.56em per character, ink ~0.72em tall
@@ -150,12 +163,12 @@ function LogoVisual({ l }: { l: Logo }) {
    golden-ratio grid above; this renders alongside it and the two are shown one at a time by CSS)
    — a centred "Our Clients" label, then the 16 logos in a plain 4-column grid on a soft grey
    card. The same logos and order as the golden-ratio grid (ORDER, above). */
-function HeroClients() {
+function HeroClients({ names, set }: { names: string[]; set: 'all' | 'picked' }) {
   return (
-    <div className="hv-clients">
+    <div className="hv-clients" data-set={set}>
       <p className="hv-clients-title">Our Clients</p>
       <ul className="hvc-grid" aria-label="Clients">
-        {ORDER.map((name, i) => {
+        {names.map((name, i) => {
           const l = BY_NAME.get(name)!;
           return (
             <li className="hvc-cell" key={l.name} style={delay(i * 40)}>
@@ -231,18 +244,21 @@ export default function HeroVertical() {
 
               {/* Zoom: the grid's title, as Fade's card has — at the top of the logos' band, under the square */}
               <p className="hv-zoom-title rise" style={delay(1200)}>Our Clients</p>
-              <ul className="hv-logos" aria-label="Clients">
-                {PLACED.map(({ l, cx, cy }, i) => (
-                  <li className={l.kind === 'design' ? 'hv-logo-slot' : 'hv-more'} key={l.name}
-                    style={vars({ '--cx': cx, '--cy': cy, '--d': `${1240 + i * 40}ms` })}>
-                    <LogoVisual l={l} />
-                  </li>
-                ))}
-              </ul>
+              {([['all', PLACED], ['picked', PLACED_PICKED]] as const).map(([set, placed]) => (
+                <ul className="hv-logos" aria-label="Clients" data-set={set} key={set}>
+                  {placed.map(({ l, cx, cy }, i) => (
+                    <li className={l.kind === 'design' ? 'hv-logo-slot' : 'hv-more'} key={l.name}
+                      style={vars({ '--cx': cx, '--cy': cy, '--d': `${1240 + i * 40}ms` })}>
+                      <LogoVisual l={l} />
+                    </li>
+                  ))}
+                </ul>
+              ))}
 
               {/* Fade only (html[data-intro='fade']): the same clients as a titled card, shown in
                   place of the golden-ratio grid above */}
-              <HeroClients />
+              <HeroClients names={ORDER} set="all" />
+              <HeroClients names={PICKED} set="picked" />
             </div>
 
             <Ticks />
