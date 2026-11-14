@@ -31,6 +31,17 @@ const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 
 const easeSine = (t: number) => (1 - Math.cos(Math.PI * t)) / 2; // in-out sine
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
+/* Style writes, only when the value changes: the loop runs every frame, and a write that changes
+   nothing still makes the browser recheck styles (a custom property, all the element's descendants). */
+const written = new WeakMap<HTMLElement, Record<string, string>>();
+function put(el: HTMLElement, k: string, v: string) {
+  let m = written.get(el);
+  if (!m) written.set(el, (m = {}));
+  if (m[k] === v) return;
+  m[k] = v;
+  if (k.startsWith('--')) el.style.setProperty(k, v);
+  else (el.style as unknown as Record<string, string>)[k] = v;
+}
 
 /* The field: a jittered grid over the full width and 1¾ screens of height (the lower rows come up
    with the scroll), with an opening in the middle for the headline. Units: fractions of the stage
@@ -125,7 +136,9 @@ function spaceOf(el: HTMLElement | null) {
 /* picks (Launches "Selected"): Float IV whose reel holds only these launches, in this order, then an
    end slide with a button to /launches (`end`). The zoom goes into the first of them: the central
    tile carries it, swapped with the tile that had it (both 16:9), so the reel opens on it with no cut. */
-export default function LaunchesFloat({ alt = false, card = false, track = false, picks, end }: { alt?: boolean; card?: boolean; track?: boolean; picks?: Launch[]; end?: ReelEnd }) {
+// `words` (alt): the pair that parts, in place of "Launches we" / "have done" (Selected, the home page's:
+// "Our trajectory" / "changing launches"); the screen readers' heading reads them as one line
+export default function LaunchesFloat({ alt = false, card = false, track = false, picks, end, words }: { alt?: boolean; card?: boolean; track?: boolean; picks?: Launch[]; end?: ReelEnd; words?: [string, string] }) {
   const reelStart = picks ? 0 : HERO_SLIDE;
   const heroPic = picks ? picks[0] : REEL[HERO_SLIDE];
   // each tile's launch (TILES', or with picks the first pick moved onto the hero tile)
@@ -159,12 +172,24 @@ export default function LaunchesFloat({ alt = false, card = false, track = false
     let overDark = false;
     let mx = 0, my = 0, tmx = 0, tmy = 0; // pointer, −1 … 1 (damped)
     let near = false;
+    // read once (and on resize), not every frame: the margin lines' width (Float III's card) and the
+    // fixed header's wordmark
+    const measureRails = () => (root.querySelector('.lcf-rails') as HTMLElement | null)?.offsetWidth ?? 0;
+    let railsW = measureRails();
+    let wmEl: HTMLElement | null = null;
 
     const frame = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now; clock += dt * 1000;
+      // every layout read first, before this frame's writes (a read after a write makes the browser
+      // lay the page out again on the spot)
       const W = stage.clientWidth, H = stage.clientHeight;
       const r = root.getBoundingClientRect();
+      if (!wmEl?.isConnected) wmEl = document.querySelector<HTMLElement>('.chrome .wordmark');
+      const wm = wmEl?.getBoundingClientRect();
+      const sr = (card && reelRef.current ? reelRef.current : stage).getBoundingClientRect();
+      const space = spaceOf(leftRef.current);
+      const lw = leftRef.current?.offsetWidth ?? 0, rw = rightRef.current?.offsetWidth ?? 0;
       const vh = window.innerHeight;
 
       // everything follows the scroll through the pin (screens since its start), damped so it
@@ -172,7 +197,7 @@ export default function LaunchesFloat({ alt = false, card = false, track = false
       // arriving (section top still on screen): the stage's contents sit higher, close under the
       // section's top edge, and ease down to the centre as it pins (no half screen of blank above)
       const arrive = clamp(r.top / vh);
-      stage.style.setProperty('--lift', `${(-easeOut(arrive) * 0.42 * H).toFixed(1)}px`);
+      put(stage, '--lift', `${(-easeOut(arrive) * 0.42 * H).toFixed(1)}px`);
       const target = Math.max(0, -r.top / vh);
       ys = reduce ? Math.max(FIELD, target) : ys + (target - ys) * (1 - Math.exp(-dt * 4));
       const prog = clamp(ys / FIELD);
@@ -226,7 +251,7 @@ export default function LaunchesFloat({ alt = false, card = false, track = false
       // 4 · zoom: only the hero tile moves — it grows from its place to the full stage (its picture
       // covers); the rest of the field stays exactly as it is, underneath.
       // Float III: the target is a card between the margin lines, a little below the middle
-      const TW = card ? Math.min(W, (root.querySelector('.lcf-rails') as HTMLElement | null)?.offsetWidth ?? W) : W;
+      const TW = card ? Math.min(W, railsW || W) : W;
       const TH = card ? Math.min(TW * 9 / 16, H * 0.74) : H;
       const TY = card ? Math.min(H * 0.035, (H - TH) / 2) : 0;
       const h0 = P[HERO];
@@ -236,45 +261,44 @@ export default function LaunchesFloat({ alt = false, card = false, track = false
         const el = cardRefs.current[i];
         const p = P[i];
         if (!el || !p) return;
+        // the card variants once zoomed in: the rest of the field is gone (opacity 0): leave it be
+        if (card && z >= 1 && i !== HERO) { put(el, 'opacity', '0.000'); return; }
         if (i === HERO) {
-          el.style.width = `${mix(hw, TW, z).toFixed(1)}px`;
-          el.style.height = `${mix(hh, TH, z).toFixed(1)}px`;
-          el.style.transform = `translate3d(${cx.toFixed(1)}px, ${cy.toFixed(1)}px, 0)${z > 0 ? '' : ` scale(${(p.sc).toFixed(4)})`}`;
-          if (z <= 0) { el.style.width = `${p.fw.toFixed(1)}px`; el.style.height = `${p.fh.toFixed(1)}px`; }
-          el.style.zIndex = z > 0 ? '950' : String(p.si > 0.5 ? Math.round(tile.d * 100) : 200 + Math.round((1 - p.from) * 100));
+          put(el, 'width', `${(z > 0 ? mix(hw, TW, z) : p.fw).toFixed(1)}px`);
+          put(el, 'height', `${(z > 0 ? mix(hh, TH, z) : p.fh).toFixed(1)}px`);
+          put(el, 'transform', `translate3d(${cx.toFixed(1)}px, ${cy.toFixed(1)}px, 0)${z > 0 ? '' : ` scale(${(p.sc).toFixed(4)})`}`);
+          put(el, 'zIndex', z > 0 ? '950' : String(p.si > 0.5 ? Math.round(tile.d * 100) : 200 + Math.round((1 - p.from) * 100)));
           // the sharp picture for the close-up
           if (z > 0.05 && !heroHd) { heroHd = true; el.querySelector('img')?.setAttribute('src', `/assets/launches/hd/${slug(heroPic)}.webp`); }
         } else {
-          el.style.width = `${p.fw.toFixed(1)}px`;
-          el.style.height = `${p.fh.toFixed(1)}px`;
-          el.style.transform = `translate3d(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px, 0) scale(${p.sc.toFixed(4)})`;
-          el.style.zIndex = String(p.si > 0.5 ? Math.round(tile.d * 100) : 200 + Math.round((1 - p.from) * 100));
+          put(el, 'width', `${p.fw.toFixed(1)}px`);
+          put(el, 'height', `${p.fh.toFixed(1)}px`);
+          put(el, 'transform', `translate3d(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px, 0) scale(${p.sc.toFixed(4)})`);
+          put(el, 'zIndex', String(p.si > 0.5 ? Math.round(tile.d * 100) : 200 + Math.round((1 - p.from) * 100)));
         }
-        el.style.opacity = String(card && i !== HERO ? p.b * (1 - z) : p.b);
+        put(el, 'opacity', (card && i !== HERO ? p.b * (1 - z) : p.b).toFixed(3));
         // blank tiles carry a picture in the ribbon (cycled), which fades as they land
-        el.style.setProperty('--pic', tile.l ? '1' : String(1 - span(p.si, 0.35, 0.85)));
+        put(el, '--pic', tile.l ? '1' : (1 - span(p.si, 0.35, 0.85)).toFixed(3));
         el.toggleAttribute('data-live', p.si > 0.98 && z <= 0);
       });
 
       // 5 · the reel comes in front of the zoomed launch (same picture: no visible cut)
       if (reelRef.current) {
         if (card) { // the reel takes the card's place exactly (same picture: no visible cut)
-          const rs = reelRef.current.style;
-          rs.left = `${((W - TW) / 2).toFixed(1)}px`; rs.top = `${((H - TH) / 2 + TY).toFixed(1)}px`;
-          rs.width = `${TW.toFixed(1)}px`; rs.height = `${TH.toFixed(1)}px`;
-          rs.setProperty('--gut', `${((W - TW) / 2).toFixed(1)}px`);
+          const rl = reelRef.current;
+          put(rl, 'left', `${((W - TW) / 2).toFixed(1)}px`); put(rl, 'top', `${((H - TH) / 2 + TY).toFixed(1)}px`);
+          put(rl, 'width', `${TW.toFixed(1)}px`); put(rl, 'height', `${TH.toFixed(1)}px`);
+          put(rl, '--gut', `${((W - TW) / 2).toFixed(1)}px`);
         }
-        reelRef.current.style.opacity = String(reelIn);
-        reelRef.current.style.setProperty('--ui', ui.toFixed(3));
-        reelRef.current.style.visibility = reelIn > 0 ? 'visible' : 'hidden';
-        reelRef.current.style.pointerEvents = ui > 0.9 ? 'auto' : 'none'; // interactive once fully in front
+        put(reelRef.current, 'opacity', reelIn.toFixed(3));
+        put(reelRef.current, '--ui', ui.toFixed(3));
+        put(reelRef.current, 'visibility', reelIn > 0 ? 'visible' : 'hidden');
+        put(reelRef.current, 'pointerEvents', ui > 0.9 ? 'auto' : 'none'); // interactive once fully in front
       }
       const on = reelIn >= 1;
       if (on !== reelOnRef.current) { reelOnRef.current = on; setReelOn(on); }
       // the fixed header turns light while the dark reel is behind it
-      const wm = document.querySelector('.chrome .wordmark')?.getBoundingClientRect();
       const line = wm ? wm.top + wm.height / 2 : 34;
-      const sr = (card && reelRef.current ? reelRef.current : stage).getBoundingClientRect();
       const dark = reelIn > 0.5 && sr.top < line && sr.bottom > line;
       if (dark !== overDark) { overDark = dark; document.documentElement.toggleAttribute('data-over-dark', dark); }
 
@@ -283,25 +307,24 @@ export default function LaunchesFloat({ alt = false, card = false, track = false
       const gap = Math.max(10, W * 0.008);
       // together they read as one line: half a word space each side of the centre, in the words' own
       // font (each word's box already carries its last letter's tracking); apart, as before
-      const wordOff = spaceOf(leftRef.current) / 2 + (ribW / 2 + cardH * 0.95 + gap) * g;
+      const wordOff = space / 2 + (ribW / 2 + cardH * 0.95 + gap) * g;
       // together, the pair is centred as a whole (the two words differ in length); as the wave opens
       // between them they part evenly around it
-      const lw = leftRef.current?.offsetWidth ?? 0, rw = rightRef.current?.offsetWidth ?? 0;
       const pairX = ((lw - rw) / 2) * (1 - g);
       const wordO = String(clamp((vh - r.top) / (vh * 0.6)) * (1 - span(prog, 0.33, 0.48)));
       const vOff = gap + (amp + cardH + 14) * g;
       if (leftRef.current) {
-        leftRef.current.style.transform = narrow ? `translate(-50%, calc(-100% - ${vOff}px))` : `translate(calc(-100% - ${(wordOff - pairX).toFixed(1)}px), -50%)`;
-        leftRef.current.style.opacity = wordO;
+        put(leftRef.current, 'transform', narrow ? `translate(-50%, calc(-100% - ${vOff}px))` : `translate(calc(-100% - ${(wordOff - pairX).toFixed(1)}px), -50%)`);
+        put(leftRef.current, 'opacity', wordO);
       }
       if (rightRef.current) {
-        rightRef.current.style.transform = narrow ? `translate(-50%, ${vOff}px)` : `translate(${(wordOff + pairX).toFixed(1)}px, -50%)`;
-        rightRef.current.style.opacity = wordO;
+        put(rightRef.current, 'transform', narrow ? `translate(-50%, ${vOff}px)` : `translate(${(wordOff + pairX).toFixed(1)}px, -50%)`);
+        put(rightRef.current, 'opacity', wordO);
       }
       if (headRef.current) {
         const h = ease(span(prog, 0.6, 0.8)) * (1 - span(ys, ZOOM[0], ZOOM[0] + 0.25));
-        headRef.current.style.opacity = String(h);
-        headRef.current.style.transform = `translate(-50%, calc(-50% + ${((1 - h) * 18 - q * 0.08 * H).toFixed(1)}px))`;
+        put(headRef.current, 'opacity', h.toFixed(3));
+        put(headRef.current, 'transform', `translate(-50%, calc(-50% + ${((1 - h) * 18 - q * 0.08 * H).toFixed(1)}px))`);
         headRef.current.toggleAttribute('data-live', h > 0.5);
       }
 
@@ -321,7 +344,7 @@ export default function LaunchesFloat({ alt = false, card = false, track = false
       tmy = (e.clientY / window.innerHeight) * 2 - 1;
     };
     window.addEventListener('pointermove', onMove, { passive: true });
-    const onResize = () => { if (near) start(); };
+    const onResize = () => { railsW = measureRails(); if (near) start(); };
     window.addEventListener('resize', onResize);
     frame(performance.now()); // place everything before the first paint
     return () => {
@@ -354,10 +377,10 @@ export default function LaunchesFloat({ alt = false, card = false, track = false
             );
           })}
         </div>
-        <p className="lcf-word" ref={leftRef} aria-hidden="true">{alt ? 'Launches we' : 'Launches'}</p>
-        <p className="lcf-word" ref={rightRef} aria-hidden="true">{alt ? 'have done' : '2B+ views'}</p>
+        <p className="lcf-word" ref={leftRef} aria-hidden="true">{alt ? (words?.[0] ?? 'Launches we') : 'Launches'}</p>
+        <p className="lcf-word" ref={rightRef} aria-hidden="true">{alt ? (words?.[1] ?? 'have done') : '2B+ views'}</p>
         {alt ? (
-          <h2 id="lc-title" className="sr-only">Launches we have done for our clients</h2>
+          <h2 id="lc-title" className="sr-only">{words ? words.join(' ') : 'Launches we have done for our clients'}</h2>
         ) : (
           <div className="lcf-head" ref={headRef}>
             <h2 id="lc-title" className="lcf-title">2B+ views across the launches we’ve done for our clients</h2>

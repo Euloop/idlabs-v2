@@ -22,7 +22,7 @@ export default function Launches({ variant = 'cloud' }: { variant?: LaunchesVari
      with a See all button to /launches (LaunchesSelected.tsx: the list and that page) */
   if (variant === 'selected') return (
     <section className="lc" data-variant={variant} data-foot="/Launches" aria-labelledby="lc-title">
-      <LaunchesFloat alt card track picks={PICKS} end={{ href: '/launches', total: LAUNCH_COUNT }} />
+      <LaunchesFloat alt card track picks={PICKS} end={{ href: '/launches', total: LAUNCH_COUNT }} words={['Our trajectory', 'changing launches']} />
     </section>
   );
   if (variant === 'float' || variant === 'float2' || variant === 'float3' || variant === 'float4') return (
