@@ -46,7 +46,6 @@ export default function ServicesCards({ light = true, layout, still = false }: {
     return () => { cancelAnimationFrame(raf); window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); };
   }, [still]);
 
-  const cta = layout === 'columns' ? '[Learn More]' : '[Work with us]';
   return (
     <section
       ref={sectionRef}
@@ -72,7 +71,8 @@ export default function ServicesCards({ light = true, layout, still = false }: {
                       start on the same line (phones: one line again, flow.css) */}
                   <h3 className="svc-title">{s.title === 'Founder & CEO Brand' ? <>Founder &amp;{' '}<br className="svc-br" />CEO Brand</> : s.title}</h3>
                   <p className="svc-text">{s.text}</p>
-                  <a className="svc-cta" href="#" aria-label={`${cta.slice(1, -1)}: ${s.title}`}>{cta}</a>
+                  {/* columns (the home page): no button; the other layout keeps "[Work with us]" */}
+                  {layout !== 'columns' && <a className="svc-cta" href="#" aria-label={`Work with us: ${s.title}`}>[Work with us]</a>}
                 </li>
               ))}
             </ol>

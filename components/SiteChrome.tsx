@@ -95,10 +95,10 @@ export default function SiteChrome() {
           {/* The nav: one fixed copy for the whole page (hero included), always on screen, no
               background. Same links in light and dark; only the colour follows the theme. */}
           <nav className="chrome-nav" aria-label="Primary">
-            <a href="#" className="roll" aria-label="Manifesto">
+            <a href="/manifesto" className="roll" aria-label="Manifesto">
               <span className="roll-track" aria-hidden="true"><span>Manifesto</span><span>Manifesto</span></span>
             </a>
-            <a href="#" className="roll" aria-label="Careers">
+            <a href="/careers" className="roll" aria-label="Careers">
               <span className="roll-track" aria-hidden="true"><span>Careers</span><span>Careers</span></span>
             </a>
           </nav>
