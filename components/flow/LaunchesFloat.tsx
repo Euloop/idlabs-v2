@@ -211,9 +211,18 @@ export default function LaunchesFloat({ alt = false, card = false, track = false
 
       // ribbon geometry; g: how far the load has opened it out from the centre
       const narrow = W < 760; // phones: a wider wave, the words above and below it
-      const ribW = narrow ? W * 0.66 : Math.min(W * 0.34, 520);
       const amp = Math.min(H * 0.1, 72);
       const cardH = Math.max(34, Math.min(W * 0.042, 58));
+      const gap = Math.max(10, W * 0.008);
+      /* the words never leave the screen, on any width: parted, each must fit between the wave and its
+         edge of the screen (a margin in), so first the wave narrows (to 55% of its width), then the
+         words scale down; together (and on phones, one above the other) the line must fit across */
+      const edge = Math.max(16, W * 0.03), half = W / 2 - edge, wide = Math.max(lw, rw, 1);
+      const rib0 = narrow ? W * 0.66 : Math.min(W * 0.34, 520);
+      const ribW = narrow ? rib0 : Math.max(rib0 * 0.55, Math.min(rib0, 2 * (half - space / 2 - cardH * 0.95 - gap - wide)));
+      const wk = Math.min(1,
+        narrow ? (W - 2 * edge) / wide : (half - space / 2 - (ribW / 2 + cardH * 0.95 + gap)) / wide,
+        (W - 2 * edge) / Math.max(1, lw + space + rw));
       const gl = span(load, 0.02, 0.92), g = mix(1 - (1 - gl) * (1 - gl), ease(gl), 0.4); // opens quickly at first: room for the first cards
       const t = clock / 1000;
       const z = easeSine(span(ys, ZOOM[0], ZOOM[1]));    // the zoom into the hero launch (a gentle in-out: no rush in the middle)
@@ -303,22 +312,23 @@ export default function LaunchesFloat({ alt = false, card = false, track = false
       if (dark !== overDark) { overDark = dark; document.documentElement.toggleAttribute('data-over-dark', dark); }
 
       // the words: together in the centre before the load, pushed apart as the wave opens;
-      // they fade as the scatter starts.
-      const gap = Math.max(10, W * 0.008);
+      // they fade as the scatter starts. (gap, the fitted wave and wk, the words' scale: above)
       // together they read as one line: half a word space each side of the centre, in the words' own
       // font (each word's box already carries its last letter's tracking); apart, as before
-      const wordOff = space / 2 + (ribW / 2 + cardH * 0.95 + gap) * g;
+      const wordOff = (space * wk) / 2 + (ribW / 2 + cardH * 0.95 + gap) * g;
       // together, the pair is centred as a whole (the two words differ in length); as the wave opens
       // between them they part evenly around it
-      const pairX = ((lw - rw) / 2) * (1 - g);
+      const pairX = (((lw - rw) * wk) / 2) * (1 - g);
       const wordO = String(clamp((vh - r.top) / (vh * 0.6)) * (1 - span(prog, 0.33, 0.48)));
       const vOff = gap + (amp + cardH + 14) * g;
       if (leftRef.current) {
-        put(leftRef.current, 'transform', narrow ? `translate(-50%, calc(-100% - ${vOff}px))` : `translate(calc(-100% - ${(wordOff - pairX).toFixed(1)}px), -50%)`);
+        put(leftRef.current, 'transformOrigin', narrow ? '50% 100%' : '100% 50%');
+        put(leftRef.current, 'transform', (narrow ? `translate(-50%, calc(-100% - ${vOff}px))` : `translate(calc(-100% - ${(wordOff - pairX).toFixed(1)}px), -50%)`) + ` scale(${wk.toFixed(4)})`);
         put(leftRef.current, 'opacity', wordO);
       }
       if (rightRef.current) {
-        put(rightRef.current, 'transform', narrow ? `translate(-50%, ${vOff}px)` : `translate(${(wordOff + pairX).toFixed(1)}px, -50%)`);
+        put(rightRef.current, 'transformOrigin', narrow ? '50% 0%' : '0% 50%');
+        put(rightRef.current, 'transform', (narrow ? `translate(-50%, ${vOff}px)` : `translate(${(wordOff + pairX).toFixed(1)}px, -50%)`) + ` scale(${wk.toFixed(4)})`);
         put(rightRef.current, 'opacity', wordO);
       }
       if (headRef.current) {
