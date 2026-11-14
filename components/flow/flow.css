@@ -392,6 +392,7 @@ html:has(body .s2-flow), body:has(.s2-flow) { overflow-x: clip; }
 .rl-text {
   margin: 0; width: min(100% - 32px, 512px); text-align: center;
   font-family: var(--mono); font-size: 12px; line-height: 1.6; letter-spacing: 0.06em; text-transform: uppercase; color: #3a3a3a;
+  text-wrap: balance; /* even lines, no word left alone on the last (the last two words are also tied) */
 }
 .rl-hl {
   white-space: nowrap; padding: 2px 4px; margin-inline: -1px;

@@ -5,7 +5,7 @@ import SectionTwo from '../components/SectionTwo';
 import ResearchLab from '../components/flow/ResearchLab';
 import SectionThree from '../components/SectionThree';
 import MonoTrail from '../components/flow/MonoTrail';
-import ToolsShowcase from '../components/flow/ToolsShowcase';
+import ToolsCollage from '../components/flow/ToolsCollage';
 import ServicesCards from '../components/flow/ServicesCards';
 import Launches from '../components/flow/Launches';
 import SiteFooter from '../components/flow/SiteFooter';
@@ -18,7 +18,7 @@ import '../components/flow/flow.css';
 /* The home page: /home-4 with its picks made and no option tabs (2026-11-14). The /hero loader and
    the clean light hero after it (StartLoader fixed: html[data-intro='fade']); the client's 12 logos,
    no "Our Network" (html[data-clients='picked']); Section 2 Diagram; research papers with the
-   Paper cover; tools Showcase; Services Columns (light); Launches Selected (Float IV with the six,
+   Paper cover; tools Motion scroll (the scroll moves through the tools); Services Columns (light); Launches Selected (Float IV with the six,
    then See all → /launches); the Fibonacci footer. The previous home page is at /old-home;
    /home-4 keeps the tabs for trying variants. */
 
@@ -47,7 +47,9 @@ export default function Home() {
       <ResearchLab fixed />
       <SectionThree lead="Read our published findings" cover="paper" holes={false} />
       <MonoTrail selector="section.s3 .s3-band" />
-      <ToolsShowcase />
+      {/* the tools as /home-4's Motion scroll: the collage in White with each tool's walkthrough, pinned
+          while the scroll moves through the four tools (a screen each); phones keep the cycle */}
+      <ToolsCollage theme="white" motion scroll intro="small" />
       <ServicesCards light layout="columns" still />
       <Launches variant="selected" />
       <SiteFooter layout="fib" />

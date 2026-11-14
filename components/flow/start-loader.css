@@ -292,6 +292,12 @@ html[data-sl-end='reel'] .sl-stage .sl-frame { visibility: visible; opacity: 0.0
    the ~30 stacked pictures add up to a pale grey box over the white while the logo opens. Until then
    only the opener shows; the rest come to 0.002 as the reel starts (100ms+ before any of them cuts in) */
 html[data-sl-end='reel'] .sl:not([data-reel]) .sl-stage .sl-frame:not(.sl-zoom-a > :first-child) { opacity: 0; }
+/* …and after it: once the reel has ended (the white lifting, then done) none stay at 0.002, or the
+   stack is left behind as a grey rectangle (the last picture fades out by its own animation, which
+   still wins while it runs) */
+html[data-sl-end='reel']:not([data-loader='run']) .sl-stage .sl-frame { opacity: 0; }
+/* the waiting ones at once (no 450ms fade from 0.002, which shows grey on the GPU while it runs) */
+html[data-sl-end='reel']:not([data-loader='run']) .sl-stage .sl-frame:not(.sl-last) { transition: none; }
 html[data-sl-end='reel'] .sl-zoom-a > .sl-frame:first-child { opacity: 1; }
 .sl[data-reel] .sl-zoom-a > .sl-frame:first-child { opacity: 0; }
 .sl[data-reel] .sl-stage .sl-frame[style*='--at'] { animation: sl-cut 4000ms linear calc(var(--at) - 3900ms) none; }

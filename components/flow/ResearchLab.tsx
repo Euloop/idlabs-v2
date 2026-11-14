@@ -6,16 +6,16 @@ import OptionTabs, { useOption } from './OptionTabs';
 /* /home-2: the research lab's line on its own screen, between Section 2 and the research papers.
    One short centred column of 12px mono caps. The stage pins while the line types in with the
    scroll (letter by letter, the site's .tc letters), then a black bar wipes across
-   "500M posts/week" and each letter it passes turns white. Scrolling back un-does both.
+   "1B+ views worth of posts" and each letter it passes turns white. Scrolling back un-does both.
    The stage is half a screen, held mid-screen (flow.css). Two sizes, 12px or 20px (bottom tabs; ?lab=). */
 
 type Size = 'small' | 'large';
 const SIZES: [Size, string][] = [['small', '12px'], ['large', '20px']];
 
 const PRE = 'We backpropagate ';
-const HL = '500M posts/week';
+const HL = '1B+ views worth of posts';
 const POST =
-  ' to analyse how the algorithm treats each post as it goes through the sourcing and ranking stages. The dominant patterns that emerge fine-tune our approach and ensure every post or launch we do goes consistently viral.';
+  ' to analyse how the algorithm treats each post as it goes through the sourcing and ranking stages. The dominant patterns that emerge fine-tune our approach and ensure every post or launch we do goes consistently\u00a0viral.'; // (no orphan: the last two words kept together)
 const TEXT = PRE + HL + POST;
 
 const clamp = (v: number) => Math.max(0, Math.min(1, v));

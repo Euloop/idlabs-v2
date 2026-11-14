@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react';
+import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react';
 import { TOOLS } from './ToolsCollage';
 import { PAPERS } from '../SectionThree';
 import './footer-fib.css';
@@ -35,9 +35,23 @@ const box = (x: number, y: number, w: number, h: number): CSSProperties =>
   ({ '--x': x, '--y': y, '--w': w, '--h': h } as CSSProperties);
 
 /* Figma 200:22, edge to edge of the screen (footer-fib.css) */
+/* It draws itself in when it comes on screen (data-drawn, footer-fib.css): the squares open from their
+   corner, the circles from their centre, the section lines sweep across, the diagonals run along —
+   one after another. Once per page view; the finished drawing for reduced motion. */
 function Construction() {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (!('IntersectionObserver' in window)) { el.setAttribute('data-drawn', ''); return; }
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { el.setAttribute('data-drawn', ''); io.disconnect(); }
+    }, { threshold: 0.12 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
   return (
-    <div className="ftf-gold" aria-hidden="true">
+    <div className="ftf-gold" ref={ref} aria-hidden="true">
       {/* the big golden square with its circle (Frame 56) */}
       <span className="ftf-g" style={box(0, 0, 787.692, 787.692)}><img src={`${A}frame56.svg`} alt="" /></span>
       {/* the column to its right: 492 square, then 98 · 98 / 197 beside 295 */}

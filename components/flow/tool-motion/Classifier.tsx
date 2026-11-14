@@ -1,11 +1,13 @@
 'use client';
 
-import { Av, C, Card, Frame, eout, fmt, lerp, loopFade, rng, seg, useLoop } from './shared';
+import { Av, C, Card, Cursor, Frame, eio, eout, fmt, lerp, loopFade, rng, seg, useLoop } from './shared';
 
 /* Engagement Classifier: the "Rate vs baseline" plot. Every post starts at its own baseline (its
-   first 15 minutes) and runs right as it ages; most sink, a few climb into the green. The one that
-   climbed furthest has its card open (the app's own hover card). Right: the
-   counts and the classifier's calls filling in. */
+   first 15 minutes) and runs right as it ages; most sink, a few climb into the green. The plot is
+   drawn and still (the lines growing read badly); the walkthrough is the pointer moving over it,
+   resting on one post after another — an emerging one, a decaying one, a climber, then the one that
+   climbed furthest — its line lit, the rest faded back, its card open (the app's own hover card).
+   Right: the counts, and the classifier's calls coming in. */
 
 const PX0 = 70, PX1 = 494, PY0 = 80, PY1 = 320;
 const MMIN = 3.2, MMAX = 720, RMAX = 4.9, RMIN = -3.5;
@@ -45,7 +47,34 @@ const POSTS: Post[] = (() => {
   return out;
 })();
 const HERO = POSTS[0];
-const HX = HERO.pts[HERO.pts.length - 1][0], HY = HERO.pts[HERO.pts.length - 1][1];
+
+/* The posts the pointer rests on, in turn (each with a face: the card shows who posted it), and when:
+   it arrives at `a`, the card is open until `b`. */
+const rOf = (y: number) => RMAX - ((y - PY0) / (PY1 - PY0)) * (RMAX - RMIN); // a y back to log2 of the rate
+const mOf = (x: number) => MMIN * Math.pow(MMAX / MMIN, (x - PX0) / (PX1 - PX0));  // an x back to minutes
+const age = (m: number) => (m >= 60 ? `${Math.floor(m / 60)}h ${String(Math.round(m % 60)).padStart(2, '0')}m` : `${Math.round(m)}m`);
+type Stop = { p: Post; a: number; b: number; views: string; kind: string; aud: number };
+const STOPS: Stop[] = [
+  { p: POSTS[9], a: 1.0, b: 2.95, views: '84.2K', kind: 'Emerging', aud: 41 },
+  { p: POSTS[17], a: 3.25, b: 5.15, views: '12.6K', kind: 'Decaying', aud: 9 },
+  { p: POSTS[1], a: 5.45, b: 7.35, views: '412K', kind: 'Viral', aud: 47 },
+  { p: HERO, a: 7.65, b: 9.35, views: '1.7M', kind: 'Viral', aud: 54 },
+];
+const end = (p: Post) => p.pts[p.pts.length - 1];
+// the pointer's path: in from the bottom right, onto each post's end point (just under it), out again
+const KEYS: [number, number, number][] = [
+  [0.35, PX1 + 40, PY1 + 30],
+  ...STOPS.flatMap((s): [number, number, number][] => { const [x, y] = end(s.p); return [[s.a, x + 2, y + 3], [s.b - 0.3, x + 2, y + 3]]; }),
+  [9.75, PX1 + 40, PY1 + 30],
+];
+function pointer(t: number): [number, number] {
+  if (t <= KEYS[0][0]) return [KEYS[0][1], KEYS[0][2]];
+  for (let i = 1; i < KEYS.length; i++) {
+    const [t0, x0, y0] = KEYS[i - 1], [t1, x1, y1] = KEYS[i];
+    if (t <= t1) { const k = eio(seg(t, t0, t1)); return [lerp(x0, x1, k), lerp(y0, y1, k)]; }
+  }
+  return [KEYS[KEYS.length - 1][1], KEYS[KEYS.length - 1][2]];
+}
 
 const YL: [number, string][] = [[3, '8× baseline'], [2, '4× baseline'], [1, '2× baseline'], [0, 'baseline'], [-1, '½ baseline'], [-2, '¼ baseline'], [-3, '⅛ baseline']];
 const XL: [number, string][] = [[5, '5m'], [10, '10m'], [15, '15m'], [30, '30m'], [60, '1h'], [120, '2h'], [240, '4h'], [480, '8h'], [720, '12h']];
@@ -57,19 +86,15 @@ const CALLS = [
 ];
 const COUNTS: [string, number, boolean][] = [['Viral', 58, true], ['Emerging', 8, true], ['Decaying', 230, false], ['High reach', 19, false], ['Flat', 5, false], ['Unscored', 26, false]];
 
-function partial(pts: [number, number][], p: number) {
-  const n = pts.length - 1, f = p * n, k = Math.floor(f);
-  const a = pts.slice(0, k + 1);
-  if (k < n) a.push([lerp(pts[k][0], pts[k + 1][0], f - k), lerp(pts[k][1], pts[k + 1][1], f - k)]);
-  return a;
-}
-
 export default function Classifier({ playing, time, onEnd }: { playing: boolean; time?: number; onEnd?: () => void }) {
   const t = useLoop(playing, 7, time, onEnd);
   const fade = loopFade(t);
-  const grow = eout(seg(t, 0.6, 4.1));
-  const tip = Math.min(eout(seg(t, 5.2, 5.55)), 1 - seg(t, 8.85, 9.2));
-  const tx = HX - 224, ty = HY + 14;
+  const grow = 1; // the counts as they are: nothing counts up
+  // how far each stop's hover is on (0…1), and the strongest — the rest of the plot fades back by it
+  const on = STOPS.map((s) => Math.min(eout(seg(t, s.a - 0.05, s.a + 0.25)), 1 - seg(t, s.b - 0.25, s.b)));
+  const dim = Math.max(...on);
+  const lit = (p: Post) => { const k = STOPS.findIndex((s) => s.p === p); return k < 0 ? 0 : on[k]; };
+  const [cx, cy] = pointer(t);
 
   return (
     <Frame label="Engagement Classifier: every post's view rate against its own baseline" title="Engagement Classifier" meta="1,284 posts · polled every 30s">
@@ -95,66 +120,71 @@ export default function Classifier({ playing, time, onEnd }: { playing: boolean;
         <line x1={PX0} x2={PX1} y1={Y0} y2={Y0} stroke={C.ink} strokeDasharray="4 3" strokeWidth={0.9} />
         <text x={X15 + 4} y={Y0 - 4} className="tm-m" fontSize={6.5} fill={C.ink}>baseline = first 15m</text>
 
-        {/* the posts: each runs out from the baseline as it ages */}
+        {/* the posts, drawn: each from the baseline out to its age now; the one pointed at lit (green
+            above the baseline, ink below), the rest faded back while it is */}
         {POSTS.map((p) => {
-          const s0 = 0.55 + 0.04 * (p.i % 22);
-          const pr = eout(seg(t, s0, s0 + 3.3));
-          if (pr <= 0) return null;
-          const hero = p === HERO;
-          const d = pr >= 1 ? p.d : pathD(partial(p.pts, pr)); // a finished line: its path, built once
+          const l = lit(p);
+          const up = end(p)[1] < Y0;
+          const base = p === HERO ? 0.55 : 0.42;
           return (
-            <path key={p.i} d={d} fill="none" stroke={hero ? C.green : '#8f8d87'} strokeWidth={hero ? lerp(0.9, 1.7, tip) : 0.6}
-              strokeOpacity={hero ? lerp(0.55, 1, tip) : 0.42 * (1 - 0.65 * tip)} />
+            <path key={p.i} d={p.d} fill="none" stroke={l > 0 ? (up ? C.green : C.ink) : p === HERO ? C.green : '#8f8d87'}
+              strokeWidth={lerp(p === HERO ? 0.9 : 0.6, 1.7, l)}
+              strokeOpacity={lerp(base * (1 - 0.7 * dim), 1, l)} />
           );
         })}
-        {/* the heads: a plain dot rides each line out; a post with a face shows it only once its
-            line has landed (it fades and grows in on the end point, still): pictures never slide */}
+        {/* the heads, at each line's end: a dot, or the poster's face (ringed green when it climbed);
+            the one pointed at a little larger */}
         {POSTS.map((p) => {
-          const s0 = 0.55 + 0.04 * (p.i % 22);
-          const pr = eout(seg(t, s0, s0 + 3.3));
-          if (pr <= 0) return null;
-          const hero = p === HERO;
-          const o = hero ? 1 : 1 - 0.6 * tip;
+          const l = lit(p);
+          const o = lerp(1 - 0.6 * dim, 1, l);
+          const [ex, ey] = end(p);
           if (p.face) {
-            const [ex, ey] = p.pts[p.pts.length - 1];
-            const land = eout(seg(t, s0 + 2.6, s0 + 3.2)); // the face, as the line slows into its end
-            const [x, y] = partial(p.pts, pr).at(-1)!;
             return (
               <g key={p.i} opacity={o}>
-                {land < 1 && <circle cx={x} cy={y} r={2.2} fill={p.color} stroke="#fff" strokeWidth={0.6} opacity={1 - land} />}
-                {land > 0 && (
-                  <g opacity={land}>
-                    <Av h={p.face} x={ex} y={ey} r={p.r * (0.75 + 0.25 * land)} ring={hero || ey < Y0 - 20 ? C.green : undefined} />
-                  </g>
-                )}
+                <Av h={p.face} x={ex} y={ey} r={p.r * (1 + 0.25 * l)} ring={p === HERO || ey < Y0 - 20 ? C.green : undefined} />
               </g>
             );
           }
-          const [x, y] = partial(p.pts, pr).at(-1)!;
-          return <circle key={p.i} cx={x} cy={y} r={p.r} fill={p.color} stroke="#fff" strokeWidth={0.6} opacity={o} />;
+          return <circle key={p.i} cx={ex} cy={ey} r={p.r} fill={p.color} stroke="#fff" strokeWidth={0.6} opacity={o} />;
         })}
 
-        {/* the hover card */}
-        {tip > 0 && (
-          <g transform={`translate(${tx} ${ty + 6 * (1 - tip)})`} opacity={tip}>
-            <rect x={0} y={0} width={214} height={120} rx={7} fill="#fff" stroke={C.rule} />
-            <rect x={0} y={0} width={214} height={120} rx={7} fill="none" stroke="rgb(0 0 0 / .04)" strokeWidth={4} />
-            <Av h="paularambles" x={15} y={16} r={7} />
-            <text x={27} y={15} fontSize={8.5} fill={C.ink}>“paula” <tspan fill={C.mute}>@paularambles</tspan></text>
-            <text x={27} y={25} className="tm-m" fontSize={6.3} fill={C.mute}>text · 9h 53m old · 1.7M views</text>
-            <text x={204} y={15} textAnchor="end" className="tm-m" fontSize={7.5} fill={C.green}>Viral</text>
-            <text x={10} y={44} fontSize={8.2} fill={C.ink}>unsurprisingly the website this is from is</text>
-            <text x={10} y={55} fontSize={8.2} fill={C.ink}>literally cookingforengineers dot com</text>
-            {[['baseline', '52/min'], ['now', `${(lerp(0.05, 2.9, eout(seg(t, 5.4, 6.4)))).toFixed(1)}K/min`], ['new audience', `${fmt(54 * eout(seg(t, 5.5, 6.5)))}%`]].map(([l, v], i) => (
-              <g key={l}>
-                <text x={10 + i * 70} y={72} className="tm-m" fontSize={6.3} fill={C.mute}>{l}</text>
-                <text x={10 + i * 70} y={84} className="tm-m" fontSize={7.8} fill={C.ink}>{v}</text>
-              </g>
-            ))}
-            <text x={10} y={100} className="tm-m" fontSize={6.6} fill={C.soft}>16.0× baseline · 54% new audience ·</text>
-            <text x={10} y={110} className="tm-m" fontSize={6.6} fill={C.soft}>accelerating through reshares.</text>
-          </g>
-        )}
+        {/* the hover cards: the post pointed at — who, how old, how seen, the call — beside it, kept
+            inside the plot (above the point when it is low, below when it is high) */}
+        {STOPS.map((st, k) => {
+          const h = on[k];
+          if (h <= 0) return null;
+          const [ex, ey] = end(st.p);
+          const hero = st.p === HERO;
+          const r = rOf(ey), mult = Math.pow(2, r);
+          const w = 214, ht = hero ? 120 : 96;
+          const x = Math.max(PX0 + 6, Math.min(PX1 - w - 6, ex - w - 12));
+          const y = ey < (PY0 + PY1) / 2 ? Math.min(PY1 - ht - 4, ey + 14) : Math.max(PY0 + 4, ey - ht - 14);
+          const green = st.kind === 'Viral' || st.kind === 'Emerging';
+          const handle = hero ? 'paularambles' : st.p.face!;
+          const rate = `${mult >= 1 ? mult.toFixed(mult >= 10 ? 1 : 2) : mult.toFixed(2)}× baseline`;
+          return (
+            <g key={k} transform={`translate(${x} ${y + 6 * (1 - h)})`} opacity={h}>
+              <rect x={0} y={0} width={w} height={ht} rx={7} fill="#fff" stroke={C.rule} />
+              <rect x={0} y={0} width={w} height={ht} rx={7} fill="none" stroke="rgb(0 0 0 / .04)" strokeWidth={4} />
+              <Av h={handle} x={15} y={16} r={7} />
+              <text x={27} y={15} fontSize={8.5} fill={C.ink}>{hero ? '“paula” ' : ''}<tspan fill={C.mute}>@{handle}</tspan></text>
+              <text x={27} y={25} className="tm-m" fontSize={6.3} fill={C.mute}>{hero ? 'text · 9h 53m old · 1.7M views' : `post · ${age(mOf(ex))} old · ${st.views} views`}</text>
+              <text x={204} y={15} textAnchor="end" className="tm-m" fontSize={7.5} fill={green ? C.green : C.soft}>{st.kind}</text>
+              {hero && <>
+                <text x={10} y={44} fontSize={8.2} fill={C.ink}>unsurprisingly the website this is from is</text>
+                <text x={10} y={55} fontSize={8.2} fill={C.ink}>literally cookingforengineers dot com</text>
+              </>}
+              {[['baseline', hero ? '52/min' : '38/min'], ['now', hero ? '2.9K/min' : `${fmt(38 * mult)}/min`], ['new audience', `${st.aud}%`]].map(([l, v], i) => (
+                <g key={l}>
+                  <text x={10 + i * 70} y={hero ? 72 : 48} className="tm-m" fontSize={6.3} fill={C.mute}>{l}</text>
+                  <text x={10 + i * 70} y={hero ? 84 : 60} className="tm-m" fontSize={7.8} fill={C.ink}>{v}</text>
+                </g>
+              ))}
+              <text x={10} y={hero ? 100 : 78} className="tm-m" fontSize={6.6} fill={C.soft}>{hero ? '16.0× baseline · 54% new audience ·' : `${rate} · ${st.aud}% new audience ·`}</text>
+              <text x={10} y={hero ? 110 : 88} className="tm-m" fontSize={6.6} fill={C.soft}>{hero ? 'accelerating through reshares.' : st.kind === 'Decaying' ? 'slowing below its own baseline.' : st.kind === 'Emerging' ? 'picking up past its first 15 minutes.' : 'compounding through quotes.'}</text>
+            </g>
+          );
+        })}
 
         {/* right: the counts, then the calls */}
         <Card x={516} y={44} w={190} h={110} />
@@ -188,6 +218,7 @@ export default function Classifier({ playing, time, onEnd }: { playing: boolean;
           );
         })}
 
+        <Cursor x={cx} y={cy} o={Math.min(seg(t, 0.35, 0.7), 1 - seg(t, 9.45, 9.75))} />
       </g>
     </Frame>
   );
