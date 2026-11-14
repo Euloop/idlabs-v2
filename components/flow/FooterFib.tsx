@@ -64,12 +64,12 @@ function Construction() {
 }
 
 /* `top`: something in place of the empty band at the top (/footer's "Fibonacci + Focus": FooterGolden's
-   Focus), over the same construction behind, the links box under it */
+   Focus) — then no construction behind (tried behind the whole, and behind the links only: neither
+   looked right), the links box under it */
 export default function FooterFib({ top }: { top?: ReactNode } = {}) {
   return (
     <>
-      <Construction />
-      {top && <div className="ftf-top">{top}</div>}
+      {top ? <div className="ftf-top">{top}</div> : <Construction />}
       <div className={top ? 'ftf ftf-after-top' : 'ftf'}>
         <nav className="ftf-box" aria-label="Site">
           {COLUMNS.map((c) => (

@@ -234,7 +234,7 @@ html[data-sl-end='reel'] .sl-stage .sl-gframe img { position: absolute; left: -1
    The construction is white in difference (dark on light images, light on dark); the spiral is the
    highlight, lit white with a halo on a soft dark edge. Laid out from the start, unseen (the arc at
    opacity 0, the lines at 0), so turning it on is only an opacity and dash change. */
-.sl-spiral { position: absolute; top: 0; left: 0; overflow: visible; fill: none; stroke: #fff; mix-blend-mode: difference; }
+.sl-spiral { position: absolute; z-index: 2; top: 0; left: 0; overflow: visible; fill: none; stroke: #fff; mix-blend-mode: difference; }
 /* The glow is strokes, not a filter: the arc redraws every frame while it draws, and a drop-shadow
    filter on it is re-blurred every one of those frames — enough on a slower machine to hold a cut. */
 .sl-spiral-glow { mix-blend-mode: normal; }
@@ -288,14 +288,21 @@ html[data-sl-end='reel'][data-loader='zoom'] .sl-spiral { opacity: 0; transition
    first beat can show a frame of it half drawn — a ghost of the cut. 0.002 is invisible, and every
    image is drawn and ready before the reel starts.) */
 html[data-sl-end='reel'] .sl-stage .sl-frame { visibility: visible; opacity: 0.002; will-change: opacity; }
+/* …but not before the reel starts: in Chrome (GPU) each 0.002 rounds up to the smallest visible step and
+   the ~30 stacked pictures add up to a pale grey box over the white while the logo opens. Until then
+   only the opener shows; the rest come to 0.002 as the reel starts (100ms+ before any of them cuts in) */
+html[data-sl-end='reel'] .sl:not([data-reel]) .sl-stage .sl-frame:not(.sl-zoom-a > :first-child) { opacity: 0; }
 html[data-sl-end='reel'] .sl-zoom-a > .sl-frame:first-child { opacity: 1; }
 .sl[data-reel] .sl-zoom-a > .sl-frame:first-child { opacity: 0; }
 .sl[data-reel] .sl-stage .sl-frame[style*='--at'] { animation: sl-cut 4000ms linear calc(var(--at) - 3900ms) none; }
-@keyframes sl-cut { 0%, 97.4997% { opacity: 0.002; } 97.5000%, 100% { opacity: 1; } }
+/* the picture on screen also comes to the top of its layer (z-index), so the faint ones never lie over it */
+@keyframes sl-cut { 0%, 97.4997% { opacity: 0.002; z-index: 0; } 97.5000%, 100% { opacity: 1; z-index: 1; } }
 /* the last image: its beat and three more, then it fades with the white (450ms) */
 .sl[data-reel] .sl-stage .sl-frame.sl-last { animation: sl-cut-last 4000ms linear calc(var(--at) - 3150ms) none; }
-@keyframes sl-cut-last { 0%, 78.7497% { opacity: 0.002; } 78.7500%, 88.7500% { opacity: 1; } 100% { opacity: 0.002; } }
-.sl[data-reel] .sl-zoom-a { animation: sl-push-a 2400ms linear(0.0000, 0.0781, 0.1571, 0.2371, 0.3179, 0.3998, 0.4825, 0.5663, 0.6510, 0.7367, 0.8235, 0.9112, 1.0000) both; }
+@keyframes sl-cut-last { 0%, 78.7497% { opacity: 0.002; z-index: 0; } 78.7500%, 88.7500% { opacity: 1; z-index: 1; } 100% { opacity: 0.002; z-index: 1; } }
+.sl[data-reel] .sl-zoom-a { animation: sl-push-a 2400ms linear(0.0000, 0.0781, 0.1571, 0.2371, 0.3179, 0.3998, 0.4825, 0.5663, 0.6510, 0.7367, 0.8235, 0.9112, 1.0000) both, sl-front 2400ms step-end both; }
+/* the first half's layer over the golden half's (its faint pictures) for its 2400ms, then under it */
+@keyframes sl-front { from { z-index: 1; } to { z-index: 0; } }
 .sl[data-reel] .sl-zoom-b { animation: sl-push-b 4750ms linear both; }
 @keyframes sl-push-b {
   0%, 50.5263% { transform: scale(0.88); animation-timing-function: linear(0.0000, 0.0785, 0.1579, 0.2381, 0.3192, 0.4012, 0.4840, 0.5677, 0.6524, 0.7379, 0.8243, 0.9117, 1.0000); }
