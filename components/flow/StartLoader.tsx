@@ -197,10 +197,13 @@ const END_LOGO = 1.65; // the Fade ending's logo, in the image slot (170 × 38)
 
 // /hero (fixed): the logo opening (html[data-sl-open='logo']), the reel, then the white lifts onto the
 // clean hero (data-intro 'fade') with no golden ratio (html[data-sl-end='reel']).
-const BOOT = (fixed: boolean) => `(function(){var d=document.documentElement,q=new URLSearchParams(location.search).get('intro');${
-  fixed ? "d.dataset.intro='fade';d.dataset.slOpen='logo';d.dataset.slEnd='reel';" : "d.dataset.intro=q==='fade'?'fade':'zoom';"}if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;d.dataset.loader='run';try{history.scrollRestoration='manual'}catch(e){}scrollTo(0,0)})()`;
+// `choice` (/home-4): ?loader=first plays only the reel's first half (html[data-sl-reel='first']): no golden
+// half, the white lifting after the nautilus drawing (HeroIntroOptions' Loader tab)
+const BOOT = (fixed: boolean, choice: boolean) => `(function(){var d=document.documentElement,u=new URLSearchParams(location.search),q=u.get('intro');${
+  fixed ? "d.dataset.intro='fade';d.dataset.slOpen='logo';d.dataset.slEnd='reel';" : "d.dataset.intro=q==='fade'?'fade':'zoom';"}${
+  choice ? "d.dataset.slReel=u.get('loader')==='first'?'first':'full';" : ''}if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;d.dataset.loader='run';try{history.scrollRestoration='manual'}catch(e){}scrollTo(0,0)})()`;
 
-export default function StartLoader({ fixed = false }: { fixed?: boolean }) {
+export default function StartLoader({ fixed = false, choice = false }: { fixed?: boolean; choice?: boolean }) {
   const reel = fixed ? REEL_HERO : REEL;
   // /hero: each image already cropped to the frame and bulged (assets/loader/bulged, by its file name)
   const bulged = (src: string) => `assets/loader/bulged/${src.split('/').pop()!.replace(/\.\w+$/, '')}.webp`;
@@ -208,14 +211,14 @@ export default function StartLoader({ fixed = false }: { fixed?: boolean }) {
   // (start-loader.css .sl[data-reel]): the opener before the first cut, then one beat each
   const at = (i: number) => (fixed && i > 0 ? { '--at': `${(i - 1) * REEL_BEAT}ms` } : {});
   const reelFrames = reel.map((r, i) => (
-    <span className="sl-frame" data-on={i === 0 ? '' : undefined} key={r.src} style={{ width: `${fixed ? G_W : r.w}px`, ...at(i) } as CSSProperties}>
+    <span className={fixed && i === reel.length - 1 ? 'sl-frame sl-last-a' : 'sl-frame'} data-on={i === 0 ? '' : undefined} key={r.src} style={{ width: `${fixed ? G_W : r.w}px`, ...at(i) } as CSSProperties}>
       <img src={`/${fixed ? bulged(r.src) : r.src}`} alt="" decoding="async" fetchPriority={i === 0 ? 'high' : 'auto'}
         style={r.crop && !fixed ? { height: `${r.crop}%`, objectFit: 'fill' } : undefined} />
     </span>
   ));
   return (
     <>
-      <script dangerouslySetInnerHTML={{ __html: BOOT(fixed) }} />
+      <script dangerouslySetInnerHTML={{ __html: BOOT(fixed, choice) }} />
       {/* its script sets the halves' offsets (style) before React hydrates */}
       <div className="sl" aria-hidden="true" suppressHydrationWarning>
         {/* Fade: the words; Zoom: the logo in two halves that overlap where the italic L tucks under the y */}

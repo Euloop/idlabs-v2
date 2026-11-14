@@ -346,3 +346,9 @@ html[data-sl-end='reel'] .sl-zoom-a > .sl-frame:first-child { opacity: 1; }
   97.5000% { opacity: 0.55; animation-timing-function: ease-out; } 99.9975% { opacity: 0; }
   100% { opacity: 0; }
 }
+
+/* /home-4's "First half" loader (html[data-sl-reel='first'], StartLoader `choice`): the golden half not
+   shown; the first half's last image (the nautilus drawing) holds and fades with the white, as the
+   golden half's last does */
+html[data-sl-reel='first'] .sl-zoom-b { display: none; }
+html[data-sl-reel='first'] .sl[data-reel] .sl-stage .sl-frame.sl-last-a { animation: sl-cut-last 4000ms linear calc(var(--at) - 3150ms) none; }

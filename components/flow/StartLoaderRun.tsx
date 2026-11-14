@@ -126,7 +126,9 @@ export default function StartLoaderRun({ frames, golden = 0 }: { frames: number;
         // (start-loader.css .sl[data-push]); the golden half's starts with the spiral
         push(i, cut, golden && !p && i === 1 ? () => el.setAttribute('data-push', '') : undefined);
       }
-      if (golden) {
+      // /home-4's "First half" (html[data-sl-reel='first']): the reel ends on the first half's last image
+      const firstOnly = root.dataset.slReel === 'first';
+      if (golden && !firstOnly) {
         // no pause: the golden images cut straight on, and the spiral draws over them as they change
         // (data-push / data-spiral only mark the moments; the CSS runs off data-reel)
         for (let i = plain; i < frames; i++) push(i, BEAT, i === plain ? () => el.setAttribute('data-spiral', '') : undefined);

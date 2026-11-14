@@ -35,7 +35,7 @@ export default function Home4({ loader = 'new' }: { loader?: 'new' | 'classic' }
       {/* start loader (Figma 184:117–174): before the hero, so its zoom lands on it */}
       {/* the start loader as /hero: the logo drawn and split, the reel of people and papers, then the
           golden spirals, onto the clean hero (no golden construction) */}
-      {loader === 'new' ? <StartLoader fixed /> : <StartLoader />}
+      {loader === 'new' ? <StartLoader fixed choice /> : <StartLoader />}
       <HeroVertical />
       <HeroLight />
       {/* loader ending + hero: Zoom (drawn hero) or Fade (clean hero), bottom tabs (?intro=) */}

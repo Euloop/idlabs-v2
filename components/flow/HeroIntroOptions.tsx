@@ -15,22 +15,28 @@ type Clients = 'picked' | 'all';
 const CLIENTS: [Clients, string][] = [['picked', 'Clients 12'], ['all', 'Clients 16 + Network']];
 const onHero = (r: DOMRect, vh: number) => r.top > -vh * 0.25 && r.bottom > vh * 0.6;
 const never = () => false;
-type Loader = 'new' | 'zoom' | 'fade';
-const LOADERS: [Loader, string][] = [['new', 'New loader'], ['zoom', 'Zoom'], ['fade', 'Fade']];
+/* `first`: the New loader with only the reel's first half (the people and papers, no golden spirals),
+   on /home-4 itself (?loader=first, read before first paint by StartLoader `choice`) */
+type Loader = 'new' | 'first' | 'zoom' | 'fade';
+const LOADERS: [Loader, string][] = [['new', 'New loader'], ['first', 'New · first half'], ['zoom', 'Zoom'], ['fade', 'Fade']];
 
 export default function HeroIntroOptions({ loader = 'new' }: { loader?: 'new' | 'classic' } = {}) {
   const [clients, pickClients] = useOption<Clients>('clients', CLIENTS, 'picked');
   // which loader this page plays: New here; on /home-4/classic its ending, from ?intro= (Zoom by default)
   const [current, setCurrent] = useState<Loader>(loader === 'new' ? 'new' : 'zoom');
   useEffect(() => {
-    if (loader === 'classic') setCurrent(new URLSearchParams(window.location.search).get('intro') === 'fade' ? 'fade' : 'zoom');
+    const q = new URLSearchParams(window.location.search);
+    if (loader === 'classic') setCurrent(q.get('intro') === 'fade' ? 'fade' : 'zoom');
+    else if (q.get('loader') === 'first') setCurrent('first');
   }, [loader]);
   const pickLoader = (v: Loader) => {
     const q = new URLSearchParams(window.location.search);
     q.delete('intro');
-    if (v !== 'new') q.set('intro', v);
+    q.delete('loader');
+    if (v === 'zoom' || v === 'fade') q.set('intro', v);
+    if (v === 'first') q.set('loader', 'first');
     const qs = q.toString();
-    window.location.href = `${v === 'new' ? '/home-4' : '/home-4/classic'}${qs ? `?${qs}` : ''}`;
+    window.location.href = `${v === 'new' || v === 'first' ? '/home-4' : '/home-4/classic'}${qs ? `?${qs}` : ''}`;
   };
   const [heroIn, setHeroIn] = useState(false);
 
