@@ -66,6 +66,23 @@ export default function SiteChrome() {
     };
   }, []);
 
+  // At the very end of the page (the footer's end, the last thing on it) the wordmark and the nav step
+  // away (html[data-page-end], sections.css), leaving the footer the whole screen
+  useEffect(() => {
+    const root = document.documentElement;
+    let raf = 0;
+    const check = () => {
+      raf = 0;
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      root.toggleAttribute('data-page-end', max > 0 && window.scrollY >= max - 4);
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(check); };
+    check();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); root.removeAttribute('data-page-end'); };
+  }, []);
+
   return (
     <div className="chrome" data-on={on || undefined}>
       <div className="frame s2-frame chrome-frame">

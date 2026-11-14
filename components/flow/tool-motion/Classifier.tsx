@@ -1,11 +1,11 @@
 'use client';
 
-import { Av, C, Card, Cursor, Frame, eio, eout, fmt, lerp, loopFade, rng, seg, useLoop } from './shared';
+import { Av, C, Card, Frame, eout, fmt, lerp, loopFade, rng, seg, useLoop } from './shared';
 
 /* Engagement Classifier: the "Rate vs baseline" plot. Every post starts at its own baseline (its
    first 15 minutes) and runs right as it ages; most sink, a few climb into the green. The plot is
-   drawn and still (the lines growing read badly); the walkthrough is the pointer moving over it,
-   resting on one post after another — an emerging one, a decaying one, a climber, then the one that
+   drawn and still (the lines growing read badly); the walkthrough highlights one post after another
+   (no pointer: each is simply lit in turn) — an emerging one, a decaying one, a climber, then the one that
    climbed furthest — its line lit, the rest faded back, its card open (the app's own hover card).
    Right: the counts, and the classifier's calls coming in. */
 
@@ -48,8 +48,8 @@ const POSTS: Post[] = (() => {
 })();
 const HERO = POSTS[0];
 
-/* The posts the pointer rests on, in turn (each with a face: the card shows who posted it), and when:
-   it arrives at `a`, the card is open until `b`. */
+/* The posts highlighted in turn (each with a face: the card shows who posted it), and when: lit from
+   `a`, its card open until `b`. */
 const rOf = (y: number) => RMAX - ((y - PY0) / (PY1 - PY0)) * (RMAX - RMIN); // a y back to log2 of the rate
 const mOf = (x: number) => MMIN * Math.pow(MMAX / MMIN, (x - PX0) / (PX1 - PX0));  // an x back to minutes
 const age = (m: number) => (m >= 60 ? `${Math.floor(m / 60)}h ${String(Math.round(m % 60)).padStart(2, '0')}m` : `${Math.round(m)}m`);
@@ -61,20 +61,6 @@ const STOPS: Stop[] = [
   { p: HERO, a: 7.65, b: 9.35, views: '1.7M', kind: 'Viral', aud: 54 },
 ];
 const end = (p: Post) => p.pts[p.pts.length - 1];
-// the pointer's path: in from the bottom right, onto each post's end point (just under it), out again
-const KEYS: [number, number, number][] = [
-  [0.35, PX1 + 40, PY1 + 30],
-  ...STOPS.flatMap((s): [number, number, number][] => { const [x, y] = end(s.p); return [[s.a, x + 2, y + 3], [s.b - 0.3, x + 2, y + 3]]; }),
-  [9.75, PX1 + 40, PY1 + 30],
-];
-function pointer(t: number): [number, number] {
-  if (t <= KEYS[0][0]) return [KEYS[0][1], KEYS[0][2]];
-  for (let i = 1; i < KEYS.length; i++) {
-    const [t0, x0, y0] = KEYS[i - 1], [t1, x1, y1] = KEYS[i];
-    if (t <= t1) { const k = eio(seg(t, t0, t1)); return [lerp(x0, x1, k), lerp(y0, y1, k)]; }
-  }
-  return [KEYS[KEYS.length - 1][1], KEYS[KEYS.length - 1][2]];
-}
 
 const YL: [number, string][] = [[3, '8× baseline'], [2, '4× baseline'], [1, '2× baseline'], [0, 'baseline'], [-1, '½ baseline'], [-2, '¼ baseline'], [-3, '⅛ baseline']];
 const XL: [number, string][] = [[5, '5m'], [10, '10m'], [15, '15m'], [30, '30m'], [60, '1h'], [120, '2h'], [240, '4h'], [480, '8h'], [720, '12h']];
@@ -94,7 +80,6 @@ export default function Classifier({ playing, time, onEnd }: { playing: boolean;
   const on = STOPS.map((s) => Math.min(eout(seg(t, s.a - 0.05, s.a + 0.25)), 1 - seg(t, s.b - 0.25, s.b)));
   const dim = Math.max(...on);
   const lit = (p: Post) => { const k = STOPS.findIndex((s) => s.p === p); return k < 0 ? 0 : on[k]; };
-  const [cx, cy] = pointer(t);
 
   return (
     <Frame label="Engagement Classifier: every post's view rate against its own baseline" title="Engagement Classifier" meta="1,284 posts · polled every 30s">
@@ -120,7 +105,7 @@ export default function Classifier({ playing, time, onEnd }: { playing: boolean;
         <line x1={PX0} x2={PX1} y1={Y0} y2={Y0} stroke={C.ink} strokeDasharray="4 3" strokeWidth={0.9} />
         <text x={X15 + 4} y={Y0 - 4} className="tm-m" fontSize={6.5} fill={C.ink}>baseline = first 15m</text>
 
-        {/* the posts, drawn: each from the baseline out to its age now; the one pointed at lit (green
+        {/* the posts, drawn: each from the baseline out to its age now; the one highlighted lit (green
             above the baseline, ink below), the rest faded back while it is */}
         {POSTS.map((p) => {
           const l = lit(p);
@@ -133,7 +118,7 @@ export default function Classifier({ playing, time, onEnd }: { playing: boolean;
           );
         })}
         {/* the heads, at each line's end: a dot, or the poster's face (ringed green when it climbed);
-            the one pointed at a little larger */}
+            the one highlighted a little larger */}
         {POSTS.map((p) => {
           const l = lit(p);
           const o = lerp(1 - 0.6 * dim, 1, l);
@@ -148,7 +133,7 @@ export default function Classifier({ playing, time, onEnd }: { playing: boolean;
           return <circle key={p.i} cx={ex} cy={ey} r={p.r} fill={p.color} stroke="#fff" strokeWidth={0.6} opacity={o} />;
         })}
 
-        {/* the hover cards: the post pointed at — who, how old, how seen, the call — beside it, kept
+        {/* the cards: the post lit — who, how old, how seen, the call — beside it, kept
             inside the plot (above the point when it is low, below when it is high) */}
         {STOPS.map((st, k) => {
           const h = on[k];
@@ -218,7 +203,6 @@ export default function Classifier({ playing, time, onEnd }: { playing: boolean;
           );
         })}
 
-        <Cursor x={cx} y={cy} o={Math.min(seg(t, 0.35, 0.7), 1 - seg(t, 9.45, 9.75))} />
       </g>
     </Frame>
   );

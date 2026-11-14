@@ -17,7 +17,9 @@ import { PICKS, LAUNCH_COUNT } from './LaunchesSelected';
                and the reel with a smaller reach, a mono line under it and side prev / next areas
    Light page; normal scroll; the last section, so it closes the page's corners. */
 export type LaunchesVariant = 'cloud' | 'grid' | 'box' | 'carousel' | 'slider' | 'float' | 'float2' | 'float3' | 'float4' | 'selected';
-export default function Launches({ variant = 'cloud' }: { variant?: LaunchesVariant }) {
+// `words`: the parting pair for the Float II–IV variants (the "alt" words), in place of their own
+// "Launches we" / "have done" — /home-4 gives them /'s, as Selected has
+export default function Launches({ variant = 'cloud', words }: { variant?: LaunchesVariant; words?: [string, string] }) {
   /* selected: Float IV whose reel shows only the client's six, in their order, then an end slide
      with a See all button to /launches (LaunchesSelected.tsx: the list and that page) */
   if (variant === 'selected') return (
@@ -28,7 +30,7 @@ export default function Launches({ variant = 'cloud' }: { variant?: LaunchesVari
   if (variant === 'float' || variant === 'float2' || variant === 'float3' || variant === 'float4') return (
     <section className="lc" data-variant={variant} data-foot="/Launches" aria-labelledby="lc-title">
       {/* keyed: each variant gets a fresh float (its scroll loop reads alt / card once, at mount) */}
-      <LaunchesFloat key={variant} alt={variant !== 'float'} card={variant === 'float3' || variant === 'float4'} track={variant === 'float4'} />
+      <LaunchesFloat key={variant} alt={variant !== 'float'} card={variant === 'float3' || variant === 'float4'} track={variant === 'float4'} words={variant !== 'float' ? words : undefined} />
     </section>
   );
   return (

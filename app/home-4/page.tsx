@@ -53,11 +53,11 @@ export default function Home4() {
       <ResearchLab />
       <SectionThree lead="Read our published findings" cover="paper" holes={false} />
       <MonoTrail selector="section.s3 .s3-band" />
-      {/* tools: Showcase (default) or Motion, bottom tabs (?tools=) */}
-      <ToolsOptions only={['showcase', 'motion']} />
+      {/* tools: Showcase (default), Motion, or Motion scroll (the scroll moves through the tools, as /), bottom tabs (?tools=) */}
+      <ToolsOptions only={['showcase', 'motion', 'motionScroll']} />
       <ServicesCards light layout="columns" />
       {/* launches: Selected (default: the client's six and See all → /launches) or Float II–IV (?launches=) */}
-      <LaunchesOptions only={['selected', 'float2', 'float3', 'float4']} />
+      <LaunchesOptions only={['selected', 'float2', 'float3', 'float4']} words={['Our trajectory', 'changing launches']} />
       {/* footer: Fibonacci (default, Figma Zoomcast 200:4) or the reading list, bottom tabs (?footer=) */}
       {/* every footer variant, as /footer (bottom tabs, ?golden=): Spiral · Compound · Focus · Reel · Trace ·
           Reading list · Fibonacci (/) · Fibonacci + Focus — opening on Fibonacci, the footer / has */}

@@ -14,12 +14,13 @@ const VARIANTS: [Variant, string][] = [['selected', 'Selected'], ['float2', 'Flo
 const arrived = (r: DOMRect, vh: number) => r.top <= vh * 0.5;
 
 // `only`: a page that offers just some of the variants (/home-4: Float II, III, IV); the first is the default
-export default function LaunchesOptions({ only }: { only?: Variant[] } = {}) {
+// `words`: passed on to the Float II–IV variants (Launches)
+export default function LaunchesOptions({ only, words }: { only?: Variant[]; words?: [string, string] } = {}) {
   const options = only ? VARIANTS.filter(([id]) => only.includes(id)) : VARIANTS;
   const [variant, pick] = useOption<Variant>('launches', options, options[0][0]);
   return (
     <>
-      <Launches variant={variant} />
+      <Launches variant={variant} words={words} />
       <OptionTabs groups={[{ label: 'Launches layout', options, value: variant, onChange: (v) => pick(v as Variant) }]}
         selector="section.lc" label="Launches options" when={arrived} />
     </>

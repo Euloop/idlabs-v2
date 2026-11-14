@@ -254,3 +254,9 @@ html[data-theme='night'] .ti-text { color: #ebebeb; }
   .s4-tab { white-space: nowrap; }
   .s4-tab { font-size: 10px; }
 }
+
+/* the very end of the page (SiteChrome: html[data-page-end]) with the Fibonacci + Focus footer (its Focus
+   figure, .ftf-top): the fixed wordmark and nav step away, leaving the figure's line on the screen's top */
+.chrome .s2-header { transition: opacity 300ms var(--ease-out); }
+html[data-page-end]:has(.ftf-top) .chrome .s2-header { opacity: 0; pointer-events: none; }
+html[data-page-end]:has(.ftf-top) .chrome .s2-header * { pointer-events: none !important; }

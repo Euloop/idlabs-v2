@@ -304,7 +304,8 @@ function FocusBand({ interactive = false, caption = true }: { interactive?: bool
         <div className="fg-f-copy" style={{ left: x, top: y }}>
           <p className="fg-say">Built on research.<br />Engineered to spread.</p>
           <p className="fg-body">We reverse engineer how X and LinkedIn distribute, and build what makes launches travel.</p>
-          <p className="fg-cta"><a href="#">Start a project <span aria-hidden="true">→</span></a></p>
+          {/* (not in Fibonacci + Focus: the footer's links below it are enough) */}
+          {!interactive && <p className="fg-cta"><a href="#">Start a project <span aria-hidden="true">→</span></a></p>}
         </div>
         {caption && <p className="fg-label fg-f-note">Fig. 01 — The golden section: where the eye comes to rest.</p>}
         {interactive && (

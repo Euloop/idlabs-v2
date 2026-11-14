@@ -68,6 +68,31 @@
    links box follows it directly */
 .ftf-top { position: relative; z-index: 1; padding-top: 80px; }
 .ftf.ftf-after-top { padding-top: 0; }
+/* At the end of the page, the Focus figure's cut line above the spiral's eye — the horizontal across
+   its top-right, 0.236 (1/φ³) of the golden rectangle's height down from its top — sits on the top of
+   the screen, 2px in (a 1px line exactly on the edge rounds off it). From that line to the footer's end
+   is one screen less those 2px: the rest of the figure (0.764 of its height), the 48px gap, the links box
+   and the bar (274 + 64 = 338px, fixed). Laptops and desktops
+   (the figure keeps its stacked layout on phones):
+   - too tall: the figure is sized by the screen's height as well as its width — never wider than it
+     was (the frame, less its 9-unit insets), nor narrower than 500px — its type and notes scaling
+     with it (its --px from its own width, 990 units across);
+   - room to spare: the bottom part takes the rest, above the links. */
+@media (min-width: 760px) {
+  .ft-fib .ft-frame:has(.ftf-top) {
+    --ff-w: max(500px, min(calc(100cqw * 990 / 1008), calc((100svh - 388px) / 0.763932 * 1.618034)));
+  }
+  .ftf-top .fg {
+    --px: calc(var(--ff-w) / 990);
+    width: calc(var(--ff-w) + 18 * var(--px)); margin-inline: auto; margin-bottom: 48px;
+  }
+  /* its statement's small print scales with it too (not below 10px), so it stays inside the arc */
+  .ftf-top .fg-f-copy .fg-body { font-size: clamp(10px, calc(12 * var(--px)), 12px); } /* shrinks with it, never past its 12 */
+  .ftf.ftf-after-top {
+    display: flex; flex-direction: column; justify-content: flex-end;
+    min-height: calc(100svh - var(--ff-w) * 0.618034 * 0.763932 - 50px);
+  }
+}
 
 /* The construction draws itself in (FooterFib Construction: data-drawn once on screen). Its 16 pieces in
    order (--i, 110ms apart): the big square, the five smaller squares, the three upright bands, the
