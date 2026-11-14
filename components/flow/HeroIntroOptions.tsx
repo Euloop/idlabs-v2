@@ -3,8 +3,10 @@
 import { useEffect, useState } from 'react';
 import OptionTabs, { useOption } from './OptionTabs';
 
-/* /home-4's hero tabs. The loader is /hero's now (StartLoader fixed: always onto the clean hero), so the
-   earlier Zoom · Fade intro tab is gone; the Clients tab stays.
+/* /home-4's hero tabs. Loader: New (today's, /hero's: onto the clean hero; /home-4) or the one before it,
+   ending in the Zoom (onto the drawn hero) or the Fade (onto the clean hero) — /home-4/classic?intro=.
+   A pick goes to that page (the two loaders are different markup, built into each page), keeping the
+   other tabs' picks in the address. Then the Clients tab.
    Bottom tabs while the hero fills the screen — only once the hero's entrance has played out (the
    loader, then every headline line, paragraph and logo in), so they never sit over it arriving. */
 /* Clients (?clients=): the client's 12 in their order with "Our Network" hidden (default), or the
@@ -13,9 +15,23 @@ type Clients = 'picked' | 'all';
 const CLIENTS: [Clients, string][] = [['picked', 'Clients 12'], ['all', 'Clients 16 + Network']];
 const onHero = (r: DOMRect, vh: number) => r.top > -vh * 0.25 && r.bottom > vh * 0.6;
 const never = () => false;
+type Loader = 'new' | 'zoom' | 'fade';
+const LOADERS: [Loader, string][] = [['new', 'New loader'], ['zoom', 'Zoom'], ['fade', 'Fade']];
 
-export default function HeroIntroOptions() {
+export default function HeroIntroOptions({ loader = 'new' }: { loader?: 'new' | 'classic' } = {}) {
   const [clients, pickClients] = useOption<Clients>('clients', CLIENTS, 'picked');
+  // which loader this page plays: New here; on /home-4/classic its ending, from ?intro= (Zoom by default)
+  const [current, setCurrent] = useState<Loader>(loader === 'new' ? 'new' : 'zoom');
+  useEffect(() => {
+    if (loader === 'classic') setCurrent(new URLSearchParams(window.location.search).get('intro') === 'fade' ? 'fade' : 'zoom');
+  }, [loader]);
+  const pickLoader = (v: Loader) => {
+    const q = new URLSearchParams(window.location.search);
+    q.delete('intro');
+    if (v !== 'new') q.set('intro', v);
+    const qs = q.toString();
+    window.location.href = `${v === 'new' ? '/home-4' : '/home-4/classic'}${qs ? `?${qs}` : ''}`;
+  };
   const [heroIn, setHeroIn] = useState(false);
 
   useEffect(() => {
@@ -34,6 +50,7 @@ export default function HeroIntroOptions() {
   return (
     <OptionTabs
       groups={[
+        { label: 'Loader', options: LOADERS, value: current, onChange: (v) => pickLoader(v as Loader) },
         { label: 'Clients', options: CLIENTS, value: clients, onChange: (v) => { pickClients(v as Clients); document.documentElement.dataset.clients = v; } },
       ]}
       selector="div.hero" label="Hero intro options" when={heroIn ? onHero : never} />

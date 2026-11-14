@@ -11,6 +11,8 @@ import './footer-fib.css';
    the construction is placed from the page's left (the frame starts at 112). */
 
 type Link = { label: string; href?: string };
+// the footer's contact addresses (Contact us column), to come from the client
+const CONTACT: string[] = [];
 /* Analytical tools: the four tools of the tools section (ToolsCollage.tsx), linked to each; research
    papers: the two PDFs (SectionThree.tsx); Join us: the open roles on Notion; Socials: X and LinkedIn. */
 const COLUMNS: { title: string; links: Link[] }[] = [
@@ -25,6 +27,8 @@ const COLUMNS: { title: string; links: Link[] }[] = [
   },
   // Instagram and Substack hidden for now
   { title: 'Socials', links: [{ label: 'X / Twitter', href: 'https://x.com/IdentityLabsInc' }, { label: 'LinkedIn', href: 'https://www.linkedin.com/company/theidentitylabs' }] },
+  // Contact us: the two addresses, each a mail link (the column shows once it has them)
+  ...(CONTACT.length ? [{ title: 'Contact us', links: CONTACT.map((m) => ({ label: m, href: `mailto:${m}` })) }] : []),
 ];
 const OFFICES = ['San Francisco', 'London', 'Bangalore'];
 const LEGAL = [{ label: 'Terms & Conditions', href: '/terms' }, { label: 'Privacy Policy', href: '/privacy' }];
@@ -92,7 +96,7 @@ export default function FooterFib({ top }: { top?: ReactNode } = {}) {
               <ul>{c.links.map((l) => (
                 <li key={l.label}>
                   {l.href
-                    ? <a href={l.href} target="_blank" rel="noopener noreferrer">{l.label}</a>
+                    ? <a href={l.href} {...(l.href.startsWith('mailto:') ? {} : { target: '_blank', rel: 'noopener noreferrer' })}>{l.label}</a>
                     : <a href="#">{l.label}</a>}
                 </li>
               ))}</ul>
