@@ -220,6 +220,13 @@ html[data-sl-end='reel'] .sl-stage { position: absolute; top: 0; left: -65.78px;
 .sl-zoom { position: absolute; inset: 0; will-change: transform; }
 .sl-stage .sl-frame { top: 0; left: 0; translate: none; }
 .sl-gframe { height: 208px; }
+/* the golden images are made larger than the frame (scripts/loader-golden.py: 1/0.88 about the
+   spiral's eye), so at the golden half's starting zoom, 0.88, they still fill it */
+html[data-sl-end='reel'] .sl-stage .sl-gframe { overflow: visible; }
+/* (the first golden frame is its layer's first child, so it matches the opener's .sl-frame:first-child
+   rules; its white shutters, parked just below it, would show inside the stage at 0.88) */
+html[data-sl-end='reel'] .sl-gframe::before, html[data-sl-end='reel'] .sl-gframe::after { content: none; }
+html[data-sl-end='reel'] .sl-stage .sl-gframe img { position: absolute; left: -12.75px; top: -20.27px; width: 149.76px; height: 236.6px; max-width: none; }
 
 /* The golden half (<Spiral>, the .sl-gframe images): the spiral and its construction draw over the
    aligned images as they start cutting (.sl[data-spiral]) and stay put while the rest cut under it.
@@ -233,14 +240,11 @@ html[data-sl-end='reel'] .sl-stage { position: absolute; top: 0; left: -65.78px;
 .sl-spiral-glow .sl-sp-halo { stroke: rgb(255 255 255 / 0.32); stroke-width: 5.5; }
 /* drawn over the golden half's first three bars (12 beats, 1200ms) as the images cut: the arc from the
    outer corner in to the eye, the construction lines coming up behind it from the second bar */
-.sl-sp-line { stroke-width: 0.75; stroke-opacity: 0.8; opacity: 0; transition: opacity 600ms var(--ease-out) 400ms; }
-.sl-sp-arc { stroke-width: 2; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1;
-  transition: stroke-dashoffset 1200ms cubic-bezier(.4, 0, .2, 1); }
+.sl-sp-line { stroke-width: 0.75; stroke-opacity: 0.8; opacity: 0; }
+.sl-sp-arc { stroke-width: 2; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; }
 /* the dark edge under the white line, so it holds on white paper (the birds, the Eiffel plate) */
 .sl-sp-edge { stroke: rgb(0 0 0 / 0.38); stroke-width: 4; }
 .sl-sp-arc { opacity: 0; } /* (a zero-length dash with round caps would still draw a dot) */
-.sl[data-spiral] .sl-sp-line { opacity: 1; }
-.sl[data-spiral] .sl-sp-arc { opacity: 1; stroke-dashoffset: 0; }
 html[data-sl-end='reel'][data-loader='zoom'] .sl-spiral { opacity: 0; transition: opacity 450ms var(--ease-out); }
 
 /* The push-in — the frame and the margins stay put while the pictures inside move closer, cropped by
@@ -253,16 +257,13 @@ html[data-sl-end='reel'][data-loader='zoom'] .sl-spiral { opacity: 0; transition
    - Exponential, not linear: size is seen as a ratio, so a linear scale reads as slowing down; an
      exponential one keeps the perceived speed constant (van Wijk & Nuij's log-scale zoom). The
      linear() easings are (S^t − 1)/(S − 1) on a plain scale interpolation.
-   - First half 1 → 1.35 (~13% a second) from the centre, over its 24 cuts (--push-a). Golden half
-     1 → 1.25 (~10% a second) about the spiral's eye (71.04% 71.47% of the frame), images and spiral in
-     one layer so they stay locked, from the spiral's start to the white lifting (--push-b) — from
-     the whole construction in view to its outer turns running past the frame. */
+   - First half 1 → 1.15 (~6% a second) from the centre, over its 24 cuts. Golden half 0.88 → 1
+     (~5% a second) about the spiral's eye (71.04% 71.47% of the frame), images and spiral in one
+     layer so they stay locked: the whole construction in view, coming up to the frame's edges and
+     never past them (its images are made larger than the frame for this). */
 .sl-zoom-a { transform-origin: 50% 50%; }
-.sl-zoom-b { transform-origin: 71.04% 71.47%; }
-.sl[data-push] .sl-zoom-a { animation: sl-push-a var(--push-a, 2400ms) linear(0.0000, 0.0724, 0.1465, 0.2226, 0.3006, 0.3806, 0.4626, 0.5466, 0.6328, 0.7212, 0.8118, 0.9047, 1.0000) both; }
-.sl[data-spiral] .sl-zoom-b { animation: sl-push-b var(--push-b, 2350ms) linear(0.0000, 0.0751, 0.1516, 0.2295, 0.3089, 0.3897, 0.4721, 0.5561, 0.6416, 0.7287, 0.8175, 0.9079, 1.0000) both; }
-@keyframes sl-push-a { from { transform: scale(1); } to { transform: scale(1.35); } }
-@keyframes sl-push-b { from { transform: scale(1); } to { transform: scale(1.25); } }
+.sl-zoom-b { transform-origin: 71.04% 71.47%; transform: scale(0.88); }
+@keyframes sl-push-a { from { transform: scale(1); } to { transform: scale(1.15); } }
 
 /* The flash on the beat, as the reference (its glowing spiral flares on a cut and is gone a couple of
    frames later): a wider, brighter halo of the same arc, drawn with it, whose opacity alone animates.
@@ -271,11 +272,62 @@ html[data-sl-end='reel'][data-loader='zoom'] .sl-spiral { opacity: 0; transition
 .sl-spiral-flash { mix-blend-mode: normal; opacity: 0; }
 .sl-spiral-flash .sl-sp-arc { stroke-width: 4; }
 .sl-spiral-flash .sl-sp-halo { stroke: rgb(255 255 255 / 0.35); stroke-width: 12; }
-.sl[data-flash='a'] .sl-spiral-flash { animation: sl-flash-a 100ms ease-out both; }
-.sl[data-flash='b'] .sl-spiral-flash { animation: sl-flash-b 100ms ease-out both; }
-.sl[data-flash='A'] .sl-spiral-flash { animation: sl-flash-A 100ms ease-out both; }
-.sl[data-flash='B'] .sl-spiral-flash { animation: sl-flash-B 100ms ease-out both; }
-@keyframes sl-flash-a { from { opacity: 0.55; } to { opacity: 0; } }
-@keyframes sl-flash-b { from { opacity: 0.55; } to { opacity: 0; } }
-@keyframes sl-flash-A { from { opacity: 1; } to { opacity: 0; } }
-@keyframes sl-flash-B { from { opacity: 1; } to { opacity: 0; } }
+
+/* /hero's clock. Everything on the beat runs on the compositor, so a busy main thread (hydration,
+   garbage collection, another tab) can't hold an image past its beat — stepped from the main thread it
+   did, and so did CSS animations waiting out a delay: Chrome hands an animation to the compositor only
+   once it has started. So every animation here starts at the reel's first moment (.sl[data-reel],
+   StartLoaderRun) and carries its timing inside: each cut shares one keyframe set whose visible beat is
+   its last 100ms, placed by a negative delay (--at, StartLoader: one 100ms beat apart; started
+   already, never waiting); the golden push and the flash hold still in their keyframes until the
+   golden half (2400ms). Tested with the main thread blocked for 2s: delayed animations froze with it,
+   these kept a 100ms beat. Every frame is laid out and composited from the start, unseen at opacity 0,
+   so a cut never waits on a decode either. */
+/* (hidden at 0.002, not 0: Chrome skips rastering a fully transparent layer, and then an image's
+   first beat can show a frame of it half drawn — a ghost of the cut. 0.002 is invisible, and every
+   image is drawn and ready before the reel starts.) */
+html[data-sl-end='reel'] .sl-stage .sl-frame { visibility: visible; opacity: 0.002; will-change: opacity; }
+html[data-sl-end='reel'] .sl-zoom-a > .sl-frame:first-child { opacity: 1; }
+.sl[data-reel] .sl-zoom-a > .sl-frame:first-child { opacity: 0; }
+.sl[data-reel] .sl-stage .sl-frame[style*='--at'] { animation: sl-cut 4000ms linear calc(var(--at) - 3900ms) none; }
+@keyframes sl-cut { 0%, 97.4997% { opacity: 0.002; } 97.5000%, 100% { opacity: 1; } }
+/* the last image: its beat and three more, then it fades with the white (450ms) */
+.sl[data-reel] .sl-stage .sl-frame.sl-last { animation: sl-cut-last 4000ms linear calc(var(--at) - 3150ms) none; }
+@keyframes sl-cut-last { 0%, 78.7497% { opacity: 0.002; } 78.7500%, 88.7500% { opacity: 1; } 100% { opacity: 0.002; } }
+.sl[data-reel] .sl-zoom-a { animation: sl-push-a 2400ms linear(0.0000, 0.0781, 0.1571, 0.2371, 0.3179, 0.3998, 0.4825, 0.5663, 0.6510, 0.7367, 0.8235, 0.9112, 1.0000) both; }
+.sl[data-reel] .sl-zoom-b { animation: sl-push-b 4750ms linear both; }
+@keyframes sl-push-b {
+  0%, 50.5263% { transform: scale(0.88); animation-timing-function: linear(0.0000, 0.0785, 0.1579, 0.2381, 0.3192, 0.4012, 0.4840, 0.5677, 0.6524, 0.7379, 0.8243, 0.9117, 1.0000); }
+  100% { transform: scale(1); }
+}
+/* the spiral draws over the golden half's first three bars, the construction coming up behind it
+   (a stroke and an opacity inside the SVG: painted, not composited, so these may wait on a busy
+   main thread — the cuts and the push above don't) */
+.sl[data-reel] .sl-sp-arc { animation: sl-draw 1200ms cubic-bezier(.4, 0, .2, 1) 2400ms both; }
+.sl[data-reel] .sl-sp-line { animation: sl-lines 600ms var(--ease-out) 2800ms both; }
+@keyframes sl-draw { 0% { stroke-dashoffset: 1; opacity: 0; } 0.1% { opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 1; } }
+@keyframes sl-lines { from { opacity: 0; } to { opacity: 1; } }
+/* the flash: from the golden half, every beat flares and dies within it, the first of each bar of four
+   harder (the accent) — sixteen beats */
+.sl-spiral-flash { will-change: opacity; }
+.sl[data-reel] .sl-spiral-flash { animation: sl-flash 4000ms linear both; }
+@keyframes sl-flash {
+  0%, 59.9997% { opacity: 0; }
+  60.0000% { opacity: 1; animation-timing-function: ease-out; } 62.4975% { opacity: 0; }
+  62.5000% { opacity: 0.55; animation-timing-function: ease-out; } 64.9975% { opacity: 0; }
+  65.0000% { opacity: 0.55; animation-timing-function: ease-out; } 67.4975% { opacity: 0; }
+  67.5000% { opacity: 0.55; animation-timing-function: ease-out; } 69.9975% { opacity: 0; }
+  70.0000% { opacity: 1; animation-timing-function: ease-out; } 72.4975% { opacity: 0; }
+  72.5000% { opacity: 0.55; animation-timing-function: ease-out; } 74.9975% { opacity: 0; }
+  75.0000% { opacity: 0.55; animation-timing-function: ease-out; } 77.4975% { opacity: 0; }
+  77.5000% { opacity: 0.55; animation-timing-function: ease-out; } 79.9975% { opacity: 0; }
+  80.0000% { opacity: 1; animation-timing-function: ease-out; } 82.4975% { opacity: 0; }
+  82.5000% { opacity: 0.55; animation-timing-function: ease-out; } 84.9975% { opacity: 0; }
+  85.0000% { opacity: 0.55; animation-timing-function: ease-out; } 87.4975% { opacity: 0; }
+  87.5000% { opacity: 0.55; animation-timing-function: ease-out; } 89.9975% { opacity: 0; }
+  90.0000% { opacity: 1; animation-timing-function: ease-out; } 92.4975% { opacity: 0; }
+  92.5000% { opacity: 0.55; animation-timing-function: ease-out; } 94.9975% { opacity: 0; }
+  95.0000% { opacity: 0.55; animation-timing-function: ease-out; } 97.4975% { opacity: 0; }
+  97.5000% { opacity: 0.55; animation-timing-function: ease-out; } 99.9975% { opacity: 0; }
+  100% { opacity: 0; }
+}

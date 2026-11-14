@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import Bookshelf, { type ShelfPalette } from './Bookshelf';
 import OptionTabs, { useOption } from './OptionTabs';
 import FooterGolden, { type GoldenVariant } from './FooterGolden';
+import FooterFib from './FooterFib';
 import './footer.css';
 
 /* /home-2 footer: always dark — its own dark ground and grain, whatever the page theme; it does
@@ -31,8 +32,16 @@ const MIDDLES: [Middle, string][] = [
   ['spiral', 'Spiral'], ['compound', 'Compound'], ['focus', 'Focus'], ['reel', 'Reel'], ['trace', 'Trace'], ['books', 'Reading list'],
 ];
 
+// /home-4 (`fib`): the Fibonacci footer (Figma Zoomcast 200:4, FooterFib.tsx) or this one, ?footer=
+export type Layout = 'fib' | 'classic';
+const LAYOUTS: [Layout, string][] = [['fib', 'Fibonacci'], ['classic', 'Reading list']];
+
 const OFFICES = ['San Francisco', 'New York', 'Remote'];
-const SOCIALS = ['X / Twitter', 'LinkedIn', 'Instagram', 'Substack'];
+// Instagram and Substack hidden for now
+const SOCIALS = [
+  { label: 'X / Twitter', href: 'https://x.com/IdentityLabsInc' },
+  { label: 'LinkedIn', href: 'https://www.linkedin.com/company/theidentitylabs' },
+];
 
 /** a rule across the frame, rule to rule, with the frame's squares where it meets them */
 function Rule() {
@@ -44,8 +53,11 @@ function Rule() {
   );
 }
 
-export default function SiteFooter({ golden = false }: { golden?: boolean } = {}) {
+// `layout`: a fixed layout with no tabs (the live pages: / and /launches use 'fib')
+export default function SiteFooter({ golden = false, fib = false, layout: fixed }: { golden?: boolean; fib?: boolean; layout?: Layout } = {}) {
   const ref = useRef<HTMLElement>(null);
+  const [layoutPicked, pickLayout] = useOption<Layout>('footer', LAYOUTS, 'fib');
+  const layout: Layout = fixed ?? (fib ? layoutPicked : 'classic');
   const [shelf, pickShelf] = useOption<ShelfPalette>('books', SHELVES, 'classic');
   const [picked, pickMiddle] = useOption<Middle>('golden', MIDDLES, 'spiral');
   const middle: Middle = golden ? picked : 'books';
@@ -79,9 +91,10 @@ export default function SiteFooter({ golden = false }: { golden?: boolean } = {}
 
   return (
     <>
-    <section ref={ref} className="ft" data-foot="/Footer" aria-label="Footer">
+    <section ref={ref} className={layout === 'fib' ? 'ft ft-fib' : 'ft'} data-foot="/Footer" aria-label="Footer">
       <div className="ft-texture" aria-hidden="true" />
       <div className="frame ft-frame">
+        {layout === 'fib' ? <FooterFib /> : <>
         {/* /footer (golden): the golden band above, the links under it; otherwise the links, then
             the reading list */}
         {middle !== 'books' && <><FooterGolden variant={middle} /><Rule /></>}
@@ -110,19 +123,21 @@ export default function SiteFooter({ golden = false }: { golden?: boolean } = {}
         <div className="ft-bar">
           <span className="ft-status"><span className="ft-dot" aria-hidden="true" />All systems operational</span>
           <span className="ft-offices">{OFFICES.map((o) => <span key={o}>{o}</span>)}</span>
-          <span className="ft-socials">{SOCIALS.map((s) => <a key={s} href="#">{s}</a>)}</span>
+          <span className="ft-socials">{SOCIALS.map((s) => <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer">{s.label}</a>)}</span>
           <span className="tick tick-l" aria-hidden="true" />
           <span className="tick tick-r" aria-hidden="true" />
         </div>
+        </>}
       </div>
     </section>
-    <OptionTabs
+    {(fixed === undefined || golden) && <OptionTabs
       groups={[
+        ...(fib ? [{ label: 'Footer', options: LAYOUTS, value: layout, onChange: (v: string) => pickLayout(v as Layout) }] : []),
         ...(golden ? [{ label: 'Golden ratio', options: MIDDLES, value: middle, onChange: (v: string) => pickMiddle(v as Middle) }] : []),
-        ...(middle === 'books' ? [{ label: 'Reading list', options: SHELVES, value: shelf, onChange: (v: string) => pickShelf(v as ShelfPalette) }] : []),
+        ...(middle === 'books' && layout === 'classic' ? [{ label: 'Reading list', options: SHELVES, value: shelf, onChange: (v: string) => pickShelf(v as ShelfPalette) }] : []),
       ]}
       selector="section.ft" label="Footer options" when={footerInView}
-    />
+    />}
     </>
   );
 }

@@ -92,6 +92,10 @@ const GOLDEN = ['black', 'nautilus', 'eiffel', 'm51', 'mona', 'fern', 'katrina',
 // 126.5 : 200 — so its size never changes, cut to cut or half to half. The first half's images are
 // cropped to fill it (cover, centred); the golden images and their spiral drawing (in its own 126.5 ×
 // 200 units, VB_*) scale up together to it, so they stay locked.
+// /hero's beat (StartLoaderRun BEAT; start-loader.css's clock assumes 24 + 16 cuts of it): every cut is
+// a CSS animation set this far apart, run by the compositor — not stepped from the main thread,
+// where any busy moment held an image on screen.
+const REEL_BEAT = 100;
 const VB_W = 126.5;
 const VB_H = 200;
 const G_H = 208;
@@ -200,8 +204,11 @@ export default function StartLoader({ fixed = false }: { fixed?: boolean }) {
   const reel = fixed ? REEL_HERO : REEL;
   // /hero: each image already cropped to the frame and bulged (assets/loader/bulged, by its file name)
   const bulged = (src: string) => `assets/loader/bulged/${src.split('/').pop()!.replace(/\.\w+$/, '')}.webp`;
+  // /hero: each frame's moment on the beat (ms from the reel's start), for its own CSS animation
+  // (start-loader.css .sl[data-reel]): the opener before the first cut, then one beat each
+  const at = (i: number) => (fixed && i > 0 ? { '--at': `${(i - 1) * REEL_BEAT}ms` } : {});
   const reelFrames = reel.map((r, i) => (
-    <span className="sl-frame" data-on={i === 0 ? '' : undefined} key={r.src} style={{ width: `${fixed ? G_W : r.w}px` }}>
+    <span className="sl-frame" data-on={i === 0 ? '' : undefined} key={r.src} style={{ width: `${fixed ? G_W : r.w}px`, ...at(i) } as CSSProperties}>
       <img src={`/${fixed ? bulged(r.src) : r.src}`} alt="" decoding="async" fetchPriority={i === 0 ? 'high' : 'auto'}
         style={r.crop && !fixed ? { height: `${r.crop}%`, objectFit: 'fill' } : undefined} />
     </span>
@@ -209,7 +216,8 @@ export default function StartLoader({ fixed = false }: { fixed?: boolean }) {
   return (
     <>
       <script dangerouslySetInnerHTML={{ __html: BOOT(fixed) }} />
-      <div className="sl" aria-hidden="true">
+      {/* its script sets the halves' offsets (style) before React hydrates */}
+      <div className="sl" aria-hidden="true" suppressHydrationWarning>
         {/* Fade: the words; Zoom: the logo in two halves that overlap where the italic L tucks under the y */}
         <p className="sl-side sl-word sl-l">Engineering</p>
         <p className="sl-side sl-word sl-r">Virality</p>
@@ -227,7 +235,8 @@ export default function StartLoader({ fixed = false }: { fixed?: boolean }) {
               <span className="sl-zoom sl-zoom-a">{reelFrames}</span>
               <span className="sl-zoom sl-zoom-b">
                 {GOLDEN.map((g, i) => (
-                  <span className="sl-frame sl-gframe" key={`${g}-${i}`} style={{ width: `${G_W}px` }}>
+                  <span className={i === GOLDEN.length - 1 ? 'sl-frame sl-gframe sl-last' : 'sl-frame sl-gframe'} key={`${g}-${i}`}
+                    style={{ width: `${G_W}px`, ...at(reel.length + i) } as CSSProperties}>
                     <img src={`/assets/loader/bulged/g-${g}.webp`} width={G_W} height={G_H} alt="" decoding="async" />
                   </span>
                 ))}

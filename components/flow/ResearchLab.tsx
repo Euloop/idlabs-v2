@@ -23,7 +23,8 @@ const range = (v: number, a: number, b: number) => clamp((v - a) / (b - a));
 // tabs while the held stage covers the middle of the screen
 const held = (r: DOMRect, vh: number) => r.top <= vh * 0.5 && r.bottom >= vh * 0.5;
 
-export default function ResearchLab() {
+// `fixed`: no tabs (the live home page), the default size
+export default function ResearchLab({ fixed = false }: { fixed?: boolean } = {}) {
   const ref = useRef<HTMLElement>(null);
   const hlRef = useRef<HTMLSpanElement>(null);
   const [size, pick] = useOption<Size>('lab', SIZES, 'small');
@@ -79,7 +80,7 @@ export default function ResearchLab() {
           </p>
         </div>
       </div>
-      <OptionTabs groups={[{ label: 'Text size', options: SIZES, value: size, onChange: (v) => pick(v as Size) }]} selector="section.rl" label="Research lab options" when={held} />
+      {!fixed && <OptionTabs groups={[{ label: 'Text size', options: SIZES, value: size, onChange: (v) => pick(v as Size) }]} selector="section.rl" label="Research lab options" when={held} />}
     </section>
   );
 }

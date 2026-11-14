@@ -11,8 +11,9 @@ export const metadata: Metadata = {
 export const viewport: Viewport = { width: 'device-width', initialScale: 1, themeColor: '#2a2c31' };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  // suppressHydrationWarning: the pages' inline scripts set html data-* attributes before React hydrates
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preload" href="/assets/texture.webp" as="image" type="image/webp" fetchPriority="high" />
         <link rel="preload" href="/fonts/instrument-serif-latin-400-normal.woff2" as="font" type="font/woff2" crossOrigin="" />

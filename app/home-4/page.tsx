@@ -38,7 +38,9 @@ export default function Home4() {
       <span className="s2-flow" hidden />
       {/* the new light hero: the golden construction upright (Figma 183:3) */}
       {/* start loader (Figma 184:117–174): before the hero, so its zoom lands on it */}
-      <StartLoader />
+      {/* the start loader as /hero: the logo drawn and split, the reel of people and papers, then the
+          golden spirals, onto the clean hero (no golden construction) */}
+      <StartLoader fixed />
       <HeroVertical />
       <HeroLight />
       {/* loader ending + hero: Zoom (drawn hero) or Fade (clean hero), bottom tabs (?intro=) */}
@@ -56,7 +58,8 @@ export default function Home4() {
       <ServicesCards light layout="columns" />
       {/* launches: Selected (default: the client's six and See all → /launches) or Float II–IV (?launches=) */}
       <LaunchesOptions only={['selected', 'float2', 'float3', 'float4']} />
-      <SiteFooter />
+      {/* footer: Fibonacci (default, Figma Zoomcast 200:4) or the reading list, bottom tabs (?footer=) */}
+      <SiteFooter fib />
       <SiteChrome />
       <ThemeDriver />
     </>

@@ -83,7 +83,8 @@ export default function LaunchesReel({ on, start = 0, alt = false, card = false,
   const videoRef = useRef<HTMLVideoElement>(null);
   const slides = list ?? REEL;
   const n = slides.length + (end ? 1 : 0);
-  const last = end ? n - 1 : n; // how far the track goes (with an end slide: to it, and no further)
+  const finite = !!end; // with an end slide the track runs one way, to it
+  const last = finite ? n - 1 : n; // how far the track goes
   /* track (Float IV): one continuous position `pos` (launches from `start`, fractional), eased every
      frame toward `target`, like the page's own smooth scroll. The wheel over the reel, a drag, the
      arrows and the peeks all just move the target; the reel glides there, and only once the wheel
@@ -118,7 +119,9 @@ export default function LaunchesReel({ on, start = 0, alt = false, card = false,
     g.dx = e.clientX - g.x;
     if (!g.on && Math.abs(g.dx) > 6) { g.on = true; dragged.current = true; el.setPointerCapture(g.id); el.setAttribute('data-dragging', ''); }
     if (g.on) {
-      const p = g.p0 - g.dx / el.clientWidth, now = performance.now(), dt = Math.max(1, now - g.t) / 1000;
+      let p = g.p0 - g.dx / el.clientWidth;
+      const now = performance.now(), dt = Math.max(1, now - g.t) / 1000;
+      if (end) p = Math.min(last, Math.max(0, p)); // with an end slide: no dragging past either end
       g.v = g.v * 0.6 + ((p - pos.current) / dt) * 0.4; // its speed, smoothed: kept for the release
       g.t = now;
       target.current = pos.current = p;
@@ -145,19 +148,28 @@ export default function LaunchesReel({ on, start = 0, alt = false, card = false,
   const onRef = useRef(on);
   onRef.current = on;
   const doneRef = useRef(false);
-  useEffect(() => { if (!on) doneRef.current = false; }, [on]);
+  // the reel left (scrolled back up into the float): the wheel is the reel's again; with an end slide
+  // it also goes back to the first launch, the picture the zoom lands on
+  useEffect(() => {
+    if (on) return;
+    doneRef.current = false;
+    if (!finite) return;
+    pos.current = target.current = vel.current = 0;
+    movedRef.current = false; setMoved(false);
+    kick.current();
+  }, [on, finite]);
   useEffect(() => {
     const el = rootRef.current;
     if (!track || !el) return;
-    let raf = 0, last = 0, idle = 0, cur = -1;
+    let raf = 0, then = 0, idle = 0, cur = -1;
     let dir = 0; // the way the wheel last moved it (+1 forward, −1 back), for the settle
     const wrap = (x: number) => ((x % n) + n) % n;
     const paint = () => {
       const p = pos.current;
       slideRefs.current.forEach((sl, k) => {
         if (!sl) return;
-        let d = end ? k - start - p : wrap(k - start - p);
-        if (!end && d > n / 2) d -= n;
+        let d = finite ? k - start - p : wrap(k - start - p);
+        if (!finite && d > n / 2) d -= n;
         const near = Math.abs(d) < 1.5;
         sl.style.visibility = near ? 'visible' : 'hidden';
         if (near) sl.style.translate = `${(d * 100).toFixed(3)}% 0`;
@@ -165,11 +177,12 @@ export default function LaunchesReel({ on, start = 0, alt = false, card = false,
       const idx = wrap(start + Math.round(p));
       if (idx !== cur) { cur = idx; setI(idx); }
       if (!movedRef.current && p > 0.5) { movedRef.current = true; setMoved(true); }
+      if (p >= last - 0.001) doneRef.current = true; // at the end, however it got there: the page's scroll from now on
       el.toggleAttribute('data-sliding', Math.abs(target.current - p) > 0.004 || !!drag.current?.on);
     };
     const frame = (now: number) => {
-      const dt = Math.min(0.05, (now - last) / 1000);
-      last = now;
+      const dt = Math.min(0.05, (now - then) / 1000);
+      then = now;
       if (!drag.current?.on) {
         // a critically damped spring toward the target, in small steps: it eases in and out, the
         // wheel's separate notches blend into one glide, and it never overshoots
@@ -180,11 +193,14 @@ export default function LaunchesReel({ on, start = 0, alt = false, card = false,
           pos.current += vel.current * h;
         }
       }
+      // with an end slide the reel stops there: a throw's momentum never carries it past (or before the first)
+      if (finite && pos.current > last) { pos.current = last; vel.current = Math.min(0, vel.current); }
+      if (finite && pos.current < 0) { pos.current = 0; vel.current = Math.max(0, vel.current); }
       if (Math.abs(target.current - pos.current) < 0.0004 && Math.abs(vel.current) < 0.002) { pos.current = target.current; vel.current = 0; }
       paint();
       raf = pos.current !== target.current || vel.current !== 0 || drag.current?.on ? requestAnimationFrame(frame) : 0;
     };
-    kick.current = () => { if (!raf) { last = performance.now(); raf = requestAnimationFrame(frame); } };
+    kick.current = () => { if (!raf) { then = performance.now(); raf = requestAnimationFrame(frame); } };
     paint();
     const onWheel = (e: WheelEvent) => {
       if (!onRef.current || e.ctrlKey || doneRef.current) return;
@@ -197,7 +213,6 @@ export default function LaunchesReel({ on, start = 0, alt = false, card = false,
       e.stopPropagation(); // the page's smooth scroll (Lenis, on the window) must not see it either
       target.current = Math.min(last, Math.max(0, t + dy / el.clientWidth));
       dir = dy > 0 ? 1 : -1;
-      if (target.current >= last) doneRef.current = true; // the cycle is complete: from now on the page's
       window.clearTimeout(idle);
       // once the wheel rests, settle on a launch: the next one the way it was going if it is over a
       // quarter of the way there, else back to the one it left (the spring eases it in)
@@ -210,7 +225,7 @@ export default function LaunchesReel({ on, start = 0, alt = false, card = false,
     };
     el.addEventListener('wheel', onWheel, { passive: false });
     return () => { el.removeEventListener('wheel', onWheel); window.clearTimeout(idle); cancelAnimationFrame(raf); kick.current = () => {}; };
-  }, [track, n, start, end, last]);
+  }, [track, n, start, finite, last]);
 
   const onClickCapture = (e: React.MouseEvent) => {
     if (dragged.current) { e.preventDefault(); e.stopPropagation(); dragged.current = false; }

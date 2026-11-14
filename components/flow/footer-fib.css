@@ -1,0 +1,63 @@
+/* Footer "Fibonacci" (FooterFib.tsx, Figma Zoomcast 200:4). Figma px of a 1280 page, scaled with the
+   frame: calc(n * var(--px)). Type: 12px IBM Plex Mono caps (headings Bold, links Regular). */
+
+.ft-fib .ft-frame { min-height: 0; padding-top: 0; padding-bottom: 0; display: block; letter-spacing: normal; line-height: normal; }
+
+/* the golden-ratio construction behind (Figma 200:22, its 1280 width of squares and circles), dimmed
+   from the design's 12%: scaled so those 1280 units run from the screen's left edge to its right
+   (--gk: one unit), from 199 units above the footer's top, clipped */
+.ftf-gold {
+  --gk: calc(100vw / 1280);
+  position: absolute; z-index: 0; pointer-events: none; overflow: clip; opacity: .06;
+  left: calc(50% - 50vw); top: calc(-199 * var(--gk));
+  width: 100vw; height: calc(838.769 * var(--gk));
+}
+.ftf-g {
+  position: absolute; display: block;
+  left: calc(var(--x) * var(--gk)); top: calc(var(--y) * var(--gk));
+  width: calc(var(--w) * var(--gk)); height: calc(var(--h) * var(--gk));
+}
+.ftf-g > img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; max-width: none; }
+/* the circles' hairline strokes (0.5) read fainter than the ruled lines: brightened to match them */
+.ftf-g > img:not(.ftf-diag > img) { filter: brightness(1.96) drop-shadow(0 0 .35px #fff); }
+.ftf-sq { border: .274px solid #828282; overflow: clip; }
+.ftf-band { border: .5px solid #828282; }
+.ftf-vline { border-left: .532px solid #828282; }
+.ftf-diag > img { inset: auto; left: 50%; top: 50%; width: calc(var(--len) * var(--gk)); height: 1.06484px; translate: -50% -50%; rotate: var(--r); }
+
+/* content: the box from y 195, rule to rule (1057 wide at x 112) */
+.ftf { position: relative; z-index: 1; padding-top: calc(195 * var(--px)); margin-inline: calc(-1 * var(--pad)); }
+.ftf-box {
+  position: relative; display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 64px 24px; border: 1px solid rgb(130 130 130 / .15);
+}
+.ftf-col { display: flex; flex-direction: column; gap: 22px; }
+.ftf-h { margin: 0; font-family: var(--mono); font-weight: 700; font-size: 12px; line-height: 16px; letter-spacing: 1.2px; text-transform: uppercase; color: #ebebeb; white-space: nowrap; }
+.ftf-col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.ftf-col a, .ftf-bar { font-family: var(--mono); font-size: 12px; line-height: 16px; letter-spacing: .5px; text-transform: uppercase; white-space: nowrap; }
+.ftf-col a { color: #999; text-decoration: none; }
+
+/* the 8px corner squares (Figma 200:82, 200:85, 200:19) */
+.ftf-sqs { position: absolute; display: flex; justify-content: space-between; align-items: center; opacity: .15; pointer-events: none; }
+.ftf-sqs i { display: block; width: 8px; height: 8px; background: #999; }
+.ftf-sqs-t { top: -5px; left: -2px; right: -5px; }
+.ftf-sqs-b { bottom: -4px; left: -5px; right: -5px; }
+.ftf-sqs-frame { top: calc(59 * var(--px)); left: -4px; right: -4px; z-index: 1; }
+.ftf-sqs-frame i { background: #828282; }
+
+/* closing bar */
+/* status left, offices centred on the page, legal right */
+.ftf-bar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 24px; padding: 24px; color: #999; }
+.ftf-status { display: inline-flex; align-items: center; gap: 12px; }
+.ftf-status img { display: block; flex: none; }
+.ftf-offices { display: flex; justify-content: center; gap: 22px; color: #666; }
+.ftf-legal { display: flex; gap: 22px; justify-self: end; }
+.ftf-legal a { color: #999; text-decoration: none; }
+
+@media (max-width: 759px) {
+  .ftf-box { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 24px; padding: 48px 20px; }
+  .ftf-col a, .ftf-h { white-space: normal; }
+  .ftf-bar { grid-template-columns: 1fr; justify-items: start; gap: 16px; padding: 24px 20px; }
+  .ftf-offices { justify-content: flex-start; flex-wrap: wrap; }
+  .ftf-legal { justify-self: start; }
+}

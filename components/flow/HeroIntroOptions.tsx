@@ -3,17 +3,10 @@
 import { useEffect, useState } from 'react';
 import OptionTabs, { useOption } from './OptionTabs';
 
-/* /home-4: how the start loader ends, and the hero it hands over to (?intro=).
-   Zoom — the golden ratio zooms up and settles onto the hero's construction (the drawn hero).
-   Fade — the golden ratio fades away where it is, onto the clean hero: the same copy, rails and
-   logos, no construction behind them.
-   StartLoader's inline script reads ?intro= into html[data-intro] before first paint, so the clean
-   hero never flashes the drawing; a pick reloads the page so the loader plays with that ending.
+/* /home-4's hero tabs. The loader is /hero's now (StartLoader fixed: always onto the clean hero), so the
+   earlier Zoom · Fade intro tab is gone; the Clients tab stays.
    Bottom tabs while the hero fills the screen — only once the hero's entrance has played out (the
    loader, then every headline line, paragraph and logo in), so they never sit over it arriving. */
-
-export type Intro = 'zoom' | 'fade';
-const INTROS: [Intro, string][] = [['zoom', 'Zoom'], ['fade', 'Fade']];
 /* Clients (?clients=): the client's 12 in their order with "Our Network" hidden (default), or the
    earlier 16 with the network card. html[data-clients], set before first paint by /home-4's script. */
 type Clients = 'picked' | 'all';
@@ -22,7 +15,6 @@ const onHero = (r: DOMRect, vh: number) => r.top > -vh * 0.25 && r.bottom > vh *
 const never = () => false;
 
 export default function HeroIntroOptions() {
-  const [intro, pick] = useOption<Intro>('intro', INTROS, 'zoom');
   const [clients, pickClients] = useOption<Clients>('clients', CLIENTS, 'picked');
   const [heroIn, setHeroIn] = useState(false);
 
@@ -42,7 +34,6 @@ export default function HeroIntroOptions() {
   return (
     <OptionTabs
       groups={[
-        { label: 'Hero intro', options: INTROS, value: intro, onChange: (v) => { pick(v as Intro); window.location.reload(); } },
         { label: 'Clients', options: CLIENTS, value: clients, onChange: (v) => { pickClients(v as Clients); document.documentElement.dataset.clients = v; } },
       ]}
       selector="div.hero" label="Hero intro options" when={heroIn ? onHero : never} />

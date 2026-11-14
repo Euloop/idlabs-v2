@@ -123,28 +123,22 @@ export default function StartLoaderRun({ frames, golden = 0 }: { frames: number;
       for (let p = 0; p < T.passes; p++) for (let i = 0; i < plain; i++) if (p || i) {
         // /hero: the slow push-in starts with the first cut and runs the length of the half
         // (start-loader.css .sl[data-push]); the golden half's starts with the spiral
-        push(i, cut, !golden || p ? undefined : i === 1 ? () => {
-          el.style.setProperty('--push-a', `${(plain - 1) * cut}ms`);
-          el.style.setProperty('--push-b', `${golden * BEAT + G.hold + 450}ms`);
-          el.setAttribute('data-push', '');
-        } : undefined);
+        push(i, cut, golden && !p && i === 1 ? () => el.setAttribute('data-push', '') : undefined);
       }
       if (golden) {
         // no pause: the golden images cut straight on, and the spiral draws over them as they change
-        // (start-loader.css .sl-sp-arc), then stays put while the rest cut under it
-        // each cut also fires the spiral's flash: alternate names so the animation restarts every beat,
-        // upper case on the first beat of each bar of four (the accent)
-        for (let i = plain; i < frames; i++) push(i, BEAT, () => {
-          if (i === plain) el.setAttribute('data-spiral', '');
-          const k = i - plain;
-          el.dataset.flash = (k % 2 ? 'b' : 'a')[k % 4 === 0 ? 'toUpperCase' : 'toLowerCase']();
-        });
+        // (data-push / data-spiral only mark the moments; the CSS runs off data-reel)
+        for (let i = plain; i < frames; i++) push(i, BEAT, i === plain ? () => el.setAttribute('data-spiral', '') : undefined);
       }
       if (!reelEnd) push('golden', T.cut);
       // The reel runs off the frame clock, not a timer per cut: each frame shows whichever image is
       // due by now, so a busy main thread can't bunch cuts together (queued timers fire back to back
       // and flash an image for a few ms). Starts on a frame; the zoom follows the golden ratio's hold.
       at(t, () => {
+        // /hero: every cut, the push, the spiral's draw and its flash are CSS animations scheduled
+        // from this one moment (start-loader.css .sl[data-reel]) and run by the compositor, so a busy
+        // main thread can't hold an image. The loop below only keeps data-on in step and ends the reel.
+        if (golden) el.setAttribute('data-reel', '');
         let t0 = 0;
         let k = 0;
         let shown = -1;
