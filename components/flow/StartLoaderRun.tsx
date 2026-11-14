@@ -6,7 +6,8 @@ import { useEffect } from 'react';
    cuts land on exact frames. All times in ms. */
 const T = {
   hold: 2900, // from the start of the opening (words in the middle, parting on a spring, the image opening at 1000) to the first cut
-  holdLogo: 4250, // the same with the drawn logo (Zoom): it draws first (~2.3s), the image opens at 2350
+  holdLogo: 4250,
+  logoLater: 1000, // /hero: the logo finishes drawing before it splits (start-loader.css), so all of it 1000 later // the same with the drawn logo (Zoom): it draws first (~2.3s), the image opens at 2350
   endLogo: 2900, // Fade: from the logo starting (as the golden ratio fades) to the white lifting: drawn by ~2.5s, then held
   cut: 120, // each showreel image (hard cuts)
   passes: 1, // times through the reel (the first image is not repeated at the very start)
@@ -16,7 +17,13 @@ const T = {
 };
 const MAX_WAIT = 2500; // start anyway if the images are slow
 
-export default function StartLoaderRun({ frames }: { frames: number }) {
+/* /hero's golden half (html[data-sl-end='reel'], the last `golden` frames): the aligned images cut on
+   straight from the first half while the spiral draws over them, then a short hold before the white lifts. */
+const G = { bridge: 200, cut: 120, passes: 1, hold: 300 };
+// ...and its first half, the people and papers: cuts speeding up from 140 to 60ms, a jumble building into it.
+const RAMP = [140, 60];
+
+export default function StartLoaderRun({ frames, golden = 0 }: { frames: number; golden?: number }) {
   useEffect(() => {
     const root = document.documentElement;
     const el = document.querySelector<HTMLElement>('.sl');
@@ -99,24 +106,45 @@ export default function StartLoaderRun({ frames }: { frames: number }) {
 
     const start = () => {
       const opened = (window as { __slReady?: number }).__slReady ?? performance.now();
-      const logo = root.dataset.intro === 'zoom';
-      let t = Math.max(0, opened + (logo ? T.holdLogo : T.hold) - performance.now());
-      const order: (number | 'golden')[] = [];
-      for (let p = 0; p < T.passes; p++) for (let i = 0; i < frames; i++) if (p || i) order.push(i);
-      order.push('golden');
+      const logo = root.dataset.intro === 'zoom' || root.dataset.slOpen === 'logo';
+      const reelEnd = root.dataset.slEnd === 'reel';
+      const hold = logo ? T.holdLogo + (root.dataset.slOpen === 'logo' ? T.logoLater : 0) : T.hold;
+      let t = Math.max(0, opened + hold - performance.now());
+      // The schedule: what shows from when (ms after the reel starts).
+      type Step = { show: number | 'golden'; at: number; fx?: () => void };
+      const order: Step[] = [];
+      let clock = 0;
+      const push = (show: Step['show'], dur: number, fx?: () => void) => { order.push({ show, at: clock, fx }); clock += dur; };
+      const plain = frames - golden;
+      for (let p = 0; p < T.passes; p++) for (let i = 0; i < plain; i++) if (p || i) {
+        // the last of them (the nautilus construction) holds, a beat before the spiral takes over
+        push(i, !golden ? T.cut : i === plain - 1 ? G.bridge : Math.round(RAMP[0] + (RAMP[1] - RAMP[0]) * (i / (plain - 1)) ** 0.8));
+      }
+      if (golden) {
+        // no pause: the golden images cut straight on, and the spiral draws over them as they change
+        // (start-loader.css .sl-sp-arc), then stays put while the rest cut under it
+        for (let p = 0; p < G.passes; p++) for (let i = plain; i < frames; i++) {
+          push(i, G.cut, p === 0 && i === plain ? () => el.setAttribute('data-spiral', '') : undefined);
+        }
+      }
+      if (!reelEnd) push('golden', T.cut);
       // The reel runs off the frame clock, not a timer per cut: each frame shows whichever image is
       // due by now, so a busy main thread can't bunch cuts together (queued timers fire back to back
       // and flash an image for a few ms). Starts on a frame; the zoom follows the golden ratio's hold.
       at(t, () => {
         let t0 = 0;
+        let k = 0;
+        let shown = -1;
         const step = (now: number) => {
           if (cancelled) return;
           if (!t0) t0 = now;
-          const k = Math.min(order.length - 1, Math.floor((now - t0) / T.cut));
-          show(order[k]);
+          const e = now - t0;
+          while (k + 1 < order.length && order[k + 1].at <= e) k++;
+          if (k !== shown) { shown = k; show(order[k].show); order[k].fx?.(); }
           if (k < order.length - 1) raf = requestAnimationFrame(step);
           // Zoom: the golden ratio zooms. Fade: it goes, the logo draws in its place, then the white lifts.
-          else at(T.golden, logo ? zoom : () => { el.setAttribute('data-end', ''); at(T.endLogo, zoom); });
+          else if (reelEnd) at(golden ? G.hold : T.cut, zoom); // /hero: the last image's beat, then the white lifts
+          else at(T.golden, root.dataset.intro === 'zoom' ? zoom : () => { el.setAttribute('data-end', ''); at(T.endLogo, zoom); });
         };
         raf = requestAnimationFrame(step);
       });

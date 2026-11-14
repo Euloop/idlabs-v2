@@ -42,6 +42,80 @@ const REEL: ReelImage[] = [
   { src: 'assets/tools-collage/c1.webp', w: 183 },
 ];
 
+// /hero's reel, first half: the people and the papers — scientists, equations, patent drawings,
+// research figures — ending on the nautilus construction, which hands over to the golden half.
+// Oppenheimer and Tesla from Figma "start loader more iamges" (Zoomcast 194:2); the rest
+// (assets/loader/reel) public domain, from Wikimedia Commons — colour portraits set in grey.
+const R = (n: string, w: number): ReelImage => ({ src: `assets/loader/reel/${n}.webp`, w });
+const REEL_HERO: ReelImage[] = [
+  { src: 'assets/loader/reel-1-einstein.png', w: 174 },
+  R('euclid', 341.5),
+  { src: 'assets/loader/reel-tesla.webp', w: 155.5 },
+  R('fibonacci', 136),
+  R('curie', 156),
+  { src: 'assets/loader/reel-3.png', w: 164, crop: 108.94 },
+  R('newton', 156),
+  R('principia', 150),
+  R('galileo', 156),
+  R('kepler', 189),
+  R('lovelace', 156),
+  { src: 'assets/tools-collage/c3.webp', w: 171 },
+  R('ramanujan', 156),
+  { src: 'assets/research/linkedin-fig-3.webp', w: 167 },
+  R('turing', 156),
+  { src: 'assets/tools-collage/c7.webp', w: 132 },
+  R('maxwell', 166.5),
+  R('vitruvian', 153),
+  R('planck', 156),
+  { src: 'assets/research/front-fig-1.webp', w: 182 },
+  R('hilbert', 156),
+  R('leonardo-notes', 152),
+  { src: 'assets/tools-collage/c4.webp', w: 133 },
+  R('leonardo-self', 132.5),
+  R('einstein-board', 166.5),
+  { src: 'assets/loader/reel-oppenheimer.webp', w: 157.5 },
+  { src: 'assets/loader/reel-2.png', w: 161 },
+];
+
+// Second half: the golden ratio at work. Each image is warped so its own upright
+// golden rectangle — big square on top, the spiral's eye low on the right — lands on one rectangle:
+// 118.67 × 192 at (4, 4) in a 126.5 × 200 frame (files at 2×, assets/loader/golden). The spiral
+// over them (<Spiral>) is that rectangle's, so it stays put while the images cut under it.
+// The first six from Zoomcast 194:2 (their own drawn spirals aligned to ours); then public-domain
+// spirals from Wikimedia Commons (NASA/Hubble, Vermeer), fitted by their centre and size.
+const GOLDEN = ['black', 'm51', 'eiffel', 'katrina', 'mona', 'whirlpool', 'birds', 'solar', 'pearl', 'm74', 'begonia'];
+const G_W = 126.5;
+const G_H = 200;
+
+/* The construction, in the frame's px: squares cut from the golden rectangle in turn — top, left,
+   bottom, right — each with a quarter arc, which together make the spiral. */
+const PHI = (1 + Math.sqrt(5)) / 2;
+function construction() {
+  const f = (n: number) => +n.toFixed(2);
+  let x = 4, y = 4, w = 192 / PHI, h = 192;
+  const lines: string[] = [];
+  let arc = `M${f(x + w)} ${f(y)}`;
+  for (let i = 0; i < 10; i++) {
+    const k = i % 4;
+    const s = k % 2 === 0 ? w : h;
+    if (k === 0) { arc += `A${f(s)} ${f(s)} 0 0 0 ${f(x)} ${f(y + s)}`; y += s; h -= s; lines.push(`M${f(x)} ${f(y)}H${f(x + w)}`); }
+    else if (k === 1) { arc += `A${f(s)} ${f(s)} 0 0 0 ${f(x + s)} ${f(y + s)}`; x += s; w -= s; lines.push(`M${f(x)} ${f(y)}V${f(y + h)}`); }
+    else if (k === 2) { arc += `A${f(s)} ${f(s)} 0 0 0 ${f(x + s)} ${f(y + h - s)}`; h -= s; lines.push(`M${f(x)} ${f(y + h)}H${f(x + w)}`); }
+    else { arc += `A${f(s)} ${f(s)} 0 0 0 ${f(x + w - s)} ${f(y)}`; w -= s; lines.push(`M${f(x + w)} ${f(y)}V${f(y + h)}`); }
+  }
+  return { lines: lines.join(''), arc };
+}
+const CON = construction();
+function Spiral() {
+  return (
+    <svg className="sl-spiral" viewBox={`0 0 ${G_W} ${G_H}`} width={G_W} height={G_H} aria-hidden="true">
+      <rect className="sl-sp-line" x={4} y={4} width={192 / PHI} height={192} pathLength={1} />
+      <path className="sl-sp-line" d={CON.lines} />
+      <path className="sl-sp-arc" d={CON.arc} pathLength={1} />
+    </svg>
+  );
+}
+
 // Right after the overlay, before hydration. Once the first image has loaded (and the fonts, so the
 // words measure true): sets --l-dx / --r-dx / --dy on the overlay — how far each of the pair shown
 // (the words, or the logo's halves) must move to sit side by side in the middle of the screen, one
@@ -63,12 +137,16 @@ function Ink({ paths, x, w, scale, from = 0, className }: { paths: string[]; x: 
 const LOGO = 1.5; // the split logo, × the 103 × 23 wordmark (155 × 35)
 const END_LOGO = 1.65; // the Fade ending's logo, in the image slot (170 × 38)
 
-const BOOT = `(function(){var d=document.documentElement,q=new URLSearchParams(location.search).get('intro');d.dataset.intro=q==='fade'?'fade':'zoom';if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;d.dataset.loader='run';try{history.scrollRestoration='manual'}catch(e){}scrollTo(0,0)})()`;
+// /hero (fixed): the logo opening (html[data-sl-open='logo']), the reel, then the white lifts onto the
+// clean hero (data-intro 'fade') with no golden ratio (html[data-sl-end='reel']).
+const BOOT = (fixed: boolean) => `(function(){var d=document.documentElement,q=new URLSearchParams(location.search).get('intro');${
+  fixed ? "d.dataset.intro='fade';d.dataset.slOpen='logo';d.dataset.slEnd='reel';" : "d.dataset.intro=q==='fade'?'fade':'zoom';"}if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;d.dataset.loader='run';try{history.scrollRestoration='manual'}catch(e){}scrollTo(0,0)})()`;
 
-export default function StartLoader() {
+export default function StartLoader({ fixed = false }: { fixed?: boolean }) {
+  const reel = fixed ? REEL_HERO : REEL;
   return (
     <>
-      <script dangerouslySetInnerHTML={{ __html: BOOT }} />
+      <script dangerouslySetInnerHTML={{ __html: BOOT(fixed) }} />
       <div className="sl" aria-hidden="true">
         {/* Fade: the words; Zoom: the logo in two halves that overlap where the italic L tucks under the y */}
         <p className="sl-side sl-word sl-l">Engineering</p>
@@ -78,12 +156,18 @@ export default function StartLoader() {
         {/* Fade: the logo that draws at the end, where the golden ratio was */}
         <Ink className="sl-endlogo" paths={[...IDENTITY, ...LABS]} x={0} w={WORDMARK_W} scale={END_LOGO} />
         <div className="sl-slot">
-          {REEL.map((r, i) => (
+          {reel.map((r, i) => (
             <span className="sl-frame" data-on={i === 0 ? '' : undefined} key={r.src} style={{ width: `${r.w}px` }}>
               <img src={`/${r.src}`} alt="" decoding="async" fetchPriority={i === 0 ? 'high' : 'auto'}
                 style={r.crop ? { height: `${r.crop}%`, objectFit: 'fill' } : undefined} />
             </span>
           ))}
+          {fixed && GOLDEN.map((g) => (
+            <span className="sl-frame sl-gframe" key={g} style={{ width: `${G_W}px` }}>
+              <img src={`/assets/loader/golden/${g}.webp`} width={G_W} height={G_H} alt="" decoding="async" />
+            </span>
+          ))}
+          {fixed && <Spiral />}
           {/* golden ratio (Figma 184:290): 122.636 × 208.141 in the slot (the SVG's own size), drawn
               at the hero's 577.663 × 980.663 and scaled down in CSS so the zoom stays sharp. Two
               layers: 1px lines while it holds (the design's 0.28px drop edges at that size), handing
@@ -102,7 +186,7 @@ export default function StartLoader() {
         </p>
       </div>
       <script dangerouslySetInnerHTML={{ __html: READY }} />
-      <StartLoaderRun frames={REEL.length} />
+      <StartLoaderRun frames={reel.length + (fixed ? GOLDEN.length : 0)} golden={fixed ? GOLDEN.length : 0} />
     </>
   );
 }

@@ -178,17 +178,17 @@ html[data-sl-ready] .sl-logo path, .sl[data-end] .sl-endlogo path { animation-pl
    spring), its halves overlapping 2 units (3px at ×1.5) where the L tucks under the y. Everything after it
    moves later: the split at 2100 (the last letters still filling), the image at 2350, the caption
    at 2850 (StartLoaderRun's hold to match). */
-html[data-intro='zoom'] .sl { --sl-gap: -3px; }
-html[data-intro='zoom'] .sl-word { display: none; }
-html[data-intro='zoom'] .sl-logo { display: block; }
+html:is([data-intro='zoom'], [data-sl-open='logo']) .sl { --sl-gap: -3px; }
+html:is([data-intro='zoom'], [data-sl-open='logo']) .sl-word { display: none; }
+html:is([data-intro='zoom'], [data-sl-open='logo']) .sl-logo { display: block; }
 .sl-logo.sl-l { left: 28px; translate: 0 -50%; }
 .sl-logo.sl-r { left: auto; right: 28px; translate: 0 -50%; }
-html[data-intro='zoom'] .sl-logo { animation-delay: 0ms, 2100ms; animation-duration: 1ms, 1000ms; }
-html[data-intro='zoom'] .sl-frame:first-child,
-html[data-intro='zoom'] .sl-frame:first-child::before,
-html[data-intro='zoom'] .sl-frame:first-child::after,
-html[data-intro='zoom'] .sl-frame:first-child img { animation-delay: 2350ms; }
-html[data-intro='zoom'] .sl-caption { animation-delay: 2850ms; }
+html:is([data-intro='zoom'], [data-sl-open='logo']) .sl-logo { animation-delay: 0ms, 2100ms; animation-duration: 1ms, 1000ms; }
+html:is([data-intro='zoom'], [data-sl-open='logo']) .sl-frame:first-child,
+html:is([data-intro='zoom'], [data-sl-open='logo']) .sl-frame:first-child::before,
+html:is([data-intro='zoom'], [data-sl-open='logo']) .sl-frame:first-child::after,
+html:is([data-intro='zoom'], [data-sl-open='logo']) .sl-frame:first-child img { animation-delay: 2350ms; }
+html:is([data-intro='zoom'], [data-sl-open='logo']) .sl-caption { animation-delay: 2850ms; }
 
 /* Fade: at the end the logo draws in the image slot as the golden ratio fades out of it — the two
    cross, so there is no empty beat between them — with the words either side and the caption staying
@@ -196,3 +196,35 @@ html[data-intro='zoom'] .sl-caption { animation-delay: 2850ms; }
 html[data-intro='fade'] .sl-endlogo { display: block; position: absolute; left: 50%; top: calc(50% - 9px); translate: -50% -50%; }
 .sl[data-end] .sl-golden, .sl[data-end] .sl-g-bold { opacity: 0; transition: opacity 550ms var(--ease-out); }
 html[data-loader='zoom'] .sl-endlogo { opacity: 0; transition: opacity 450ms var(--ease-out); }
+
+/* /hero (html[data-sl-end='reel']): no ending logo — the last image goes with the white */
+html[data-sl-end='reel'] .sl-endlogo { display: none; }
+html[data-sl-end='reel'][data-loader='zoom'] .sl-frame { opacity: 0; transition: opacity 450ms var(--ease-out); }
+
+/* /hero (html[data-sl-open='logo']): the logo finishes before it splits — the last letter's outline is
+   gone by ~2900 — so everything after it moves 1000 later: the split at 3100, the image at 3350,
+   the caption at 3850 (StartLoaderRun's hold to match). */
+html[data-sl-open='logo'] .sl-logo { animation-delay: 0ms, 3100ms; }
+html[data-sl-open='logo'] .sl-frame:first-child,
+html[data-sl-open='logo'] .sl-frame:first-child::before,
+html[data-sl-open='logo'] .sl-frame:first-child::after,
+html[data-sl-open='logo'] .sl-frame:first-child img { animation-delay: 3350ms; }
+html[data-sl-open='logo'] .sl-caption { animation-delay: 3850ms; }
+
+/* /hero's golden half (StartLoader <Spiral>, the .sl-gframe images): 126.5 × 200, centred in the 208 slot.
+   The spiral and its construction draw over the aligned images as they start cutting (.sl[data-spiral])
+   and stay put while the rest cut under it. White in difference: black on the white and on light images, white on dark ones. */
+.sl-gframe { top: 4px; height: 200px; }
+.sl-spiral {
+  position: absolute; top: 4px; left: 0; translate: -50% 0; overflow: visible;
+  fill: none; stroke: #fff; mix-blend-mode: difference; visibility: hidden;
+}
+.sl[data-spiral] .sl-spiral { visibility: visible; }
+/* drawn over the first ~7 images as they cut: the arc from the outer corner in to the eye, the
+   construction lines coming up behind it */
+.sl-sp-line { stroke-width: 0.6; stroke-opacity: 0.75; opacity: 0; transition: opacity 500ms var(--ease-out) 300ms; }
+.sl-sp-arc { stroke-width: 1.25; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1;
+  transition: stroke-dashoffset 850ms cubic-bezier(.4, 0, .2, 1); }
+.sl[data-spiral] .sl-sp-line { opacity: 1; }
+.sl[data-spiral] .sl-sp-arc { stroke-dashoffset: 0; }
+html[data-sl-end='reel'][data-loader='zoom'] .sl-spiral { opacity: 0; transition: opacity 450ms var(--ease-out); }
