@@ -1,24 +1,17 @@
 'use client';
 
-import { Av, C, Card, Frame, Spark, eout, fmt, lerp, loopFade, rng, scenes, seg, useLoop } from './shared';
+import { Av, C, Card, Frame, Spark, detailTime, eout, fmt, lerp, loopFade, rng, seg, useLoop } from './shared';
 
-/* Post Velocity: the posts in flight, sorted by acceleration, each with its first-hour
-   sparkline; the pointer opens the fastest one and its total-views curve is sampled out to now —
+/* Post Velocity: the fastest post in flight (it used to open on the list of posts and click into
+   it; it now opens on the post): its total-views curve is sampled out to now —
    the engagements that bent it marked where they landed, the typical post below, the projection
    past NOW — with its acceleration, checkpoints and projected shelf life underneath. */
 
-const ROWS = [
-  { h: 'sama', name: 'Sam Altman', post: 'gpt-6 training run finished last night.', age: '42m', views: '936.6K', vpm: 40351 },
-  { h: 'demishassabis', name: 'Demis Hassabis', post: 'I’ve been working towards AGI my whole life, and…', age: '35m', views: '373.8K', vpm: 16468 },
-  { h: 'sundarpichai', name: 'Sundar Pichai', post: 'Gemini 3 is rolling out to everyone today, start…', age: '18m', views: '169.6K', vpm: 11935 },
-  { h: 'nytimes', name: 'The New York Times', post: 'Breaking News: Unemployment among recent coll…', age: '1h50m', views: '432.4K', vpm: 16970 },
-  { h: 'FT', name: 'Financial Times', post: 'OpenAI in talks to raise at a $1.2tn valuation…', age: '48m', views: '175.7K', vpm: 11938 },
-  { h: 'MKBHD', name: 'Marques Brownlee', post: 'The tri-fold phone review.', age: '35m', views: '220.0K', vpm: 5908 },
-];
-const SPARKS = ROWS.map((_, i) => {
-  const R = rng(40 + i);
+// the post's first-hour sparkline (the acceleration card)
+const SPARK = (() => {
+  const R = rng(40);
   return Array.from({ length: 30 }, (_, j) => 0.15 + R() * 0.35 + (j > 22 ? R() * (j - 20) * 0.18 : 0) + (j < 3 ? 0.6 * R() : 0));
-});
+})();
 
 // the watched post: cumulative views (K) by minute
 const CUM: [number, number][] = [[0, 0], [1, 70], [3, 150], [5, 196], [10, 288], [15, 342], [20, 386], [25, 414], [30, 436], [32, 470], [35, 556], [37, 688], [40, 830], [42, 936.6]];
@@ -38,10 +31,10 @@ const EVENTS = [
 ];
 const BUCKET_TONE = ['#d6d4cd', '#cfe0e0', '#e6e4de', '#e6e4de', '#e6e4de', '#e6e4de', '#cfe0e0', '#dccfb2', '#e6e4de'];
 
-export default function Velocity({ playing, time }: { playing: boolean; time?: number }) {
-  const t = useLoop(playing, 7.6, time);
-  const fade = loopFade(t);
-  const sc = scenes(t, 3.3);
+export default function Velocity({ playing, time, onEnd }: { playing: boolean; time?: number; onEnd?: () => void }) {
+  const raw = useLoop(playing, 7.6, time, onEnd);
+  const fade = loopFade(raw);
+  const t = detailTime(raw, 3.7); // straight into the one post (it used to open from the list at 3.3)
   const sweep = NOW * seg(t, 3.8, 7.4); // sampled up to this minute
   const proj = eout(seg(t, 7.45, 8.6));
 
@@ -61,55 +54,7 @@ export default function Velocity({ playing, time }: { playing: boolean; time?: n
   return (
     <Frame label="Post Velocity: how fast engagement is accelerating in real time" title="Post Velocity" meta="412 posts in flight · sampled every 30s">
       <g opacity={fade}>
-        {/* A: the posts in flight */}
-        {sc.a > 0 && (
-          <g opacity={sc.a} transform={`translate(${sc.ax} 0)`}>
-            <Card x={14} y={44} w={692} h={290} />
-            <text x={28} y={63} fontSize={9.5} fill={C.ink}>In flight</text>
-            <text x={692} y={63} textAnchor="end" className="tm-m" fontSize={6.8} fill={C.mute}>51 shown of 412 · sorted by acceleration</text>
-            <line x1={14} x2={706} y1={72} y2={72} stroke={C.grid} />
-            {[['Account', 28, 'start'], ['Post', 170, 'start'], ['Age', 432, 'end'], ['Views', 478, 'end'], ['Views/min', 536, 'end'], ['First 60m', 552, 'start'], ['Status', 692, 'end']].map(([l, x, a]) => (
-              <text key={l} x={x as number} y={86} textAnchor={a as 'start' | 'end'} fontSize={7.4} fill={C.soft}>{l}</text>
-            ))}
-            <line x1={14} x2={706} y1={93} y2={93} stroke={C.grid} />
-            {ROWS.map((r, i) => {
-              const k = eout(seg(t, 0.3 + i * 0.12, 0.8 + i * 0.12));
-              const y = 112 + i * 38;
-              const hov = i === 0 ? seg(t, 2.5, 2.7) : 0;
-              const vpm = r.vpm * (1 + 0.012 * Math.sin(t * 2.6 + i * 1.7)) * k;
-              return (
-                <g key={r.h} opacity={k}>
-                  {hov > 0 && <rect x={15} y={y - 19} width={690} height={38} fill="#f4f3ef" opacity={hov} />}
-                  <line x1={14} x2={706} y1={y + 19} y2={y + 19} stroke={C.grid} />
-                  <Av h={r.h} x={36} y={y} r={8} />
-                  {i === 0 && <circle cx={42} cy={y - 6} r={2.4} fill={C.green} stroke="#fff" strokeWidth={0.8} />}
-                  <text x={50} y={y + 3} fontSize={8.3} fill={C.ink}>{r.name}</text>
-                  <text x={170} y={y + 3} fontSize={8} fill={C.soft}>{r.post}</text>
-                  <text x={432} y={y + 3} textAnchor="end" className="tm-m" fontSize={7.6} fill={C.soft}>{r.age}</text>
-                  <text x={478} y={y + 3} textAnchor="end" className="tm-m" fontSize={7.6} fill={C.ink}>{r.views}</text>
-                  <text x={536} y={y + 3} textAnchor="end" className="tm-m" fontSize={7.6} fill={C.ink}>{fmt(vpm)}</text>
-                  <Spark x={552} y={y - 8} w={54} h={14} pts={SPARKS[i]} p={eout(seg(t, 0.6 + i * 0.12, 2.0 + i * 0.12))} />
-                  <rect x={630} y={y - 7} width={62} height={14} rx={7} fill={C.greenBg} />
-                  <text x={661} y={y + 2.6} textAnchor="middle" fontSize={7} fill={C.green}>↗ Accelerating</text>
-                </g>
-              );
-            })}
-            <g opacity={eout(seg(t, 1.0, 1.5))}>
-              <rect x={14.5} y={341.5} width={691} height={20} rx={10} fill="#fff" stroke={C.rule} />
-              <circle cx={28} cy={351.5} r={2} fill="#b8860b" />
-              <text x={34} y={354} className="tm-m" fontSize={7} fill="#8a6a1c">SAMPLING</text>
-              <svg x={84} y={344} width={612} height={14}>
-                <text x={4 - ((t * 22) % 120)} y={10} className="tm-m" fontSize={7} fill={C.soft}>
-                @sundarpichai 11,935 /min at +18m · accel +636   •   @nytimes 16,970 /min first 60m · accel +1,494   •   @FT 11,938 /min at +48m
-              </text>
-              </svg>
-            </g>
-          </g>
-        )}
-
-        {/* B: one post, sampled */}
-        {sc.b > 0 && (
-          <g opacity={sc.b} transform={`translate(${sc.bx} 0)`}>
+        <g>
             <Card x={14} y={44} w={692} h={34} />
             <Av h="sama" x={32} y={61} r={9} />
             <text x={47} y={58} fontSize={8.6} fill={C.ink}>Sam Altman <tspan fill={C.mute}>@sama</tspan></text>
@@ -172,7 +117,7 @@ export default function Velocity({ playing, time }: { playing: boolean; time?: n
             <text x={195} y={308.6} textAnchor="middle" fontSize={7} fill={C.green} opacity={seg(t, 5.5, 5.9)}>↗ Accelerating</text>
             <text x={28} y={333} className="tm-m" fontSize={15} fill={C.ink}>+{fmt(2744 * eout(seg(t, 4.2, 7.4)))}<tspan fontSize={7} fill={C.mute}> /min²</tspan></text>
             <text x={28} y={348} fontSize={6.8} fill={C.mute}>slope of the gain rate · last 10m</text>
-            <Spark x={164} y={322} w={62} h={20} pts={SPARKS[0]} p={seg(t, 4.0, 7.4)} />
+            <Spark x={164} y={322} w={62} h={20} pts={SPARK} p={seg(t, 4.0, 7.4)} />
 
             <Card x={248} y={292} w={226} h={66} />
             <text x={262} y={309} fontSize={8.5} fill={C.soft}>Checkpoints</text>
@@ -192,8 +137,7 @@ export default function Velocity({ playing, time }: { playing: boolean; time?: n
             <rect x={496} y={340} width={196} height={3} rx={1.5} fill="#efeee9" />
             <rect x={496} y={340} width={196 * eout(seg(t, 5.0, 8.0))} height={3} rx={1.5} fill={C.green} />
             <rect x={496} y={346} width={196 * (9 / 31)} height={3} rx={1.5} fill="#d6d4cd" />
-          </g>
-        )}
+        </g>
       </g>
     </Frame>
   );

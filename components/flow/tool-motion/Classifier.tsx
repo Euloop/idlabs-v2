@@ -16,7 +16,9 @@ const X15 = xs(15), Y0 = ys(0);
 const FACES = ['elonmusk', 'sama', 'naval', 'paulg', 'karpathy', 'levie', 'MKBHD', 'nytimes', 'FT', 'garrytan', 'jack', 'chamath',
   'dhh', 'satyanadella', 'pmarca', 'rauchg', 'balajis', 'emollick', 'business', 'gdb'];
 
-type Post = { pts: [number, number][]; r: number; face?: string; color: string; i: number };
+type Post = { pts: [number, number][]; d: string; r: number; face?: string; color: string; i: number };
+
+const pathD = (a: [number, number][]) => a.map(([x, y], j) => `${j ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join(' ');
 
 const POSTS: Post[] = (() => {
   const R = rng(11);
@@ -25,19 +27,20 @@ const POSTS: Post[] = (() => {
     const hero = i === 0;
     const end = hero ? 4.0 : i < 6 ? 1.1 + R() * 2.1 : i < 10 ? 0.1 + R() * 0.5 : i < 14 ? -0.15 + R() * 0.3 : -0.5 - Math.pow(R(), 0.8) * 2.9;
     const mEnd = hero ? 593 : 15 * Math.pow(48, 0.22 + 0.78 * Math.pow(R(), 0.55));
-    const ph = R() * 6, K = 22;
+    // a gentle wander (low frequencies only), so the lines and the dots riding them move smoothly
+    const ph = R() * 6, K = 40;
     const pts: [number, number][] = [];
     for (let j = 0; j <= K; j++) {
       const u = j / K;
       const m = 15 * Math.pow(mEnd / 15, u);
       const shape = hero ? Math.pow(u, 1.5) : end < 0 ? (1 - Math.exp(-3.2 * u)) / (1 - Math.exp(-3.2)) : Math.pow(u, 0.9);
-      const wob = (0.16 * Math.sin(j * 1.9 + ph) + 0.08 * Math.sin(j * 4.3 + ph * 2)) * Math.min(1, u * 3);
+      const wob = (0.09 * Math.sin(u * 7.5 + ph) + 0.03 * Math.sin(u * 15 + ph * 2)) * Math.min(1, u * 3);
       pts.push([xs(m), ys(Math.min(RMAX - 0.15, end * shape + wob))]);
     }
     const na = end > 0.5 ? 0.5 + R() * 0.5 : R() * 0.5;
     const g = Math.round(lerp(125, 143, na)), rr = Math.round(lerp(125, 47, na)), b = Math.round(lerp(118, 78, na));
     const face = hero ? 'paularambles' : i % 4 === 1 && FACES.length ? FACES[(i >> 2) % FACES.length] : undefined;
-    out.push({ pts, r: hero ? 8 : face ? 6 : 1.8 + R() * 2.6, face, color: `rgb(${rr} ${g} ${b})`, i });
+    out.push({ pts, d: pathD(pts), r: hero ? 8 : face ? 6 : 1.8 + R() * 2.6, face, color: `rgb(${rr} ${g} ${b})`, i });
   }
   return out;
 })();
@@ -61,8 +64,8 @@ function partial(pts: [number, number][], p: number) {
   return a;
 }
 
-export default function Classifier({ playing, time }: { playing: boolean; time?: number }) {
-  const t = useLoop(playing, 7, time);
+export default function Classifier({ playing, time, onEnd }: { playing: boolean; time?: number; onEnd?: () => void }) {
+  const t = useLoop(playing, 7, time, onEnd);
   const fade = loopFade(t);
   const grow = eout(seg(t, 0.6, 4.1));
   const tip = Math.min(eout(seg(t, 5.2, 5.55)), 1 - seg(t, 8.85, 9.2));
@@ -97,28 +100,38 @@ export default function Classifier({ playing, time }: { playing: boolean; time?:
           const s0 = 0.55 + 0.04 * (p.i % 22);
           const pr = eout(seg(t, s0, s0 + 3.3));
           if (pr <= 0) return null;
-          const a = partial(p.pts, pr);
           const hero = p === HERO;
-          const d = a.map(([x, y], j) => `${j ? 'L' : 'M'}${x.toFixed(1)} ${y.toFixed(1)}`).join(' ');
+          const d = pr >= 1 ? p.d : pathD(partial(p.pts, pr)); // a finished line: its path, built once
           return (
             <path key={p.i} d={d} fill="none" stroke={hero ? C.green : '#8f8d87'} strokeWidth={hero ? lerp(0.9, 1.7, tip) : 0.6}
               strokeOpacity={hero ? lerp(0.55, 1, tip) : 0.42 * (1 - 0.65 * tip)} />
           );
         })}
+        {/* the heads: a plain dot rides each line out; a post with a face shows it only once its
+            line has landed (it fades and grows in on the end point, still): pictures never slide */}
         {POSTS.map((p) => {
           const s0 = 0.55 + 0.04 * (p.i % 22);
           const pr = eout(seg(t, s0, s0 + 3.3));
           if (pr <= 0) return null;
-          const a = partial(p.pts, pr);
-          const [x, y] = a[a.length - 1];
           const hero = p === HERO;
           const o = hero ? 1 : 1 - 0.6 * tip;
-          return (
-            <g key={p.i} opacity={o}>
-              {p.face ? <Av h={p.face} x={x} y={y} r={p.r} ring={hero || y < Y0 - 20 ? C.green : undefined} />
-                : <circle cx={x} cy={y} r={p.r} fill={p.color} stroke="#fff" strokeWidth={0.6} />}
-            </g>
-          );
+          if (p.face) {
+            const [ex, ey] = p.pts[p.pts.length - 1];
+            const land = eout(seg(t, s0 + 2.6, s0 + 3.2)); // the face, as the line slows into its end
+            const [x, y] = partial(p.pts, pr).at(-1)!;
+            return (
+              <g key={p.i} opacity={o}>
+                {land < 1 && <circle cx={x} cy={y} r={2.2} fill={p.color} stroke="#fff" strokeWidth={0.6} opacity={1 - land} />}
+                {land > 0 && (
+                  <g opacity={land}>
+                    <Av h={p.face} x={ex} y={ey} r={p.r * (0.75 + 0.25 * land)} ring={hero || ey < Y0 - 20 ? C.green : undefined} />
+                  </g>
+                )}
+              </g>
+            );
+          }
+          const [x, y] = partial(p.pts, pr).at(-1)!;
+          return <circle key={p.i} cx={x} cy={y} r={p.r} fill={p.color} stroke="#fff" strokeWidth={0.6} opacity={o} />;
         })}
 
         {/* the hover card */}

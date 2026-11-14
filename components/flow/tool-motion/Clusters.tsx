@@ -1,19 +1,10 @@
 'use client';
 
-import { Av, C, Card, Frame, eout, fmt, loopFade, scenes, seg, useLoop } from './shared';
+import { Av, C, Card, Frame, detailTime, eout, fmt, loopFade, seg, useLoop } from './shared';
 
-/* Cluster Penetration: the watched posts with how many of the 11 clusters each reached; the
-   pointer opens one and its map replays over the post's first hours — it lives in Founders and
+/* Cluster Penetration: one watched post's map (it used to open on the list of watched posts and
+   click into one; it now opens on the map), replayed over the post's first hours — it lives in Founders and
    VCs, then @elonmusk's quote at +5h spills it into Tech Twitter, Media, Finance and the rest. */
-
-const ROWS = [
-  { h: 'patrickc', name: 'Patrick Collison', age: '2d ago', text: 'Stripe processed more volume in the last 24 hours than in all of 2014…', views: '1.20M', n: 7, pen: [3, 3, 2, 2, 2, 1, 1, 0, 0, 0, 0], entry: 'paulg', to: 'VCs', sp: '+54m' },
-  { h: 'naval', name: 'Naval', age: '7d ago', text: 'The people who get rich in a downturn are the ones who were already…', views: '9.40M', n: 7, pen: [2, 2, 2, 2, 2, 1, 1, 0, 0, 0, 0], entry: 'paulg', to: 'Tech Twitter', sp: '+1.2h' },
-  { h: 'sundarpichai', name: 'Sundar Pichai', age: '2d ago', text: 'Gemini 3 is rolling out to everyone today, starting with Search. The…', views: '7.24M', n: 6, pen: [2, 2, 0, 1, 2, 1, 1, 0, 0, 0, 0], entry: 'sama', to: 'Media', sp: '+4.2h' },
-  { h: 'sama', name: 'Sam Altman', age: '4d ago', text: 'gpt-6 training run finished last night. eval numbers in the image; the…', views: '6.12M', n: 6, pen: [2, 2, 1, 1, 0, 1, 1, 0, 0, 0, 0], entry: 'elonmusk', to: 'Tech Twitter', sp: '+4.9h' },
-  { h: 'nytimes', name: 'The New York Times', age: '3d ago', text: 'Breaking News: Unemployment among recent college graduates rose…', views: '6.87M', n: 6, pen: [1, 1, 0, 1, 3, 2, 1, 0, 0, 0, 0], entry: 'elonmusk', to: 'Tech Twitter', sp: '+3.3h' },
-];
-const DOT = ['#ffffff', '#b9d3d3', '#7fb0b0', '#4d8f8f'];
 
 type Bub = { name: string; k: number; share: number; x: number; y: number; s: number; e: number; faces: string[]; dashed?: boolean; inside?: boolean };
 const BUBS: Bub[] = [
@@ -33,10 +24,10 @@ const INSIGHT = [
   'Tech Twitter, then Media and Finance within 90 minutes, tripling total reach.',
 ];
 
-export default function Clusters({ playing, time }: { playing: boolean; time?: number }) {
-  const t = useLoop(playing, 8.4, time);
-  const fade = loopFade(t);
-  const sc = scenes(t, 3.3);
+export default function Clusters({ playing, time, onEnd }: { playing: boolean; time?: number; onEnd?: () => void }) {
+  const raw = useLoop(playing, 8.4, time, onEnd);
+  const fade = loopFade(raw);
+  const t = detailTime(raw, 3.8); // straight into the post's map (it used to open from the list at 3.3)
   const hrs = HOURS * seg(t, 3.9, 8.7);
   const grow = BUBS.map((b) => eout(seg(hrs, b.s, b.e)));
   const reached = BUBS.filter((b, i) => !b.dashed && grow[i] > 0.04).length;
@@ -47,57 +38,7 @@ export default function Clusters({ playing, time }: { playing: boolean; time?: n
   return (
     <Frame label="Cluster Penetration: which clusters a post reached and how deep" title="Cluster Penetration" meta="51 posts monitored · resolved 12s ago">
       <g opacity={fade}>
-        {/* A: the watched posts */}
-        {sc.a > 0 && (
-          <g opacity={sc.a} transform={`translate(${sc.ax} 0)`}>
-            <Card x={14} y={44} w={692} h={290} />
-            <text x={28} y={63} fontSize={9.5} fill={C.ink}>Monitored posts</text>
-            <text x={692} y={63} textAnchor="end" fontSize={7} fill={C.mute}>sorted by watch priority · click a post to open its map</text>
-            <line x1={14} x2={706} y1={72} y2={72} stroke={C.grid} />
-            {[['Post', 28, 'start'], ['Views', 386, 'end'], ['Clusters', 400, 'start'], ['Penetration', 452, 'start'], ['Entry point', 556, 'start'], ['Spilled', 692, 'end']].map(([l, x, a]) => (
-              <text key={l} x={x as number} y={86} textAnchor={a as 'start' | 'end'} fontSize={7.4} fill={C.soft}>{l}</text>
-            ))}
-            <line x1={14} x2={706} y1={93} y2={93} stroke={C.grid} />
-            {ROWS.map((r, i) => {
-              const k = eout(seg(t, 0.3 + i * 0.13, 0.8 + i * 0.13));
-              const y = 116 + i * 46;
-              const hov = i === 0 ? seg(t, 2.5, 2.7) : 0;
-              return (
-                <g key={r.h} opacity={k}>
-                  {hov > 0 && <rect x={15} y={y - 23} width={690} height={46} fill="#f4f3ef" opacity={hov} />}
-                  <line x1={14} x2={706} y1={y + 23} y2={y + 23} stroke={C.grid} />
-                  <Av h={r.h} x={36} y={y} r={9} />
-                  <text x={52} y={y - 3} fontSize={8.4} fill={C.ink}>{r.name} <tspan fontSize={7} fill={C.mute}>{r.age}</tspan>{i === 0 && <tspan fontSize={7} fill={C.teal}>  watching</tspan>}</text>
-                  <text x={52} y={y + 9} fontSize={7.6} fill={C.soft}>{r.text}</text>
-                  <text x={386} y={y + 3} textAnchor="end" className="tm-m" fontSize={7.8} fill={C.ink}>{r.views}</text>
-                  <rect x={400} y={y - 7} width={38} height={14} rx={4} fill={r.n >= 7 ? C.greenBg : '#f1f0ec'} />
-                  <text x={419} y={y + 2.6} textAnchor="middle" className="tm-m" fontSize={7} fill={r.n >= 7 ? C.green : C.soft}>{r.n} / 11</text>
-                  {r.pen.map((v, j) => {
-                    const d = seg(t, 0.8 + i * 0.13 + j * 0.07, 1.0 + i * 0.13 + j * 0.07);
-                    return <circle key={j} cx={455 + j * 9.4} cy={y} r={2.7} fill={v ? DOT[v] : '#fff'} fillOpacity={v ? d : 1} stroke={v ? 'none' : '#cfcdc6'} strokeWidth={0.7} />;
-                  })}
-                  <Av h={r.entry} x={562} y={y} r={5.5} />
-                  <text x={571} y={y + 3} fontSize={7.6} fill={C.ink}>@{r.entry} <tspan fill={C.mute}>→ {r.to}</tspan></text>
-                  <text x={692} y={y + 3} textAnchor="end" className="tm-m" fontSize={7.4} fill={C.soft}>{r.sp}</text>
-                </g>
-              );
-            })}
-            <g opacity={eout(seg(t, 1.0, 1.5))}>
-              <rect x={14.5} y={341.5} width={691} height={20} rx={10} fill="#fff" stroke={C.rule} />
-              <circle cx={28} cy={351.5} r={2} fill="#b8860b" />
-              <text x={34} y={354} className="tm-m" fontSize={7} fill="#8a6a1c">RESOLVING AUDIENCES</text>
-              <svg x={124} y={344} width={572} height={14}>
-                <text x={4 - ((t * 20) % 110)} y={10} className="tm-m" fontSize={7} fill={C.soft}>
-                @karpathy → Tech Twitter   •   @garrytan → VCs   •   @morganhousel → Finance   •   @caseynewton → Media   •   @patio11 → Founders
-              </text>
-              </svg>
-            </g>
-          </g>
-        )}
-
-        {/* B: where the views landed, replayed */}
-        {sc.b > 0 && (
-          <g opacity={sc.b} transform={`translate(${sc.bx} 0)`}>
+        <g>
             <Card x={14} y={44} w={692} h={32} />
             <Av h="patrickc" x={32} y={60} r={9} />
             <text x={47} y={57} fontSize={8.6} fill={C.ink}>Patrick Collison <tspan fill={C.mute}>@patrickc</tspan></text>
@@ -169,8 +110,7 @@ export default function Clusters({ playing, time }: { playing: boolean; time?: n
             <circle cx={28 + (hrs / HOURS) * 664} cy={346} r={3} fill="#fff" stroke={C.teal} strokeWidth={1.2} />
             <text x={28} y={338} className="tm-m" fontSize={6.3} fill={C.mute}>+{hrs.toFixed(1)}h after posting</text>
             <text x={692} y={338} textAnchor="end" className="tm-m" fontSize={6.3} fill={C.mute}>+6.5h</text>
-          </g>
-        )}
+        </g>
       </g>
     </Frame>
   );

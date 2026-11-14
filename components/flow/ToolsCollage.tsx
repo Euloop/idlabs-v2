@@ -45,6 +45,8 @@ type Tool = {
   layout: 'row' | 'col';
   /* Motion: the notes on the walkthrough's leaders (what the loop shows; two lines at most) */
   mA: string; mB: string;
+  /* Showcase: the caption under the window, the lead and the walkthrough in one short text (two lines) */
+  cap: string;
 };
 
 const S = (f: string, w: number, h: number, alt: string): Shot => ({ src: `/assets/tools/${f}.webp`, w, h, alt });
@@ -61,6 +63,7 @@ export const TOOLS: Tool[] = [
     layout: 'row',
     mA: 'Every post is measured against its own first 15 minutes. Most sink below that baseline.',
     mB: 'The few that climb are called viral or emerging within 30 minutes.',
+    cap: 'A post is only fast or slow compared to itself. Each is measured against its own first 15 minutes; the few that climb are called viral within 30 minutes.',
   },
   {
     name: 'Weighted Engagement Scoring',
@@ -73,6 +76,7 @@ export const TOOLS: Tool[] = [
     layout: 'col',
     mA: 'Each interaction is scored by who made it: their influence, their cluster, the action.',
     mB: 'The score shows which people, and which actions, it came from.',
+    cap: '100 likes from strangers are not worth one quote from someone important. Every interaction is scored by who made it: influence, cluster, action.',
   },
   {
     name: 'Post Velocity',
@@ -85,6 +89,7 @@ export const TOOLS: Tool[] = [
     layout: 'col',
     mA: 'Views are sampled every 30 seconds, so the curve shows acceleration as it happens.',
     mB: 'At +42m this post runs ×11.5 a typical one: a projected 31h shelf life.',
+    cap: 'Tracks how fast engagement accelerates in real time. Views are sampled every 30 seconds: at +42m this post runs ×11.5 a typical one.',
   },
   {
     name: 'Cluster Penetration',
@@ -97,6 +102,7 @@ export const TOOLS: Tool[] = [
     layout: 'col',
     mA: 'We see which clusters a post reached, and how much of each it covered.',
     mB: 'Here one quote at +5h carried a post out of Founders into five new clusters.',
+    cap: 'Measures how deep a post travels within a niche: which clusters it reached, and how much of each. One quote at +5h carried this one into five more.',
   },
 ];
 

@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import ScrollText, { type ScrollTextHandle } from '../ScrollText';
 import { TOOLS, LOOPS } from './ToolsCollage';
-import { LOOP } from './tool-motion/shared';
+import { LOOP, preloadAvatars } from './tool-motion/shared';
 import './tools-showcase.css';
 
 /* Analytical tools, "Showcase" layout (/home-2 and /home-4 Tools tabs). Two pinned screens:
@@ -17,8 +17,8 @@ import './tools-showcase.css';
                   2B+ data points"), the rest under it, smaller and grey
    2. The tools: the four names as tabs; under them a soft colour field, rule to rule, with the
       active tool's walkthrough (tool-motion/, the same loops as Motion) in one big window; under
-      it, centred, the tool's lead and what the walkthrough shows (the client's copy). The stage
-      holds for HOLD screens before the page scrolls on. The tools cycle, one loop each (LOOP s),
+      it, centred, a two-line caption (TOOLS[].cap: the lead and what the walkthrough shows). The stage
+      holds for HOLD screens before the page scrolls on. The tools cycle, one loop each (LOOP s, tool-motion/shared.tsx),
       while it is on screen; a click picks one; the pointer on the window holds it.
    Sizes are Figma px × --px (the frame's unit). */
 
@@ -98,13 +98,19 @@ export default function ToolsShowcase({ intro = 'typed' }: { intro?: ShowcaseInt
     return () => { cancelAnimationFrame(raf); window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); };
   }, []);
 
-  // the cycle: next tool after one full loop, only while on screen and not held
+  // the cycle: next tool when the loop on screen completes (the loop's own clock calls it, so a
+  // pause — held, or scrolled away — never desyncs the two), only while on screen and not held
   const running = inView && !held;
+  const next = () => setActive((i) => (i + 1) % TOOLS.length);
+
+  // the walkthroughs' avatars, fetched and decoded a couple of screens ahead of the section
   useEffect(() => {
-    if (!running) return;
-    const id = window.setTimeout(() => setActive((i) => (i + 1) % TOOLS.length), LOOP * 1000);
-    return () => window.clearTimeout(id);
-  }, [running, active]);
+    const el = sectionRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { preloadAvatars(); io.disconnect(); } }, { rootMargin: '200% 0px' });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   const t = TOOLS[active];
   const Loop = LOOPS[active];
@@ -134,6 +140,13 @@ export default function ToolsShowcase({ intro = 'typed' }: { intro?: ShowcaseInt
                 <button key={tool.name} type="button" role="tab" id={`tsc-tab-${i}`} aria-selected={i === active} aria-controls="tsc-panel"
                   className="tsc-tab" onClick={() => setActive(i)}>
                   {tool.name}
+                  {/* the active tool's progress: fills over its loop, frozen while the loop is (held,
+                      or off screen); the loop's own end brings the next tool (onEnd) */}
+                  {i === active && (
+                    <span className="tsc-prog" aria-hidden="true">
+                      <span key={active} className="tsc-prog-fill" data-run={running || undefined} style={{ animationDuration: `${LOOP}s` }} />
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
@@ -145,14 +158,12 @@ export default function ToolsShowcase({ intro = 'typed' }: { intro?: ShowcaseInt
                 onPointerEnter={() => setHeld(true)} onPointerLeave={() => setHeld(false)}
                 onFocus={(e) => setHeld(e.target.matches(':focus-visible'))} onBlur={() => setHeld(false)}>
                 <div key={active} className="tsc-loop">
-                  <Loop playing={running} />
+                  <Loop playing={running} onEnd={next} />
                 </div>
               </a>
             </div>
 
-            <p key={active} className="tsc-cap">
-              <span>{t.lead}</span> <span>{t.mA}</span> <span>{t.mB}</span>
-            </p>
+            <p key={active} className="tsc-cap">{t.cap}</p>
           </div>
       </div>
       <div className="tsc-hold" aria-hidden="true" />

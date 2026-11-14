@@ -1,28 +1,10 @@
 'use client';
 
-import { Av, C, Card, Frame, Pill, eout, fmt, lerp, loopFade, scenes, seg, useLoop } from './shared';
+import { Av, C, Card, Frame, Pill, detailTime, eout, fmt, loopFade, seg, useLoop } from './shared';
 
-/* Weighted Engagement: the scored feed (the action weights up top, each post's weighted score
-   counting up), the pointer opens the top post, and its breakdown builds — the score, what each
-   kind of action contributed, the score against the raw count over 24h, and who it came from. */
-
-const WEIGHTS: [string, number][] = [['Quote', 52], ['Repost', 26], ['Reply', 17], ['Like', 5]];
-
-const POSTS = [
-  {
-    h: 'naval', name: 'Naval', meta: 'Aug 14 · #1',
-    lines: ['The people who get rich in a downturn are the ones', 'who were already building when nobody was watching.', 'Leverage compounds quietly, then all at once. You', 'cannot start compounding the week the market turns.'],
-    counts: ['6.1K', '19.8K', '128K', '9.4M', '61.2K'], score: 84, lift: '×1.1', liftUp: false,
-    by: ['paulg', 'sama', 'chamath'], top: '+156,855  top @paulg 86', act: 'Reposted',
-  },
-  {
-    h: 'patrickc', name: 'Patrick Collison', meta: 'Aug 19 · #2',
-    lines: ['Stripe processed more volume in the last 24 hours', 'than in all of 2014. Most of it from businesses that', 'did not exist in 2014. The compounding is the point.'],
-    counts: ['60', '140', '1.1K', '1.2M', '382'], score: 69, lift: '×6.9', liftUp: true,
-    by: ['elonmusk', 'levie', 'shl'], top: '+1,307  top @elonmusk 98', act: 'Quoted',
-  },
-];
-const COUNT_L = ['replies', 'reposts', 'likes', 'views', 'saves'];
+/* Weighted Engagement: one post's breakdown builds — the score, what each kind of action
+   contributed, the score against the raw count over 24h, and who it came from. (It used to open on
+   the scored feed and click into the post; it now opens on the breakdown.) */
 
 const CONTRIB: [string, number, boolean][] = [['Quotes', 25, false], ['Reposts', 31, true], ['Replies', 15, false], ['Likes', 13, false]];
 const PEOPLE = [
@@ -48,82 +30,17 @@ const curve = (top: number, k: number, p: number) => {
   return d;
 };
 
-export default function Weighted({ playing, time }: { playing: boolean; time?: number }) {
-  const t = useLoop(playing, 7, time);
-  const fade = loopFade(t);
-  const sc = scenes(t, 3.35);
+export default function Weighted({ playing, time, onEnd }: { playing: boolean; time?: number; onEnd?: () => void }) {
+  const raw = useLoop(playing, 7, time, onEnd);
+  const fade = loopFade(raw);
+  const t = detailTime(raw, 3.7); // straight into the breakdown (it used to open from the feed at 3.35)
   const score = eout(seg(t, 3.9, 5.4));
 
   return (
     <Frame label="Weighted Engagement: each interaction scored by who performed it" title="Weighted Engagement" meta="Rescored 14m ago  ·  weights v3.2">
       <g opacity={fade}>
-        {/* A: the scored feed */}
-        {sc.a > 0 && (
-          <g opacity={sc.a} transform={`translate(${sc.ax} 0)`}>
-            <g opacity={eout(seg(t, 0.2, 0.7))}>
-              {WEIGHTS.map(([l, w], i) => (
-                <g key={l}>
-                  <rect x={16 + i * 62} y={44} width={56} height={15} rx={7.5} fill="#fff" stroke={C.rule} />
-                  <text x={44 + i * 62} y={54.5} textAnchor="middle" fontSize={7.8} fill={C.ink}>{l} <tspan className="tm-m" fill={C.mute}>{w}</tspan></text>
-                </g>
-              ))}
-              <text x={268} y={54.5} className="tm-m" fontSize={7} fill={C.mute}>× Author Influence 0–100</text>
-              <text x={704} y={54.5} textAnchor="end" fontSize={7.8} fill={C.mute}>Sort: <tspan fill={C.ink}>Weighted</tspan></text>
-            </g>
-            {POSTS.map((p, i) => {
-              const k = eout(seg(t, 0.35 + i * 0.18, 0.95 + i * 0.18));
-              const x = 14 + i * 350, y = 68;
-              const s = eout(seg(t, 1.0 + i * 0.2, 2.3 + i * 0.2));
-              const hover = i === 0 ? seg(t, 2.7, 2.9) : 0;
-              return (
-                <g key={p.h} opacity={k} transform={`translate(${x} ${y + 8 * (1 - k)})`}>
-                  <rect x={0.5} y={0.5} width={341} height={263} rx={7} fill="#fff" stroke={hover ? lerp(0, 1, hover) > 0.5 ? '#cfcdc6' : C.rule : C.rule} />
-                  <Av h={p.h} x={20} y={22} r={11} />
-                  <text x={38} y={20} fontSize={9.8} fill={C.ink}>{p.name} <tspan fill={C.mute}>@{p.h}</tspan></text>
-                  <text x={328} y={20} textAnchor="end" className="tm-m" fontSize={6.8} fill={C.mute}>{p.meta}</text>
-                  {p.lines.map((l, j) => <text key={j} x={38} y={38 + j * 13} fontSize={9.2} fill={C.ink}>{l}</text>)}
-                  {p.counts.map((c, j) => (
-                    <text key={j} x={38 + j * 58} y={104} className="tm-m" fontSize={7} fill={C.soft}>{c} <tspan fill={C.faint}>{COUNT_L[j]}</tspan></text>
-                  ))}
-                  <line x1={0} x2={342} y1={120} y2={120} stroke={C.grid} />
-                  <text x={16} y={150} fontSize={8.5} fill={C.soft}>Weighted</text>
-                  <text x={64} y={152} fontSize={19} fill={C.ink}>{fmt(p.score * s)}<tspan fontSize={8} fill={C.mute}>/100</tspan></text>
-                  <rect x={64} y={158} width={24 * s} height={1.6} fill={C.teal} />
-                  <text x={326} y={150} textAnchor="end" className="tm-m" fontSize={8.5} fill={p.liftUp ? C.green : C.soft}>{p.lift}</text>
-                  {p.by.map((h, j) => <Av key={h} h={h} x={22 + j * 8} y={184} r={5.5} />)}
-                  <text x={46} y={186.5} className="tm-m" fontSize={7} fill={C.soft}>{p.top}</text>
-                  <Pill x={326} y={184} w={44} text={p.act} tone="grey" anchor="end" />
-                  {/* the live weighting: the four action weights splitting this post's score */}
-                  <text x={16} y={218} className="tm-m" fontSize={6.5} fill={C.mute}>score by action</text>
-                  {(i === 0 ? CONTRIB : [['Quotes', 38, false], ['Reposts', 14, true], ['Replies', 10, false], ['Likes', 7, false]] as [string, number, boolean][]).map(([l, v, hi], j, arr) => {
-                    const tot = arr.reduce((a, b) => a + b[1], 0);
-                    const x0 = 16 + arr.slice(0, j).reduce((a, b) => a + b[1], 0) / tot * 310;
-                    return (
-                      <g key={l}>
-                        <rect x={x0} y={226} width={Math.max(0, (v / tot) * 310 * s - 2)} height={6} rx={1.5} fill={hi ? C.teal : ['#6f6e69', '#9b9993', '#c2c0ba', '#d8d6d0'][j]} />
-                        <text x={x0} y={246} className="tm-m" fontSize={6.3} fill={C.mute} opacity={s}>{l} {v}</text>
-                      </g>
-                    );
-                  })}
-                </g>
-              );
-            })}
-            <g opacity={eout(seg(t, 1.2, 1.7))}>
-              <rect x={14.5} y={340.5} width={691} height={20} rx={10} fill="#fff" stroke={C.rule} />
-              <circle cx={28} cy={350.5} r={2} fill="#b8860b" />
-              <text x={34} y={353} className="tm-m" fontSize={7} fill="#8a6a1c">Scoring</text>
-              <svg x={76} y={343} width={620} height={14}>
-                <text x={4 - ((t * 22) % 120)} y={10} className="tm-m" fontSize={7} fill={C.soft}>
-                @nytimes “Unemployment among recent…” quoted by @elonmusk (98) · +8 · 31m ago   •   @karpathy “a 20-min walkthrough…” quoted by @lexfridman (82) · +5 · 34m ago
-              </text>
-              </svg>
-            </g>
-          </g>
-        )}
-
-        {/* B: the post's breakdown */}
-        {sc.b > 0 && (
-          <g opacity={sc.b} transform={`translate(${sc.bx} 0)`}>
+        {/* the post's breakdown */}
+        <g>
             <Card x={14} y={44} w={218} h={106} />
             <text x={28} y={66} fontSize={9.5} fill={C.soft}>Weighted score</text>
             <text x={27} y={106} fontSize={36} fill={C.ink}>{fmt(84 * score)}<tspan fontSize={11} fill={C.mute}> /100</tspan></text>
@@ -189,8 +106,7 @@ export default function Weighted({ playing, time }: { playing: boolean; time?: n
             })}
             <text x={354} y={347} className="tm-m" fontSize={6.8} fill={C.mute} opacity={seg(t, 7.0, 7.4)}>+ 156,855 others</text>
             <text x={692} y={347} textAnchor="end" className="tm-m" fontSize={7.5} fill={C.ink} opacity={seg(t, 7.0, 7.4)}>+53</text>
-          </g>
-        )}
+        </g>
       </g>
     </Frame>
   );

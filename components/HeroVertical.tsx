@@ -51,6 +51,14 @@ const DESIGN: Logo[] = [
 // The rest of the launch reel's clients (LaunchesCloud.tsx); Airwallex, Deel and Gamma are in
 // DESIGN. Lovable, Akai and Icon left out (16 in all).
 const MORE: Logo[] = [
+  // the five headline names, first in the grid (November 2026): OpenAI's 2025 wordmark (Wikimedia
+  // Commons), Cursor, Sequoia and a16z from their own site headers, and Kleiner Perkins' header
+  // mark and letters set as its stacked two-line lockup
+  { kind: 'file', name: 'OpenAI', src: 'openai.svg', ratio: 269.6592 / 72.5157 },
+  { kind: 'file', name: 'Cursor', src: 'cursor.svg', ratio: 2193 / 545, boost: 1.06 },
+  { kind: 'file', name: 'Sequoia', src: 'sequoia.svg', ratio: 180 / 24.043 },
+  { kind: 'file', name: 'Andreessen Horowitz', src: 'a16z.svg', ratio: 733.88 / 260.74, boost: 1.3 },
+  { kind: 'file', name: 'Kleiner Perkins', src: 'kleinerperkins.svg', ratio: 117.33 / 23.62, boost: 1.15 },
   { kind: 'file', name: 'Cartesia', src: 'cartesia.svg', ratio: 579 / 83, boost: 1.04 },
   { kind: 'file', name: 'Matic Robots', src: 'matic.svg', ratio: 181 / 52, boost: 0.9 },
   { kind: 'file', name: 'PlayerZero', src: 'playerzero.svg', ratio: 2551 / 373, boost: 1.04 },
@@ -69,14 +77,15 @@ const MORE: Logo[] = [
 
 /* Placement, in the construction's px. Four even columns across its 577 width (centres at 1/8,
    3/8, 5/8, 7/8) and four even rows filling the band under the square (660 → 980, under its title), each logo in
-   the middle of its cell. ORDER: the clients from the design first. */
+   the middle of its cell. ORDER: the five headline names first, then the clients from the design.
+   Superblocks, Lindy, PlayerZero, Enterpret and Pocket FM are kept in MORE but not shown (4 × 4). */
 const COLS = [1, 3, 5, 7].map((k) => (577.663 * k) / 8);
 // (the band's top 54 — 606 → 660 — holds the "Our Clients" title, .hv-zoom-title)
 const ROWS = Array.from({ length: 4 }, (_, r) => 660 + ((979.999 - 660) * (r + 0.5)) / 4);
 const ORDER = [
-  'Airwallex', 'Gamma', 'Deel', 'Triple Whale',
-  'Cartesia', 'Matic Robots', 'Superblocks', 'PolyAI',
-  'Lindy', 'PlayerZero', 'Enterpret', 'Pocket FM',
+  'OpenAI', 'Cursor', 'Sequoia', 'Andreessen Horowitz',
+  'Kleiner Perkins', 'Airwallex', 'Gamma', 'Deel',
+  'Triple Whale', 'Cartesia', 'Matic Robots', 'PolyAI',
   'Fish Audio', 'Wispr Flow', 'Freehand', 'Anything',
 ];
 const BY_NAME = new Map([...DESIGN, ...MORE].map((l) => [l.name, l]));

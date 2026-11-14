@@ -58,13 +58,16 @@ export default function OptionTabs({ groups, selector, label, when = pinnedAndAl
       const nextTop = next ? next.getBoundingClientRect().top : Infinity;
       const on = el.isConnected && when(el.getBoundingClientRect(), vh, nextTop);
       setShow(on); // always the measured state (React skips it when unchanged): never stuck on
-      if (on) raf = requestAnimationFrame(measure);
     };
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(measure); };
     measure();
+    // Measured on scroll and resize, plus a slow re-check for layout that moves without either (a
+    // tab switch changing a section's height). Not every frame: these reads force a layout, and
+    // under a section that redraws every frame (the tools' walkthroughs) that cost whole frames.
+    const poll = window.setInterval(onScroll, 400);
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
-    return () => { cancelAnimationFrame(raf); setShow(false); window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); };
+    return () => { cancelAnimationFrame(raf); window.clearInterval(poll); setShow(false); window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); };
   }, [selector, key, when]);
 
   const barOn = show && !closed;

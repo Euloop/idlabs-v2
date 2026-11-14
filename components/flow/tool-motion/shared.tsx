@@ -49,12 +49,39 @@ export function toDesign(r: number) {
   return STORY + ((r - PLAY - HOLD) / (LOOP - PLAY - HOLD)) * (DESIGN - STORY);
 }
 
+/* Detail-only loops (Weighted, Velocity, Clusters): they open straight on the detail view, whose
+   story used to start at `from` (after the list and the click). The story is stretched over the
+   whole of it (0 … STORY → from … STORY); the closing and the fade after it are unchanged. */
+export const detailTime = (t: number, from: number) => (t >= STORY ? t : from + (t / STORY) * (STORY - from));
+
+/* The avatars (public/assets/tools-motion/av), fetched and decoded before a loop needs them, so no
+   loop stalls on an image the first time it shows (the Showcase calls this as the section nears). */
+const AV = ['0xgaut', 'DarioAmodei', 'FT', 'JeffBezos', 'MKBHD', 'WSJ', 'amasad', 'balajis', 'bgurley', 'business', 'chamath',
+  'demishassabis', 'dhh', 'drjimfan', 'elonmusk', 'emollick', 'garrytan', 'gdb', 'jack', 'jsngr', 'karaswisher', 'karpathy',
+  'lennysan', 'levelsio', 'levie', 'morganhousel', 'naval', 'nytimes', 'patio11', 'patrickc', 'paularambles', 'paulg', 'pmarca',
+  'rauchg', 'sama', 'satyanadella', 'shl', 'sundarpichai', 'tim_cook'];
+const avSrc = (h: string) => `/assets/tools-motion/av/${h}.webp`;
+let preloaded: HTMLImageElement[] | null = null;
+export function preloadAvatars() {
+  if (preloaded) return;
+  preloaded = AV.map((h) => {
+    const img = new Image();
+    img.src = avSrc(h);
+    img.decode?.().catch(() => { /* drawn when it arrives */ });
+    return img;
+  });
+}
+
 /* The loop's clock, in timeline units (0 … DESIGN). Runs while `playing`; holds where it is otherwise.
-   Before it has ever played (and with reduced motion) it shows `poster`. */
+   Before it has ever played (and with reduced motion) it shows `poster`; mounted already playing (the
+   next tool in a cycle) it starts at 0, not on a flash of the poster. `onEnd` is called each time a
+   loop completes (the Showcase moves to the next tool on it, so a tool never changes mid-loop). */
 /* `time` (timeline units) drives the loop from outside instead (the scroll, in Motion Scroll). */
-export function useLoop(playing: boolean, poster: number, time?: number) {
-  const [t, setT] = useState(poster);
+export function useLoop(playing: boolean, poster: number, time?: number, onEnd?: () => void) {
+  const [t, setT] = useState(() => (playing ? 0 : poster));
   const elapsed = useRef(-1);
+  const end = useRef(onEnd);
+  end.current = onEnd;
   useEffect(() => {
     if (!playing) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setT(poster); return; }
@@ -62,7 +89,11 @@ export function useLoop(playing: boolean, poster: number, time?: number) {
     const start = performance.now() - elapsed.current * 1000;
     let raf = 0;
     const tick = (now: number) => {
-      elapsed.current = (now - start) / 1000;
+      const prev = elapsed.current;
+      // (a frame's timestamp can be a little before `start`: never below 0, or crossing back over 0
+      // would count as a loop ending)
+      elapsed.current = Math.max(prev, (now - start) / 1000);
+      if (Math.floor(elapsed.current / LOOP) > Math.floor(prev / LOOP)) end.current?.();
       setT(toDesign(elapsed.current % LOOP));
       raf = requestAnimationFrame(tick);
     };
@@ -113,7 +144,7 @@ export function Av({ h, x, y, r, ring }: { h: string; x: number; y: number; r: n
     <g>
       {ring && <circle cx={x} cy={y} r={r + 2.2} fill="none" stroke={ring} strokeWidth={1} />}
       <circle cx={x} cy={y} r={r} fill={C.grey} />
-      <image href={`/assets/tools-motion/av/${h}.webp`} x={x - r} y={y - r} width={r * 2} height={r * 2} clipPath={clip} preserveAspectRatio="xMidYMid slice" />
+      <image href={avSrc(h)} x={x - r} y={y - r} width={r * 2} height={r * 2} clipPath={clip} preserveAspectRatio="xMidYMid slice" />
     </g>
   );
 }
