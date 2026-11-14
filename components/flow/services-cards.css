@@ -58,8 +58,6 @@ body:has(.s2-flow) .svc { transition: --c-line 400ms ease, --c-ink 400ms ease, -
     linear-gradient(var(--box-mark), var(--box-mark)) right bottom / 9px 9px no-repeat;
 }
 .svc[data-layout='columns'] .svc-cell { padding: 18px; }
-/* columns: no button any more, so no room held for one: the cards end a little under their text */
-.svc[data-layout='columns'] .svc-cell { min-height: 0; padding-bottom: calc(56 * var(--px)); }
 .svc[data-layout='columns'] .svc-cell + .svc-cell { border-left: 1px solid var(--c-line); }
 .svc[data-layout='columns'] .svc-num { border: 1px solid var(--c-line); }
 .svc[data-layout='columns'] .svc-title {
