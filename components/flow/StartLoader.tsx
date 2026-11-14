@@ -45,16 +45,18 @@ const REEL: ReelImage[] = [
 // /hero's reel, first half: the people and the papers — scientists, equations, patent drawings,
 // research figures — ending on the nautilus construction, which hands over to the golden half.
 // 25: the opener, then 24 cuts — six bars of four on the 100ms beat (StartLoaderRun's BEAT).
-// Oppenheimer and Tesla from Figma "start loader more iamges" (Zoomcast 194:2); the rest
+// Oppenheimer and Tesla from Figma "start loader more iamges" (Zoomcast 194:2); Einstein, the optics
+// plate and the nautilus drawing are /home-4's PNGs as small WebPs at the frame's 2× (1.6–1.9MB PNGs
+// decode slowly enough to hold a cut); the rest
 // (assets/loader/reel) public domain, from Wikimedia Commons — colour portraits set in grey.
 const R = (n: string, w: number): ReelImage => ({ src: `assets/loader/reel/${n}.webp`, w });
 const REEL_HERO: ReelImage[] = [
-  { src: 'assets/loader/reel-1-einstein.png', w: 174 },
+  R('einstein-opener', 174),
   R('euclid', 156),
   { src: 'assets/loader/reel-tesla.webp', w: 155.5 },
   R('fibonacci', 136),
   R('curie', 156),
-  { src: 'assets/loader/reel-3.png', w: 164, crop: 108.94 },
+  { src: 'assets/loader/reel/optics.webp', w: 164, crop: 108.94 },
   R('newton', 156),
   R('principia', 150),
   R('galileo', 156),
@@ -73,19 +75,27 @@ const REEL_HERO: ReelImage[] = [
   R('leonardo-notes', 152),
   R('einstein-board', 166.5),
   { src: 'assets/loader/reel-oppenheimer.webp', w: 157.5 },
-  { src: 'assets/loader/reel-2.png', w: 161 },
+  R('nautilus-construction', 161),
 ];
 
 // Second half: the golden ratio at work. Each image is warped so its own upright
 // golden rectangle — big square on top, the spiral's eye low on the right — lands on one rectangle:
 // 118.67 × 192 at (4, 4) in a 126.5 × 200 frame (files at 2×, assets/loader/golden). The spiral
 // over them (<Spiral>) is that rectangle's, so it stays put while the images cut under it.
-// The first six from Zoomcast 194:2 (their own drawn spirals aligned to ours); then public-domain
-// spirals from Wikimedia Commons (NASA/Hubble, Vermeer), fitted by their centre and size.
-// 12 — three bars of four — opening and closing on the bare construction (the blackboard).
-const GOLDEN = ['black', 'm51', 'eiffel', 'katrina', 'mona', 'whirlpool', 'birds', 'solar', 'pearl', 'm74', 'begonia', 'black'];
-const G_W = 126.5;
-const G_H = 200;
+// Six from Zoomcast 194:2 (their own drawn spirals aligned to ours: blackboard, Eiffel, Mona Lisa, birds,
+// solar system, begonia); the rest public domain / CC0 from Wikimedia Commons, fitted by their centre and
+// size: M51 (Hubble), Katrina (NASA), Vermeer, Botticelli, Weston's Nautilus (1927), a fern fiddlehead,
+// an ear, the Vatican staircase, a snail, an ammonite. 16, all different — four bars of four — the
+// subjects alternating: construction, nature, cosmos, art.
+const GOLDEN = ['black', 'nautilus', 'eiffel', 'm51', 'mona', 'fern', 'katrina', 'birds', 'ear', 'stairs', 'pearl', 'ammonite', 'solar', 'snail', 'venus', 'begonia'];
+// /hero's one frame, the whole reel through: 208 tall (the slot) at the golden frames' proportion,
+// 126.5 : 200 — so its size never changes, cut to cut or half to half. The first half's images are
+// cropped to fill it (cover, centred); the golden images and their spiral drawing (in its own 126.5 ×
+// 200 units, VB_*) scale up together to it, so they stay locked.
+const VB_W = 126.5;
+const VB_H = 200;
+const G_H = 208;
+const G_W = (VB_W * G_H) / VB_H; // 131.56
 
 /* The construction, in the frame's px: squares cut from the golden rectangle in turn — top, left,
    bottom, right — each with a quarter arc, which together make the spiral. */
@@ -111,13 +121,22 @@ const CON = construction();
    reads as lit on every image, light or dark, as in the reference. */
 function Spiral() {
   return (
+    // inside the golden zoom layer with the images (.sl-zoom-b), so it pushes in with them and crops at
+    // the frame; the construction's difference blend reaches the images there
     <>
-      <svg className="sl-spiral" viewBox={`0 0 ${G_W} ${G_H}`} width={G_W} height={G_H} aria-hidden="true">
+      <svg className="sl-spiral" viewBox={`0 0 ${VB_W} ${VB_H}`} width={G_W} height={G_H} aria-hidden="true">
         <rect className="sl-sp-line" x={4} y={4} width={192 / PHI} height={192} />
         <path className="sl-sp-line" d={CON.lines} />
       </svg>
-      <svg className="sl-spiral sl-spiral-glow" viewBox={`0 0 ${G_W} ${G_H}`} width={G_W} height={G_H} aria-hidden="true">
+      {/* the flash: a brighter, wider glow of the same arc, flaring on each golden cut and dying away
+          within the beat (start-loader.css .sl-spiral-flash; StartLoaderRun sets the beat) */}
+      <svg className="sl-spiral sl-spiral-flash" viewBox={`0 0 ${VB_W} ${VB_H}`} width={G_W} height={G_H} aria-hidden="true">
+        <path className="sl-sp-arc sl-sp-halo" d={CON.arc} pathLength={1} />
+        <path className="sl-sp-arc" d={CON.arc} pathLength={1} />
+      </svg>
+      <svg className="sl-spiral sl-spiral-glow" viewBox={`0 0 ${VB_W} ${VB_H}`} width={G_W} height={G_H} aria-hidden="true">
         <path className="sl-sp-arc sl-sp-edge" d={CON.arc} pathLength={1} />
+        <path className="sl-sp-arc sl-sp-halo" d={CON.arc} pathLength={1} />
         <path className="sl-sp-arc" d={CON.arc} pathLength={1} />
       </svg>
     </>
@@ -152,6 +171,12 @@ const BOOT = (fixed: boolean) => `(function(){var d=document.documentElement,q=n
 
 export default function StartLoader({ fixed = false }: { fixed?: boolean }) {
   const reel = fixed ? REEL_HERO : REEL;
+  const reelFrames = reel.map((r, i) => (
+    <span className="sl-frame" data-on={i === 0 ? '' : undefined} key={r.src} style={{ width: `${fixed ? G_W : r.w}px` }}>
+      <img src={`/${r.src}`} alt="" decoding="async" fetchPriority={i === 0 ? 'high' : 'auto'}
+        style={r.crop ? (fixed ? { height: `${r.crop}%`, objectPosition: '50% 0' } : { height: `${r.crop}%`, objectFit: 'fill' }) : undefined} />
+    </span>
+  ));
   return (
     <>
       <script dangerouslySetInnerHTML={{ __html: BOOT(fixed) }} />
@@ -164,18 +189,23 @@ export default function StartLoader({ fixed = false }: { fixed?: boolean }) {
         {/* Fade: the logo that draws at the end, where the golden ratio was */}
         <Ink className="sl-endlogo" paths={[...IDENTITY, ...LABS]} x={0} w={WORDMARK_W} scale={END_LOGO} />
         <div className="sl-slot">
-          {reel.map((r, i) => (
-            <span className="sl-frame" data-on={i === 0 ? '' : undefined} key={r.src} style={{ width: `${r.w}px` }}>
-              <img src={`/${r.src}`} alt="" decoding="async" fetchPriority={i === 0 ? 'high' : 'auto'}
-                style={r.crop ? { height: `${r.crop}%`, objectFit: 'fill' } : undefined} />
+          {/* /hero: one fixed frame (.sl-stage, clipping) holding two zoom layers — the first half's
+              images (.sl-zoom-a, pushed from the centre) and the golden half's images with the spiral
+              (.sl-zoom-b, pushed about the spiral's eye). The camera move is one transform on one layer;
+              a cut only switches which image inside it shows. /home-4: the frames on their own. */}
+          {fixed ? (
+            <span className="sl-stage">
+              <span className="sl-zoom sl-zoom-a">{reelFrames}</span>
+              <span className="sl-zoom sl-zoom-b">
+                {GOLDEN.map((g, i) => (
+                  <span className="sl-frame sl-gframe" key={`${g}-${i}`} style={{ width: `${G_W}px` }}>
+                    <img src={`/assets/loader/golden/${g}.webp`} width={G_W} height={G_H} alt="" decoding="async" />
+                  </span>
+                ))}
+                <Spiral />
+              </span>
             </span>
-          ))}
-          {fixed && GOLDEN.map((g, i) => (
-            <span className="sl-frame sl-gframe" key={`${g}-${i}`} style={{ width: `${G_W}px` }}>
-              <img src={`/assets/loader/golden/${g}.webp`} width={G_W} height={G_H} alt="" decoding="async" />
-            </span>
-          ))}
-          {fixed && <Spiral />}
+          ) : reelFrames}
           {/* golden ratio (Figma 184:290): 122.636 × 208.141 in the slot (the SVG's own size), drawn
               at the hero's 577.663 × 980.663 and scaled down in CSS so the zoom stays sharp. Two
               layers: 1px lines while it holds (the design's 0.28px drop edges at that size), handing

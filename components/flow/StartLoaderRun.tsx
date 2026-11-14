@@ -21,7 +21,7 @@ const MAX_WAIT = 2500; // start anyway if the images are slow
    at 30fps). 100ms is a whole number of frames at 30, 60 and 120Hz, so every image is on screen
    exactly as long as the next — a beat that isn't (120ms at 60Hz = 7.2 frames) alternates 7 and 8
    frames and reads as uneven. Every cut lands on the grid: no ramps, no holds. The first half is
-   six bars of four, the golden half three; the spiral draws over its first two bars
+   six bars of four, the golden half four; the spiral draws over its first two bars
    (start-loader.css), and the white lifts after three beats on the last image. */
 const BEAT = 100;
 const G = { hold: 3 * BEAT };
@@ -120,11 +120,25 @@ export default function StartLoaderRun({ frames, golden = 0 }: { frames: number;
       const push = (show: Step['show'], dur: number, fx?: () => void) => { order.push({ show, at: clock, fx }); clock += dur; };
       const plain = frames - golden;
       const cut = golden ? BEAT : T.cut;
-      for (let p = 0; p < T.passes; p++) for (let i = 0; i < plain; i++) if (p || i) push(i, cut);
+      for (let p = 0; p < T.passes; p++) for (let i = 0; i < plain; i++) if (p || i) {
+        // /hero: the slow push-in starts with the first cut and runs the length of the half
+        // (start-loader.css .sl[data-push]); the golden half's starts with the spiral
+        push(i, cut, !golden || p ? undefined : i === 1 ? () => {
+          el.style.setProperty('--push-a', `${(plain - 1) * cut}ms`);
+          el.style.setProperty('--push-b', `${golden * BEAT + G.hold + 450}ms`);
+          el.setAttribute('data-push', '');
+        } : undefined);
+      }
       if (golden) {
         // no pause: the golden images cut straight on, and the spiral draws over them as they change
         // (start-loader.css .sl-sp-arc), then stays put while the rest cut under it
-        for (let i = plain; i < frames; i++) push(i, BEAT, i === plain ? () => el.setAttribute('data-spiral', '') : undefined);
+        // each cut also fires the spiral's flash: alternate names so the animation restarts every beat,
+        // upper case on the first beat of each bar of four (the accent)
+        for (let i = plain; i < frames; i++) push(i, BEAT, () => {
+          if (i === plain) el.setAttribute('data-spiral', '');
+          const k = i - plain;
+          el.dataset.flash = (k % 2 ? 'b' : 'a')[k % 4 === 0 ? 'toUpperCase' : 'toLowerCase']();
+        });
       }
       if (!reelEnd) push('golden', T.cut);
       // The reel runs off the frame clock, not a timer per cut: each frame shows whichever image is
