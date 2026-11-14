@@ -8,7 +8,7 @@ const T = {
   hold: 2900, // from the start of the opening (words in the middle, parting on a spring, the image opening at 1000) to the first cut
   holdLogo: 4250,
   logoLater: 1000, // /hero: the logo finishes drawing before it splits (start-loader.css), so all of it 1000 later // the same with the drawn logo (Zoom): it draws first (~2.3s), the image opens at 2350
-  endLogo: 2900, // Fade: from the logo starting (as the golden ratio fades) to the white lifting: drawn by ~2.5s, then held
+  endFade: 600, // Fade: the golden ratio fades (550ms, .sl[data-end]), then the white lifts (no ending logo any more)
   cut: 120, // each showreel image (hard cuts)
   passes: 1, // times through the reel (the first image is not repeated at the very start)
   golden: 650, // the golden ratio holds before the zoom
@@ -109,7 +109,8 @@ export default function StartLoaderRun({ frames, golden = 0 }: { frames: number;
 
     const start = () => {
       const opened = (window as { __slReady?: number }).__slReady ?? performance.now();
-      const logo = root.dataset.intro === 'zoom' || root.dataset.slOpen === 'logo';
+      // the logo opening, for every ending (the words are no longer used)
+      const logo = root.dataset.intro !== undefined || root.dataset.slOpen === 'logo';
       const reelEnd = root.dataset.slEnd === 'reel';
       const hold = logo ? T.holdLogo + (root.dataset.slOpen === 'logo' ? T.logoLater : 0) : T.hold;
       let t = Math.max(0, opened + hold - performance.now());
@@ -153,7 +154,7 @@ export default function StartLoaderRun({ frames, golden = 0 }: { frames: number;
           if (k < order.length - 1) raf = requestAnimationFrame(step);
           // Zoom: the golden ratio zooms. Fade: it goes, the logo draws in its place, then the white lifts.
           else if (reelEnd) at(golden ? G.hold : T.cut, zoom); // /hero: the last image's beat, then the white lifts
-          else at(T.golden, root.dataset.intro === 'zoom' ? zoom : () => { el.setAttribute('data-end', ''); at(T.endLogo, zoom); });
+          else at(T.golden, root.dataset.intro === 'zoom' ? zoom : () => { el.setAttribute('data-end', ''); at(T.endFade, zoom); });
         };
         raf = requestAnimationFrame(step);
       });

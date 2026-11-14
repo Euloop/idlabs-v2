@@ -175,26 +175,27 @@ html[data-sl-ready] .sl-logo path, .sl[data-end] .sl-endlogo path { animation-pl
 @keyframes sl-ink-fill { from { fill-opacity: 0; } to { fill-opacity: 1; } }
 @keyframes sl-ink-line { from { stroke-opacity: var(--ink-line); } to { stroke-opacity: 0; } }
 
-/* Zoom: the logo instead of the words — drawn in the middle, then split to the edges (the same
+/* The logo instead of the words (both endings, Zoom and Fade, since 2026-11-14; the words are no longer
+   shown) — drawn in the middle, then split to the edges (the same
    spring), its halves overlapping 2 units (3px at ×1.5) where the L tucks under the y. Everything after it
    moves later: the split at 2100 (the last letters still filling), the image at 2350, the caption
    at 2850 (StartLoaderRun's hold to match). */
-html:is([data-intro='zoom'], [data-sl-open='logo']) .sl { --sl-gap: -3px; }
-html:is([data-intro='zoom'], [data-sl-open='logo']) .sl-word { display: none; }
-html:is([data-intro='zoom'], [data-sl-open='logo']) .sl-logo { display: block; }
+html:is([data-intro], [data-sl-open='logo']) .sl { --sl-gap: -3px; }
+html:is([data-intro], [data-sl-open='logo']) .sl-word { display: none; }
+html:is([data-intro], [data-sl-open='logo']) .sl-logo { display: block; }
 .sl-logo.sl-l { left: 28px; translate: 0 -50%; }
 .sl-logo.sl-r { left: auto; right: 28px; translate: 0 -50%; }
-html:is([data-intro='zoom'], [data-sl-open='logo']) .sl-logo { animation-delay: 0ms, 2100ms; animation-duration: 1ms, 1000ms; }
-html:is([data-intro='zoom'], [data-sl-open='logo']) .sl-frame:first-child,
-html:is([data-intro='zoom'], [data-sl-open='logo']) .sl-frame:first-child::before,
-html:is([data-intro='zoom'], [data-sl-open='logo']) .sl-frame:first-child::after,
-html:is([data-intro='zoom'], [data-sl-open='logo']) .sl-frame:first-child img { animation-delay: 2350ms; }
-html:is([data-intro='zoom'], [data-sl-open='logo']) .sl-caption { animation-delay: 2850ms; }
+html:is([data-intro], [data-sl-open='logo']) .sl-logo { animation-delay: 0ms, 2100ms; animation-duration: 1ms, 1000ms; }
+html:is([data-intro], [data-sl-open='logo']) .sl-frame:first-child,
+html:is([data-intro], [data-sl-open='logo']) .sl-frame:first-child::before,
+html:is([data-intro], [data-sl-open='logo']) .sl-frame:first-child::after,
+html:is([data-intro], [data-sl-open='logo']) .sl-frame:first-child img { animation-delay: 2350ms; }
+html:is([data-intro], [data-sl-open='logo']) .sl-caption { animation-delay: 2850ms; }
 
 /* Fade: at the end the logo draws in the image slot as the golden ratio fades out of it — the two
    cross, so there is no empty beat between them — with the words either side and the caption staying
    up. It holds, then fades away with them and the white. */
-html[data-intro='fade'] .sl-endlogo { display: block; position: absolute; left: 50%; top: calc(50% - 9px); translate: -50% -50%; }
+/* (Fade's ending logo is no longer drawn: the golden ratio fades, then the white lifts — StartLoaderRun) */
 .sl[data-end] .sl-golden, .sl[data-end] .sl-g-bold { opacity: 0; transition: opacity 550ms var(--ease-out); }
 html[data-loader='zoom'] .sl-endlogo { opacity: 0; transition: opacity 450ms var(--ease-out); }
 
