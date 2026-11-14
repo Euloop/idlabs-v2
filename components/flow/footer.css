@@ -26,9 +26,9 @@
 .ft ul { list-style: none; margin: 0; padding: 0; }
 
 /* six link columns */
-/* Alignment with the chrome above: content starts where the wordmark's letters start (9 Figma px
-   in) and ends where the nav's last letter ends (5 px past the content edge). */
-.ft-cols, .ft-read-head, .ft-bar { padding-left: calc(9 * var(--px)); margin-right: calc(-5 * var(--px)); }
+/* Alignment: content starts where the wordmark's letters start (9 Figma px in from the content edge)
+   and ends the same 9 in from the right, so the footer sits evenly between the frame rules. */
+.ft-cols, .ft-read-head, .ft-bar { padding-inline: calc(9 * var(--px)); }
 /* six columns, the first flush left, the last flush right, even space between */
 .ft-cols { display: grid; grid-template-columns: repeat(6, auto); justify-content: space-between; gap: 40px 24px; }
 .ft-col ul { display: grid; gap: 14px; margin-top: 22px; }
@@ -45,9 +45,7 @@
 .ft-read-sub { margin: 0; color: #6a6a6a; }
 
 /* closing bar: its top rule runs rule to rule, with the frame's 12px squares where they meet */
-/* (the bar's box starts at the content edge and ends 5 Figma px past it; see the alignment rule) */
-.ft-bar::before { content: ''; position: absolute; top: 0; height: 1px; left: calc(-1 * var(--pad)); right: calc(5 * var(--px) - var(--pad)); background: rgb(130 130 130 / 0.15); }
-.ft-bar .tick-r { left: calc(100% + var(--pad) - 5 * var(--px)); }
+.ft-bar::before { content: ''; position: absolute; top: 0; height: 1px; left: calc(-1 * var(--pad)); right: calc(-1 * var(--pad)); background: rgb(130 130 130 / 0.15); }
 .ft-bar {
   position: relative; --tick-y: 0;
   margin-top: auto; padding-top: 22px;
@@ -85,6 +83,10 @@ html[data-footer] .opt-tabs[data-on]:not([aria-label='Footer options']) { opacit
 .opt-tabs[aria-label='Footer options'] button { color: #6a6a6a; }
 .opt-tabs[aria-label='Footer options'] button:hover, .opt-tabs[aria-label='Footer options'] button[aria-pressed='true'] { color: #ebebeb; }
 .opt-tabs[aria-label='Footer options'] .opt-tabs-sep { color: #4a4a4a; }
+/* …and show wherever the page theme is unset or dark (options.css hides tabs there, over the hero):
+   on /footer nothing writes the theme, the footer coming straight after the hero */
+html:not([data-theme]) :is(.opt-tabs[aria-label='Footer options'], .opt-tabs-open[aria-label='Open Footer options'])[data-on],
+html[data-theme='dark'] :is(.opt-tabs[aria-label='Footer options'], .opt-tabs-open[aria-label='Open Footer options'])[data-on] { opacity: 1; visibility: visible; pointer-events: auto; }
 
 
 /* ───────── Shelf ─────────

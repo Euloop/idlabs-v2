@@ -44,12 +44,13 @@ const REEL: ReelImage[] = [
 
 // /hero's reel, first half: the people and the papers — scientists, equations, patent drawings,
 // research figures — ending on the nautilus construction, which hands over to the golden half.
+// 25: the opener, then 24 cuts — six bars of four on the 100ms beat (StartLoaderRun's BEAT).
 // Oppenheimer and Tesla from Figma "start loader more iamges" (Zoomcast 194:2); the rest
 // (assets/loader/reel) public domain, from Wikimedia Commons — colour portraits set in grey.
 const R = (n: string, w: number): ReelImage => ({ src: `assets/loader/reel/${n}.webp`, w });
 const REEL_HERO: ReelImage[] = [
   { src: 'assets/loader/reel-1-einstein.png', w: 174 },
-  R('euclid', 341.5),
+  R('euclid', 156),
   { src: 'assets/loader/reel-tesla.webp', w: 155.5 },
   R('fibonacci', 136),
   R('curie', 156),
@@ -70,8 +71,6 @@ const REEL_HERO: ReelImage[] = [
   { src: 'assets/research/front-fig-1.webp', w: 182 },
   R('hilbert', 156),
   R('leonardo-notes', 152),
-  { src: 'assets/tools-collage/c4.webp', w: 133 },
-  R('leonardo-self', 132.5),
   R('einstein-board', 166.5),
   { src: 'assets/loader/reel-oppenheimer.webp', w: 157.5 },
   { src: 'assets/loader/reel-2.png', w: 161 },
@@ -83,7 +82,8 @@ const REEL_HERO: ReelImage[] = [
 // over them (<Spiral>) is that rectangle's, so it stays put while the images cut under it.
 // The first six from Zoomcast 194:2 (their own drawn spirals aligned to ours); then public-domain
 // spirals from Wikimedia Commons (NASA/Hubble, Vermeer), fitted by their centre and size.
-const GOLDEN = ['black', 'm51', 'eiffel', 'katrina', 'mona', 'whirlpool', 'birds', 'solar', 'pearl', 'm74', 'begonia'];
+// 12 — three bars of four — opening and closing on the bare construction (the blackboard).
+const GOLDEN = ['black', 'm51', 'eiffel', 'katrina', 'mona', 'whirlpool', 'birds', 'solar', 'pearl', 'm74', 'begonia', 'black'];
 const G_W = 126.5;
 const G_H = 200;
 
@@ -106,13 +106,21 @@ function construction() {
   return { lines: lines.join(''), arc };
 }
 const CON = construction();
+/* Two layers: the construction lines, thin, in difference (dark on light images, light on dark); and
+   the spiral itself, the highlight — a bright white line with a glow over a soft dark edge, so it
+   reads as lit on every image, light or dark, as in the reference. */
 function Spiral() {
   return (
-    <svg className="sl-spiral" viewBox={`0 0 ${G_W} ${G_H}`} width={G_W} height={G_H} aria-hidden="true">
-      <rect className="sl-sp-line" x={4} y={4} width={192 / PHI} height={192} pathLength={1} />
-      <path className="sl-sp-line" d={CON.lines} />
-      <path className="sl-sp-arc" d={CON.arc} pathLength={1} />
-    </svg>
+    <>
+      <svg className="sl-spiral" viewBox={`0 0 ${G_W} ${G_H}`} width={G_W} height={G_H} aria-hidden="true">
+        <rect className="sl-sp-line" x={4} y={4} width={192 / PHI} height={192} />
+        <path className="sl-sp-line" d={CON.lines} />
+      </svg>
+      <svg className="sl-spiral sl-spiral-glow" viewBox={`0 0 ${G_W} ${G_H}`} width={G_W} height={G_H} aria-hidden="true">
+        <path className="sl-sp-arc sl-sp-edge" d={CON.arc} pathLength={1} />
+        <path className="sl-sp-arc" d={CON.arc} pathLength={1} />
+      </svg>
+    </>
   );
 }
 
@@ -162,8 +170,8 @@ export default function StartLoader({ fixed = false }: { fixed?: boolean }) {
                 style={r.crop ? { height: `${r.crop}%`, objectFit: 'fill' } : undefined} />
             </span>
           ))}
-          {fixed && GOLDEN.map((g) => (
-            <span className="sl-frame sl-gframe" key={g} style={{ width: `${G_W}px` }}>
+          {fixed && GOLDEN.map((g, i) => (
+            <span className="sl-frame sl-gframe" key={`${g}-${i}`} style={{ width: `${G_W}px` }}>
               <img src={`/assets/loader/golden/${g}.webp`} width={G_W} height={G_H} alt="" decoding="async" />
             </span>
           ))}

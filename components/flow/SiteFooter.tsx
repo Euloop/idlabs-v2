@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import Bookshelf, { type ShelfPalette } from './Bookshelf';
 import OptionTabs, { useOption } from './OptionTabs';
+import FooterGolden, { type GoldenVariant } from './FooterGolden';
 import './footer.css';
 
 /* /home-2 footer: always dark — its own dark ground and grain, whatever the page theme; it does
@@ -24,13 +25,30 @@ const COLUMNS: { title: string; links: string[] }[] = [
 const SHELVES: [ShelfPalette, string][] = [['classic', 'Classic'], ['il', 'IL colours']];
 // tabs while the footer's top is in the upper half of the screen
 const footerInView = (r: DOMRect, vh: number) => r.top <= vh * 0.5;
+// /footer (`golden`): the golden-ratio variants in place of the reading list (FooterGolden.tsx), ?golden=
+type Middle = GoldenVariant | 'books';
+const MIDDLES: [Middle, string][] = [
+  ['spiral', 'Spiral'], ['compound', 'Compound'], ['focus', 'Focus'], ['reel', 'Reel'], ['trace', 'Trace'], ['books', 'Reading list'],
+];
 
 const OFFICES = ['San Francisco', 'New York', 'Remote'];
 const SOCIALS = ['X / Twitter', 'LinkedIn', 'Instagram', 'Substack'];
 
-export default function SiteFooter() {
+/** a rule across the frame, rule to rule, with the frame's squares where it meets them */
+function Rule() {
+  return (
+    <div className="ft-rule" aria-hidden="true">
+      <span className="tick tick-l" />
+      <span className="tick tick-r" />
+    </div>
+  );
+}
+
+export default function SiteFooter({ golden = false }: { golden?: boolean } = {}) {
   const ref = useRef<HTMLElement>(null);
   const [shelf, pickShelf] = useOption<ShelfPalette>('books', SHELVES, 'classic');
+  const [picked, pickMiddle] = useOption<Middle>('golden', MIDDLES, 'spiral');
+  const middle: Middle = golden ? picked : 'books';
 
   useEffect(() => {
     const el = ref.current;
@@ -64,6 +82,9 @@ export default function SiteFooter() {
     <section ref={ref} className="ft" data-foot="/Footer" aria-label="Footer">
       <div className="ft-texture" aria-hidden="true" />
       <div className="frame ft-frame">
+        {/* /footer (golden): the golden band above, the links under it; otherwise the links, then
+            the reading list */}
+        {middle !== 'books' && <><FooterGolden variant={middle} /><Rule /></>}
         <nav className="ft-cols" aria-label="Site">
           {COLUMNS.map((c) => (
             <div className="ft-col" key={c.title}>
@@ -75,12 +96,8 @@ export default function SiteFooter() {
           ))}
         </nav>
 
-        {/* a rule across the frame, rule to rule, with the frame's squares where it meets them */}
-        <div className="ft-rule" aria-hidden="true">
-          <span className="tick tick-l" />
-          <span className="tick tick-r" />
-        </div>
-
+        {middle === 'books' && <>
+        <Rule />
         <div className="ft-read">
           <div className="ft-read-head">
             <h3 className="ft-h">Reading list</h3>
@@ -88,6 +105,7 @@ export default function SiteFooter() {
           </div>
           <Bookshelf palette={shelf} />
         </div>
+        </>}
 
         <div className="ft-bar">
           <span className="ft-status"><span className="ft-dot" aria-hidden="true" />All systems operational</span>
@@ -99,7 +117,10 @@ export default function SiteFooter() {
       </div>
     </section>
     <OptionTabs
-      groups={[{ label: 'Reading list', options: SHELVES, value: shelf, onChange: (v) => pickShelf(v as ShelfPalette) }]}
+      groups={[
+        ...(golden ? [{ label: 'Golden ratio', options: MIDDLES, value: middle, onChange: (v: string) => pickMiddle(v as Middle) }] : []),
+        ...(middle === 'books' ? [{ label: 'Reading list', options: SHELVES, value: shelf, onChange: (v: string) => pickShelf(v as ShelfPalette) }] : []),
+      ]}
       selector="section.ft" label="Footer options" when={footerInView}
     />
     </>

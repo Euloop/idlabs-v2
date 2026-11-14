@@ -48,7 +48,7 @@
   color: var(--hv-ink);
 }
 .hv-headline {
-  font-family: 'Season Mix', var(--sans); font-weight: 400;
+  font-family: 'Season Mix', var(--serif); font-weight: 400;
   font-size: calc(32 * var(--px)); line-height: 1.3; letter-spacing: -0.02em;
   color: var(--hv-ink);
 }

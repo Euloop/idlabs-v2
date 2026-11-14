@@ -17,11 +17,14 @@ const T = {
 };
 const MAX_WAIT = 2500; // start anyway if the images are slow
 
-/* /hero's golden half (html[data-sl-end='reel'], the last `golden` frames): the aligned images cut on
-   straight from the first half while the spiral draws over them, then a short hold before the white lifts. */
-const G = { bridge: 200, cut: 120, passes: 1, hold: 300 };
-// ...and its first half, the people and papers: cuts speeding up from 140 to 60ms, a jumble building into it.
-const RAMP = [140, 60];
+/* /hero's reel runs on one beat, both halves (metric montage, as the reference: a cut every 3 frames
+   at 30fps). 100ms is a whole number of frames at 30, 60 and 120Hz, so every image is on screen
+   exactly as long as the next — a beat that isn't (120ms at 60Hz = 7.2 frames) alternates 7 and 8
+   frames and reads as uneven. Every cut lands on the grid: no ramps, no holds. The first half is
+   six bars of four, the golden half three; the spiral draws over its first two bars
+   (start-loader.css), and the white lifts after three beats on the last image. */
+const BEAT = 100;
+const G = { hold: 3 * BEAT };
 
 export default function StartLoaderRun({ frames, golden = 0 }: { frames: number; golden?: number }) {
   useEffect(() => {
@@ -116,16 +119,12 @@ export default function StartLoaderRun({ frames, golden = 0 }: { frames: number;
       let clock = 0;
       const push = (show: Step['show'], dur: number, fx?: () => void) => { order.push({ show, at: clock, fx }); clock += dur; };
       const plain = frames - golden;
-      for (let p = 0; p < T.passes; p++) for (let i = 0; i < plain; i++) if (p || i) {
-        // the last of them (the nautilus construction) holds, a beat before the spiral takes over
-        push(i, !golden ? T.cut : i === plain - 1 ? G.bridge : Math.round(RAMP[0] + (RAMP[1] - RAMP[0]) * (i / (plain - 1)) ** 0.8));
-      }
+      const cut = golden ? BEAT : T.cut;
+      for (let p = 0; p < T.passes; p++) for (let i = 0; i < plain; i++) if (p || i) push(i, cut);
       if (golden) {
         // no pause: the golden images cut straight on, and the spiral draws over them as they change
         // (start-loader.css .sl-sp-arc), then stays put while the rest cut under it
-        for (let p = 0; p < G.passes; p++) for (let i = plain; i < frames; i++) {
-          push(i, G.cut, p === 0 && i === plain ? () => el.setAttribute('data-spiral', '') : undefined);
-        }
+        for (let i = plain; i < frames; i++) push(i, BEAT, i === plain ? () => el.setAttribute('data-spiral', '') : undefined);
       }
       if (!reelEnd) push('golden', T.cut);
       // The reel runs off the frame clock, not a timer per cut: each frame shows whichever image is
@@ -139,7 +138,9 @@ export default function StartLoaderRun({ frames, golden = 0 }: { frames: number;
           if (cancelled) return;
           if (!t0) t0 = now;
           const e = now - t0;
-          while (k + 1 < order.length && order[k + 1].at <= e) k++;
+          // (4ms of slack: a vsync can land a hair before a boundary, and must still count as on it,
+          // or that image gets one frame more than the rest)
+          while (k + 1 < order.length && order[k + 1].at <= e + 4) k++;
           if (k !== shown) { shown = k; show(order[k].show); order[k].fx?.(); }
           if (k < order.length - 1) raf = requestAnimationFrame(step);
           // Zoom: the golden ratio zooms. Fade: it goes, the logo draws in its place, then the white lifts.

@@ -1,0 +1,150 @@
+/* The footer's golden-ratio variants (FooterGolden.tsx), in place of the reading list.
+   Dark ground (footer.css); the construction in the hero's 12% lines, the spiral in the footer's ink. */
+
+/* Season Mix (the hero's face, hero-vertical.css) in place of Instrument Serif: TRIAL build — swap for
+   the licensed files before launch. Declared here too, so the footer has it on any page. */
+@font-face { font-family: 'Season Mix'; src: url('/experiment/fonts/season-mix-regular.otf') format('opentype'); font-weight: 400; font-style: normal; font-display: swap; }
+.fg { --serif: 'Season Mix', 'Times New Roman', serif; }
+
+.fg {
+  position: relative;
+  margin-top: calc(56 * var(--px)); margin-bottom: calc(48 * var(--px));
+  /* aligned like the columns and the bar (footer.css) */
+  padding-inline: calc(9 * var(--px));
+}
+.fg-box { position: relative; aspect-ratio: 1000 / 618.034; }
+.fg-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: none; }
+.fg-lines rect, .fg-lines path { stroke: rgb(235 235 235 / 0.12); stroke-width: 1; }
+/* the spiral, dim in every variant: a quiet line under the type */
+.fg-arc { stroke: rgb(235 235 235 / 0.4); stroke-width: 1.1; stroke-linecap: round; stroke-dasharray: 1 2; stroke-dashoffset: 1.02; }
+/* (dash 1, gap 2, offset just past 1: undrawn, no zero-length dash is left at either end for the round
+   cap to paint as a dot) */
+.fg-arc-faint { stroke: rgb(235 235 235 / 0.22); stroke-width: 1; stroke-dasharray: none; stroke-dashoffset: 0; }
+
+/* content placed in a square (inline: its box and the corner it sits in) */
+.fg-at { position: absolute; display: flex; flex-direction: column; box-sizing: border-box; padding: calc(16 * var(--px)); pointer-events: none; }
+.fg-at a, .fg-at button { pointer-events: auto; }
+.fg-label { font-size: 11px; letter-spacing: .06em; color: #5f5f5f; }
+.fg-copy { padding: calc(44 * var(--px)); }
+.fg-say {
+  margin: 0; max-width: 9em;
+  font-family: var(--serif); font-size: calc(56 * var(--px)); line-height: 1; letter-spacing: -0.02em;
+  text-transform: none; color: #ebebeb;
+}
+/* body copy as the hero's (.hv-body): Plex Mono, 12px caps */
+.fg-body { margin: calc(18 * var(--px)) 0 0; max-width: 40ch; font-family: var(--mono); font-size: 12px; line-height: 1.5; letter-spacing: .01em; text-transform: uppercase; text-wrap: pretty; color: #8f8f8f; }
+.fg-cta { margin: calc(22 * var(--px)) 0 0; color: #ebebeb; }
+.fg-cta a span { display: inline-block; transition: translate 250ms var(--ease-out); }
+.fg-cta a:hover span { translate: 4px 0; }
+
+/* the drawn wordmark: outline, then fill, letter by letter, once a parent has [data-draw] */
+.fg-ink { display: block; width: 100%; height: auto; overflow: visible; color: #ebebeb; }
+.fg-ink path {
+  fill: currentColor; fill-opacity: 0; stroke: currentColor; stroke-width: 0.3; stroke-opacity: .6;
+  stroke-dasharray: 1; stroke-dashoffset: 1;
+  --n: calc(var(--ink-at, 0ms) + var(--i) * 80ms);
+  transition: stroke-dashoffset 600ms cubic-bezier(.42, 0, .58, 1) var(--n),
+              fill-opacity 400ms cubic-bezier(.42, 0, 1, 1) calc(var(--n) + 700ms),
+              stroke-opacity 200ms linear calc(var(--n) + 1300ms);
+}
+[data-draw] .fg-ink path { stroke-dashoffset: 0; fill-opacity: 1; stroke-opacity: 0; }
+
+/* ── Spiral: --p (0–1, the scroll) brings the cuts in one by one; the arc is drawn by script ── */
+.fg-spiral .fg-lines > * { opacity: clamp(0, calc(var(--p, 0) * 14 - var(--i, 0)), 1); }
+.fg-spiral .fg-label { opacity: clamp(0, calc(var(--p, 0) * 3 - .4), 1); }
+.fg-eye { position: absolute; width: calc(112 * var(--px)); translate: -50% -50%; padding: 8px 10px; background: var(--bg); }
+
+/* ── Compound: the spiral drawn out from the eye by the scroll (--p), each square's number
+   coming in as its turn closes (--t), the counter climbing to 1M ── */
+.fg-compound .fg-c-fib { opacity: clamp(0, calc((var(--p, 0) - var(--t)) * 25 + 1), 1); color: #6a6a6a; }
+.fg-c-count { padding: calc(44 * var(--px)); gap: 12px; }
+.fg-c-num { font-family: var(--serif); font-size: calc(132 * var(--px)); line-height: .85; letter-spacing: -.03em; color: #ebebeb; font-variant-numeric: tabular-nums; }
+.fg-c-copy .fg-say { font-size: calc(40 * var(--px)); }
+.fg-c-copy { padding: calc(36 * var(--px)); }
+
+/* ── Focus: two hairlines at the golden section, the frame's square where they cross ── */
+.fg-focus .fg-box { overflow: visible; }
+/* Drawn by the scroll: --p (FooterGolden.tsx) runs 0 → 1 from the rectangle's top coming on screen
+   to the whole of it being on (or the page's end) — so it is never behind a fast scroll, and runs
+   back as you scroll back. Stages: the rectangle and hairlines 0–.35, the statement from .1, the
+   spiral .2–.95 (its dash set by script), the squares from .3, the figure's notes from .6. */
+.fg-focus { --p: 0; }
+.fg-f-v, .fg-f-h { position: absolute; background: rgb(235 235 235 / 0.14); }
+/* across the golden rectangle, edge to edge of it */
+.fg-f-v { top: 0; bottom: 0; width: 1px; scale: 1 clamp(0, calc(var(--p) / .35), 1); transform-origin: 50% 0; }
+.fg-f-h { left: 0; right: 0; height: 1px; scale: clamp(0, calc(var(--p) / .35), 1) 1; transform-origin: 0 50%; }
+.fg-f-rect { fill: none; stroke: rgb(235 235 235 / 0.14); stroke-width: 1; opacity: clamp(0, calc(var(--p) / .2), 1); }
+.fg-f-tick { position: absolute; z-index: 2; width: 12px; height: 12px; translate: -50% -50%; background: #35363b; opacity: clamp(0, calc((var(--p) - .3) / .1), 1); }
+/* the figure's notes: 10px mono, fainter than the labels elsewhere, in after the lines */
+.fg-f-notes > * { position: absolute; font-size: 10px; letter-spacing: .06em; color: #4f4f4f; white-space: nowrap; }
+.fg-f-dims, .fg-f-pole { fill: none; stroke: rgb(235 235 235 / 0.14); stroke-width: 1; }
+.fg-f-dx { top: -20px; translate: -50% -100%; padding-bottom: 12px; }             /* over the top dimension line */
+.fg-f-formula { left: 0; top: 0; padding: 18px 0 0 24px; line-height: 1.7; text-transform: none; } /* (as written: φ, not Φ) */
+.fg-f-p { padding: 0 20px 18px 0; } /* clear of the crossing's square */
+.fg-f-sq { padding: 16px; }
+.fg-f-notes > *, .fg-f-dims, .fg-f-pole, .fg-f-note { opacity: clamp(0, calc((var(--p) - .6) / .25), 1); }
+.fg-f-copy { position: absolute; display: flex; flex-direction: column; align-items: flex-start; text-align: left; padding: calc(32 * var(--px)) 0 0 calc(32 * var(--px)); }
+/* the spiral: its smaller cuts faint, the arc drawing in once the lines are across */
+.fg-f-svg .fg-lines > * { opacity: clamp(0, calc((var(--p) - .3) / .2), 1); }
+.fg-f-copy > * { --q: clamp(0, calc((var(--p) - .1) / .25), 1); opacity: var(--q); translate: 0 calc((1 - var(--q)) * 10px); }
+/* Focus, Trace, Reel: the statement at 32 with a description under it (Focus's: sized to stay
+   inside the bottom square's arc, radius 0.382 of the width round the crossing) */
+:is(.fg-focus, .fg-trace, .fg-reel) .fg-say { font-size: calc(32 * var(--px)); max-width: none; white-space: nowrap; }
+:is(.fg-focus, .fg-trace, .fg-reel) .fg-body { max-width: 34ch; }
+/* the figure's caption, under it (outside the rectangle), as on a plate */
+.fg-f-note { position: absolute; left: 0; top: 100%; margin: 0; padding-top: 14px; }
+
+/* ── Reel: copy · the image under the spiral · the captions ── */
+.fg-reel { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: end; gap: calc(48 * var(--px)); }
+.fg-reel-frame { position: relative; width: 253px; height: 400px; background: #111; }
+.fg-reel-frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; }
+.fg-reel-frame img[data-on] { opacity: 1; }
+.fg-reel-spiral { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; fill: none; }
+.fg-reel-lines { stroke: #fff; stroke-width: .4; stroke-opacity: .75; mix-blend-mode: difference; opacity: 0; transition: opacity 500ms var(--ease-out) 900ms; }
+/* dim, as the other variants' spiral; a faint dark edge under it keeps it on the light images */
+.fg-reel-arc { stroke: rgb(255 255 255 / .5); stroke-width: .7; stroke-linecap: round; stroke-dasharray: 1 2; stroke-dashoffset: 1.02; transition: stroke-dashoffset 1200ms cubic-bezier(.4, 0, .2, 1); }
+.fg-reel-edge { stroke: rgb(0 0 0 / .2); stroke-width: 1.6; }
+.fg-reel[data-draw] .fg-reel-lines { opacity: 1; }
+.fg-reel[data-draw] .fg-reel-arc { stroke-dashoffset: 0; }
+.fg-reel-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; justify-items: end; }
+.fg-reel-list button { all: unset; cursor: pointer; display: inline-flex; gap: 12px; font: inherit; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: #545454; transition: color 200ms ease; }
+.fg-reel-list button:hover, .fg-reel-list button[aria-pressed='true'] { color: #ebebeb; }
+.fg-reel-list button:focus-visible { outline: 1px solid #ebebeb; outline-offset: 3px; }
+.fg-reel-n { color: #3e3e3e; }
+
+/* ── Trace: the square pointed at, the spiral drawn out to it, its ratio read out ── */
+.fg-trace .fg-box { cursor: crosshair; touch-action: pan-y; }
+.fg-trace-sq { fill: rgb(235 235 235 / 0.045); }
+.fg-trace-arc { stroke-opacity: 0; transition: stroke-dashoffset 300ms cubic-bezier(.4, 0, .2, 1), stroke-opacity 0s linear 300ms; }
+/* (hidden once undrawn: the innermost arcs are a few px long, and their round caps would leave dots) */
+.fg-trace-arc[data-on] { stroke-dashoffset: 0; stroke-opacity: 1; transition: stroke-dashoffset 420ms cubic-bezier(.4, 0, .2, 1) var(--d, 0ms), stroke-opacity 0s linear var(--d, 0ms); }
+.fg-trace-read { padding: calc(44 * var(--px)); gap: 10px; }
+.fg-trace-num { font-family: var(--serif); font-size: calc(128 * var(--px)); line-height: .9; letter-spacing: -.03em; color: #ebebeb; font-variant-numeric: tabular-nums; }
+
+/* phones: the drawing on its own, its content under it */
+@media (max-width: 759px) {
+  .fg-box { aspect-ratio: auto; }
+  .fg-svg { position: relative; display: block; height: auto; aspect-ratio: 1000 / 618.034; }
+  .fg-at { position: static; width: auto !important; height: auto !important; padding: 20px 0 0 !important; text-align: left !important; align-items: flex-start !important; }
+  .fg-spiral .fg-label, .fg-compound .fg-c-fib { display: none; }
+  .fg-eye { position: static; translate: none; width: 120px; margin-top: 20px; padding: 0; }
+  .fg-c-num { font-size: 72px; }
+  .fg-focus .fg-box { aspect-ratio: auto; display: flex; flex-direction: column; }
+  .fg-f-v, .fg-f-notes, .fg-f-tick, .fg-f-svg { display: none; }
+  .fg-f-h { position: relative; display: block; left: auto; right: auto; }
+  .fg-f-copy, .fg-f-note { position: static; padding: 24px 0 0; }
+  .fg-f-note { order: 2; }
+  .fg-say { font-size: 36px; }
+  .fg-trace-num { font-size: 72px; }
+  .fg-reel { grid-template-columns: 1fr; justify-items: start; }
+  .fg-reel-list { justify-items: start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fg-ink path, .fg-arc, .fg-lines > *, .fg-reel-arc, .fg-reel-lines { transition: none !important; }
+}
+
+/* /footer: the golden band first, then a rule, then the link columns, then the bar */
+.ft-frame > .fg:first-child { margin-top: 0; }
+.fg + .ft-rule { margin-top: 0; }
+.ft-rule + .ft-cols { margin-top: calc(56 * var(--px)); margin-bottom: calc(64 * var(--px)); }
