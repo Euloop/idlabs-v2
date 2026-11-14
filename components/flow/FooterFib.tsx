@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { TOOLS } from './ToolsCollage';
 import { PAPERS } from '../SectionThree';
 import './footer-fib.css';
@@ -63,11 +63,14 @@ function Construction() {
   );
 }
 
-export default function FooterFib() {
+/* `top`: something in place of the empty band at the top (/footer's "Fibonacci + Focus": FooterGolden's
+   Focus), over the same construction behind, the links box under it */
+export default function FooterFib({ top }: { top?: ReactNode } = {}) {
   return (
     <>
       <Construction />
-      <div className="ftf">
+      {top && <div className="ftf-top">{top}</div>}
+      <div className={top ? 'ftf ftf-after-top' : 'ftf'}>
         <nav className="ftf-box" aria-label="Site">
           {COLUMNS.map((c) => (
             <div className="ftf-col" key={c.title}>

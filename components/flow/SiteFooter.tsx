@@ -26,10 +26,13 @@ const COLUMNS: { title: string; links: string[] }[] = [
 const SHELVES: [ShelfPalette, string][] = [['classic', 'Classic'], ['il', 'IL colours']];
 // tabs while the footer's top is in the upper half of the screen
 const footerInView = (r: DOMRect, vh: number) => r.top <= vh * 0.5;
-// /footer (`golden`): the golden-ratio variants in place of the reading list (FooterGolden.tsx), ?golden=
-type Middle = GoldenVariant | 'books';
+// /footer (`golden`): the golden-ratio variants in place of the reading list (FooterGolden.tsx), ?golden=;
+// or `fib`, the whole footer as / has it (the Fibonacci layout, FooterFib.tsx), to compare against; or
+// `fib-focus`, that footer with Focus's golden section in place of its empty top band
+export type Middle = GoldenVariant | 'books' | 'fib' | 'fib-focus';
 const MIDDLES: [Middle, string][] = [
   ['spiral', 'Spiral'], ['compound', 'Compound'], ['focus', 'Focus'], ['reel', 'Reel'], ['trace', 'Trace'], ['books', 'Reading list'],
+  ['fib', 'Fibonacci (/)'], ['fib-focus', 'Fibonacci + Focus'],
 ];
 
 // /home-4 (`fib`): the Fibonacci footer (Figma Zoomcast 200:4, FooterFib.tsx) or this one, ?footer=
@@ -54,13 +57,15 @@ function Rule() {
 }
 
 // `layout`: a fixed layout with no tabs (the live pages: / and /launches use 'fib')
-export default function SiteFooter({ golden = false, fib = false, layout: fixed }: { golden?: boolean; fib?: boolean; layout?: Layout } = {}) {
+// `start` (with `golden`): the variant the tabs open on (/footer: Spiral; /home-4: Fibonacci, as /)
+export default function SiteFooter({ golden = false, fib = false, layout: fixed, start = 'spiral' }: { golden?: boolean; fib?: boolean; layout?: Layout; start?: Middle } = {}) {
   const ref = useRef<HTMLElement>(null);
   const [layoutPicked, pickLayout] = useOption<Layout>('footer', LAYOUTS, 'fib');
-  const layout: Layout = fixed ?? (fib ? layoutPicked : 'classic');
   const [shelf, pickShelf] = useOption<ShelfPalette>('books', SHELVES, 'classic');
-  const [picked, pickMiddle] = useOption<Middle>('golden', MIDDLES, 'spiral');
+  const [picked, pickMiddle] = useOption<Middle>('golden', MIDDLES, start);
   const middle: Middle = golden ? picked : 'books';
+  // /footer's Fibonacci tab: the / footer's layout
+  const layout: Layout = fixed ?? (golden && (picked === 'fib' || picked === 'fib-focus') ? 'fib' : fib ? layoutPicked : 'classic');
 
   useEffect(() => {
     const el = ref.current;
@@ -94,10 +99,10 @@ export default function SiteFooter({ golden = false, fib = false, layout: fixed 
     <section ref={ref} className={layout === 'fib' ? 'ft ft-fib' : 'ft'} data-foot="/Footer" aria-label="Footer">
       <div className="ft-texture" aria-hidden="true" />
       <div className="frame ft-frame">
-        {layout === 'fib' ? <FooterFib /> : <>
+        {layout === 'fib' ? <FooterFib top={golden && picked === 'fib-focus' ? <FooterGolden variant="focus" interactive caption={false} /> : undefined} /> : <>
         {/* /footer (golden): the golden band above, the links under it; otherwise the links, then
             the reading list */}
-        {middle !== 'books' && <><FooterGolden variant={middle} /><Rule /></>}
+        {middle !== 'books' && middle !== 'fib' && middle !== 'fib-focus' && <><FooterGolden variant={middle} /><Rule /></>}
         <nav className="ft-cols" aria-label="Site">
           {COLUMNS.map((c) => (
             <div className="ft-col" key={c.title}>

@@ -9,7 +9,8 @@ import '../../components/flow/flow.css';
 
 /* /footer: to work on the footer. The Fade hero (the clean hero, no golden-ratio construction) with
    no start loader, and the footer straight below it, with its golden-ratio variants in place of the reading list
-   (SiteFooter golden: Spiral · Grid · Wordmark · Reel · Trace · Reading list, bottom tabs, ?golden=).
+   (SiteFooter golden: Spiral · Compound · Focus · Reel · Trace · Reading list, bottom tabs, ?golden=) —
+   and Fibonacci (/), the footer / has (?golden=fib).
    The fixed nav (SiteChrome) as on /home-4. Not linked from the site. */
 
 export const metadata: Metadata = {

@@ -17,6 +17,12 @@ export default function ThemeDriver() {
     let down = false;
     let held: HTMLElement | null = null;
     let raf = 0;
+    // the sections, found once (searched again only if one has left the page, when a variant changes)
+    let list: HTMLElement[] = [];
+    const sections = () => {
+      if (!list.length || list.some((el) => !el.isConnected)) list = Array.from(document.querySelectorAll<HTMLElement>(SECTIONS));
+      return list;
+    };
     const apply = () => {
       raf = 0;
       const vh = window.innerHeight;
@@ -28,7 +34,7 @@ export default function ThemeDriver() {
       // moves of smooth scrolling at a boundary cannot flip the theme to and fro.
       let current: HTMLElement | null = null;
       let best = -Infinity;
-      document.querySelectorAll<HTMLElement>(SECTIONS).forEach((el) => {
+      sections().forEach((el) => {
         const t = el.getBoundingClientRect().top;
         if (t < (el === held ? 0.96 : 0.92) * vh && t > best) { best = t; current = el; }
       });

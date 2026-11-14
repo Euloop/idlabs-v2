@@ -94,6 +94,19 @@
 /* the figure's caption, under it (outside the rectangle), as on a plate */
 .fg-f-note { position: absolute; left: 0; top: 100%; margin: 0; padding-top: 14px; }
 
+/* Focus, interactive (/footer's Fibonacci + Focus): Trace's pointing — the scroll-drawn spiral fades
+   back while one is pointed at, and the readout comes up in the big square's bottom corner */
+.fg-f-live .fg-box { cursor: crosshair; touch-action: pan-y; }
+.fg-f-arc { transition: stroke-opacity 300ms var(--ease-out); }
+.fg-f-arc[data-dim] { stroke-opacity: .18; }
+/* the spiral out to the square pointed at: brighter and a touch heavier than the drawing at rest */
+.fg-f-live .fg-trace-arc { stroke: rgb(235 235 235 / 0.9); stroke-width: 1.5; }
+/* only while a square is pointed at; in the big square's bottom-left corner, above its A · 1.000 note */
+.fg-f-read { position: absolute; left: 0; bottom: 0; display: flex; flex-direction: column; gap: 10px; padding: 0 0 52px 24px; pointer-events: none;
+  opacity: 0; translate: 0 6px; transition: opacity 200ms var(--ease-out), translate 200ms var(--ease-out); }
+.fg-f-read[data-on] { opacity: 1; translate: 0 0; }
+.fg-f-read .fg-trace-num { font-size: calc(56 * var(--px)); }
+
 /* ── Reel: copy · the image under the spiral · the captions ── */
 .fg-reel { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: end; gap: calc(48 * var(--px)); }
 .fg-reel-frame { position: relative; width: 253px; height: 400px; background: #111; }

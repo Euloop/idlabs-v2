@@ -48,7 +48,7 @@ export default function Home() {
       <SectionThree lead="Read our published findings" cover="paper" holes={false} />
       <MonoTrail selector="section.s3 .s3-band" />
       <ToolsShowcase />
-      <ServicesCards light layout="columns" />
+      <ServicesCards light layout="columns" still />
       <Launches variant="selected" />
       <SiteFooter layout="fib" />
       <SiteChrome />

@@ -182,12 +182,20 @@ export default function SectionTwo({ noOutro = false, compact = false }: { noOut
     const stopLoop = () => { running = false; if (raf) cancelAnimationFrame(raf); raf = 0; };
 
     // Run only while the section is on screen or within one viewport below it.
+    // `above`: the section has been scrolled past (its bottom above the screen). Its last update has
+    // set everything (light theme, its parts gone), so the scroll needs nothing from it until it
+    // comes back into view, which restarts the loop.
+    let above = false, sraf = 0;
     const io = new IntersectionObserver(
-      ([entry]) => (entry.isIntersecting ? startLoop() : (stopLoop(), update(performance.now()))),
+      ([entry]) => {
+        above = !entry.isIntersecting && entry.boundingClientRect.bottom < 0;
+        if (entry.isIntersecting) startLoop(); else { stopLoop(); update(performance.now()); }
+      },
       { rootMargin: '0px 0px 100% 0px' },
     );
     io.observe(section);
-    const onScroll = () => { if (!running) update(performance.now()); };
+    // otherwise, while the loop is off, at most one update a frame
+    const onScroll = () => { if (!running && !above && !sraf) sraf = requestAnimationFrame((t) => { sraf = 0; update(t); }); };
     // (the rAF loop also runs while the section is near, so the post-switch reveal fires on time)
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
@@ -197,6 +205,7 @@ export default function SectionTwo({ noOutro = false, compact = false }: { noOut
     return () => {
       io.disconnect();
       stopLoop();
+      cancelAnimationFrame(sraf);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
     };

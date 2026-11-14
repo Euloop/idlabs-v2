@@ -38,12 +38,14 @@
 .ftf-col a { color: #999; text-decoration: none; }
 
 /* the 8px corner squares (Figma 200:82, 200:85, 200:19) */
-.ftf-sqs { position: absolute; display: flex; justify-content: space-between; align-items: center; opacity: .15; pointer-events: none; }
-.ftf-sqs i { display: block; width: 8px; height: 8px; background: #999; }
-.ftf-sqs-t { top: -5px; left: -2px; right: -5px; }
-.ftf-sqs-b { bottom: -4px; left: -5px; right: -5px; }
-.ftf-sqs-frame { top: calc(59 * var(--px)); left: -4px; right: -4px; z-index: 1; }
-.ftf-sqs-frame i { background: #828282; }
+.ftf-sqs { position: absolute; display: flex; justify-content: space-between; align-items: center; pointer-events: none; }
+/* solid (#35363b: the footer's other squares, = the 15% grey over this ground), so no line shows through */
+.ftf-sqs i { display: block; width: 8px; height: 8px; background: #35363b; }
+/* each centred on the 1px line it marks: the box's border runs 1px outside its padding box (centre −0.5),
+   the frame's rules on its edges (centre +0.5 inside) — so −4.5 and −3.5 */
+.ftf-sqs-t { top: -4.5px; left: -4.5px; right: -4.5px; }
+.ftf-sqs-b { bottom: -4.5px; left: -4.5px; right: -4.5px; }
+.ftf-sqs-frame { top: calc(59 * var(--px)); left: -3.5px; right: -3.5px; z-index: 1; translate: 0 -50%; }
 
 /* closing bar */
 /* status left, offices centred on the page, legal right */
@@ -61,3 +63,8 @@
   .ftf-offices { justify-content: flex-start; flex-wrap: wrap; }
   .ftf-legal { justify-self: start; }
 }
+
+/* /footer's "Fibonacci + Focus" (FooterFib `top`): FooterGolden's Focus in place of the empty band; the
+   links box follows it directly */
+.ftf-top { position: relative; z-index: 1; padding-top: 80px; }
+.ftf.ftf-after-top { padding-top: 0; }

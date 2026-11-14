@@ -75,7 +75,8 @@ html[data-sl-ready] .sl-side, html[data-sl-ready] .sl-caption { animation-play-s
 @keyframes sl-fade { from { opacity: 0; } }
 @keyframes sl-split { from { transform: translate(var(--dx), var(--dy, 0px)); } }
 @keyframes sl-shutter { to { transform: translateY(var(--to)); } }
-@keyframes sl-settle { from { opacity: 0; transform: scale(1.18); } 40% { opacity: 1; } }
+/* (no fade: faded under the opening shutters the photo read as a pale grey box; the shutters reveal it) */
+@keyframes sl-settle { from { transform: scale(1.18); } }
 @keyframes sl-rise { from { opacity: 0; transform: translateY(10px); } }
 
 .sl-side {

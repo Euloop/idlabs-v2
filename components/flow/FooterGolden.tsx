@@ -214,10 +214,26 @@ const SQ_NOTES: { name: string; r: string; style: CSSProperties }[] = [
   { name: 'C', r: '0.382', style: { right: 0, top: 0, textAlign: 'right' } },
 ];
 const DIM = -20; // the dimension lines, this far outside the rectangle (in its units ≈ px)
+const PICKABLE = 8; // the squares Focus draws (and its pointing reads): the whole down to the 34-unit one
 
-function FocusBand() {
+/* `interactive` (/footer's Fibonacci + Focus): Trace's pointing on Focus's figure — point at a square and
+   the spiral draws out to it over the faded whole, the square lit, its ratio read out (only then) in
+   the big square's bottom corner. `caption`: the plate's caption under the figure (off there). */
+function FocusBand({ interactive = false, caption = true }: { interactive?: boolean; caption?: boolean } = {}) {
   const ref = useRef<HTMLDivElement>(null);
   const arc = useRef<SVGPathElement>(null);
+  const [active, setActive] = useState<number | null>(null);
+  const n = LAND.squares.length;
+  // the figure is the construction turned over (scale 1, -1): the pointer's y is read from the bottom
+  const pick = (e: PointerEvent) => {
+    const r = ref.current?.querySelector('.fg-box')?.getBoundingClientRect();
+    if (!r) return;
+    const x = ((e.clientX - r.left) / r.width) * W, y = H - ((e.clientY - r.top) / r.height) * H;
+    const i = LAND.squares.findIndex((q) => x >= q.x && x <= q.x + q.s && y >= q.y && y <= q.y + q.s);
+    // (the squares inside the 34-unit one aren't drawn: pointing there reads as that one)
+    setActive(i < 0 ? null : Math.min(i, PICKABLE - 1));
+  };
+  const sq = active === null ? null : LAND.squares[active];
   // Drawn by the scroll, not a timer (so never behind a fast scroll): --p 0 as the rectangle's top
   // comes on screen (90% down), 1 once the whole of it is on, or at the page's end if that is sooner.
   // The stages are in footer-golden.css; the spiral's dash is set here (.2–.95 of the way).
@@ -245,25 +261,31 @@ function FocusBand() {
   const x = pc(FX, 1), y = pc(FY, 1);
   const fx = FX * W;
   return (
-    <div className="fg fg-focus" ref={ref}>
-      <div className="fg-box">
+    <div className={interactive ? 'fg fg-focus fg-f-live' : 'fg fg-focus'} ref={ref}>
+      <div className="fg-box" {...(interactive ? { onPointerMove: pick, onPointerDown: pick, onPointerLeave: () => setActive(null) } : {})}>
         {/* the spiral (the construction turned over: its first cuts at 0.618 across, 0.382 down) */}
         <svg className="fg-svg fg-f-svg" viewBox={`0 0 ${W} ${H}`} aria-hidden="true">
           {/* the golden rectangle itself: the bounding box the hairlines run across */}
           <rect className="fg-f-rect" x={0} y={0} width={W} height={H} vectorEffect="non-scaling-stroke" />
           <g transform={`translate(0 ${H}) scale(1 -1)`}>
             <g className="fg-lines">
-              {LAND.lines.slice(2).map((d, i) => <path key={i} d={d} vectorEffect="non-scaling-stroke" />)}
+              {/* down to the 34-unit square: the three after it (21, 13, 8 — a few px) only tangled at the eye;
+                  the spiral curls on in past them by itself */}
+              {LAND.lines.slice(2, 8).map((d, i) => <path key={i} d={d} vectorEffect="non-scaling-stroke" />)}
             </g>
-            <path ref={arc} className="fg-arc fg-f-arc" d={LAND.spiral} pathLength={1} />
+            {sq && <rect className="fg-trace-sq" x={sq.x} y={sq.y} width={sq.s} height={sq.s} />}
+            <path ref={arc} className="fg-arc fg-f-arc" d={LAND.spiral} pathLength={1} data-dim={active !== null || undefined} />
+            {/* the spiral out to the square pointed at, arc by arc from the outside in, as Trace */}
+            {interactive && LAND.arcs.map((d, i) => (
+              <path key={i} className="fg-arc fg-trace-arc" d={d} pathLength={1} data-on={(active !== null && i <= active) || undefined}
+                style={vars({ '--d': `${active === null ? 0 : Math.max(0, i - (active - 3)) * 70}ms` })} />
+            ))}
           </g>
           {/* a dimension line, as on a drawing: across the top (0.618 | 0.382 of the width), ticked at
               the ends and the cut */}
           <g className="fg-f-dims">
             <path d={`M0 ${DIM}H${W}` + [0, fx, W].map((t) => `M${t} ${DIM - 5}v10`).join('')} vectorEffect="non-scaling-stroke" />
           </g>
-          {/* the pole: a small cross where the spiral converges */}
-          <path className="fg-f-pole" d={`M${POLE.x * W - 6} ${POLE.y * H}h12M${POLE.x * W} ${POLE.y * H - 6}v12`} vectorEffect="non-scaling-stroke" />
         </svg>
         <span className="fg-f-v" style={{ left: x }} aria-hidden="true" />
         <span className="fg-f-h" style={{ top: y }} aria-hidden="true" />
@@ -284,7 +306,15 @@ function FocusBand() {
           <p className="fg-body">We reverse engineer how X and LinkedIn distribute, and build what makes launches travel.</p>
           <p className="fg-cta"><a href="#">Start a project <span aria-hidden="true">→</span></a></p>
         </div>
-        <p className="fg-label fg-f-note">Fig. 01 — The golden section: where the eye comes to rest.</p>
+        {caption && <p className="fg-label fg-f-note">Fig. 01 — The golden section: where the eye comes to rest.</p>}
+        {interactive && (
+          // only while a square is pointed at; in the big square's bottom corner, over its A · 1.000 note
+          <div className="fg-f-read" aria-live="polite" data-on={active !== null || undefined}>
+            <span className="fg-label">{active === null ? '' : `Square ${String(active + 1).padStart(2, '0')} of ${String(PICKABLE).padStart(2, '0')}`}</span>
+            <span className="fg-trace-num">{active === null ? '' : ratio(active)}</span>
+            <span className="fg-label">{active === null ? '' : `${power(active)} of the whole`}</span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -390,11 +420,11 @@ function TraceBand() {
   );
 }
 
-export default function FooterGolden({ variant }: { variant: GoldenVariant }): ReactNode {
+export default function FooterGolden({ variant, interactive, caption }: { variant: GoldenVariant; interactive?: boolean; caption?: boolean }): ReactNode {
   switch (variant) {
     case 'spiral': return <SpiralBand />;
     case 'compound': return <CompoundBand />;
-    case 'focus': return <FocusBand />;
+    case 'focus': return <FocusBand interactive={interactive} caption={caption} />;
     case 'reel': return <ReelBand />;
     case 'trace': return <TraceBand />;
   }

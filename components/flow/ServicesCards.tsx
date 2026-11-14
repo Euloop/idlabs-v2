@@ -29,13 +29,14 @@ const SERVICES = [
   },
 ];
 
-export default function ServicesCards({ light = true, layout }: { light?: boolean; layout: CardsLayout }) {
+// `still` (the home page): no appear animation — the cards are simply there, and nothing watches the scroll
+export default function ServicesCards({ light = true, layout, still = false }: { light?: boolean; layout: CardsLayout; still?: boolean }) {
   const sectionRef = useRef<HTMLElement>(null);
   const [on, setOn] = useState(false);
 
   useEffect(() => {
     const s = sectionRef.current;
-    if (!s) return;
+    if (!s || still) return;
     let raf = 0;
     const measure = () => { raf = 0; setOn(s.getBoundingClientRect().top < window.innerHeight * 0.5); };
     const onScroll = () => { if (!raf) raf = requestAnimationFrame(measure); };
@@ -43,7 +44,7 @@ export default function ServicesCards({ light = true, layout }: { light?: boolea
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
     return () => { cancelAnimationFrame(raf); window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); };
-  }, []);
+  }, [still]);
 
   const cta = layout === 'columns' ? '[Learn More]' : '[Work with us]';
   return (
@@ -56,6 +57,7 @@ export default function ServicesCards({ light = true, layout }: { light?: boolea
       data-foot="/Forward-Deployed"
       data-foot-group="/Our Services"
       data-on={on || undefined}
+      data-still={still || undefined}
       aria-labelledby="svc-title"
     >
       <div className="sv-pin">

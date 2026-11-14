@@ -26,6 +26,7 @@ body:has(.s2-flow) .svc { transition: --c-line 400ms ease, --c-ink 400ms ease, -
   transition: opacity 500ms var(--ease-out) calc(var(--i) * 80ms), translate 500ms var(--ease-out) calc(var(--i) * 80ms);
 }
 .svc[data-on] .svc-cell { opacity: 1; translate: 0 0; }
+.svc[data-still] .svc-cell { opacity: 1; translate: none; transition: none; } /* the home page: no appear animation */
 
 .svc-num {
   display: grid; place-items: center; width: 30px; height: 30px; box-sizing: border-box;

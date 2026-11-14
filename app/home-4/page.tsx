@@ -59,7 +59,9 @@ export default function Home4() {
       {/* launches: Selected (default: the client's six and See all → /launches) or Float II–IV (?launches=) */}
       <LaunchesOptions only={['selected', 'float2', 'float3', 'float4']} />
       {/* footer: Fibonacci (default, Figma Zoomcast 200:4) or the reading list, bottom tabs (?footer=) */}
-      <SiteFooter fib />
+      {/* every footer variant, as /footer (bottom tabs, ?golden=): Spiral · Compound · Focus · Reel · Trace ·
+          Reading list · Fibonacci (/) · Fibonacci + Focus — opening on Fibonacci, the footer / has */}
+      <SiteFooter golden start="fib" />
       <SiteChrome />
       <ThemeDriver />
     </>
