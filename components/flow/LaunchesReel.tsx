@@ -13,6 +13,10 @@ import { LAUNCH_VIDEO } from './launch-videos';
 
 /* Only launches with a reach figure, biggest first (as the slides). It opens on `start`: the
    launch the field zoomed into. */
+/* the big picture of a launch: its HD file, or (the launches without one: the reel on /launches shows them all)
+   its usual one */
+const NO_HD = new Set(['anything', 'enterpret', 'freehand', 'lindy', 'lovable-agent-launch', 'superblocks', 'triple-whale']);
+const HD = (l: Launch) => (NO_HD.has(slug(l)) ? `/assets/launches/${slug(l)}.webp` : `/assets/launches/hd/${slug(l)}.webp`);
 export const REEL: Launch[] = PICTURED.filter((l) => l.reach).sort((a, b) => parseFloat(b.reach!) - parseFloat(a.reach!));
 
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -281,10 +285,10 @@ export default function LaunchesReel({ on, start = 0, alt = false, card = false,
         return (
           <figure key={slug(s)} ref={(el) => { slideRefs.current[k] = el; }} className="lcr-slide" data-on={active || undefined} aria-hidden={!active || undefined}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="lcr-media" src={`/assets/launches/hd/${slug(s)}.webp`} alt=""
+            <img className="lcr-media" src={HD(s)} alt=""
               loading={k === start || Math.abs(k - i) <= 1 ? 'eager' : 'lazy'} decoding="async" draggable={false} />
             {active && on && video && (
-              <video ref={videoRef} key={video} className="lcr-media lcr-video" src={video} poster={`/assets/launches/hd/${slug(s)}.webp`}
+              <video ref={videoRef} key={video} className="lcr-media lcr-video" src={video} poster={HD(s)}
                 muted={muted} loop playsInline autoPlay={playing} preload="auto"
                 onError={(e) => { (e.currentTarget as HTMLVideoElement).style.display = 'none'; }} />
             )}
@@ -319,7 +323,7 @@ export default function LaunchesReel({ on, start = 0, alt = false, card = false,
 
       {l && (
       <div className="lcr-cap" aria-live="polite">
-        <p key={`r-${i}`} className="lcr-reach">{l.reach} views</p>
+        <p key={`r-${i}`} className="lcr-reach">{l.reach ? `${l.reach} views` : 'On X'}</p>
         <p key={`s-${i}`} className="lcr-sub">
           <span className="lcr-who"><ClientLogo client={l.client} />{l.what && <span className="lcr-what">{l.what}</span>}</span>{' '}
           {l.x && <a href={l.x} target="_blank" rel="noopener noreferrer" tabIndex={on ? 0 : -1}>Go to post <span aria-hidden="true">↗</span></a>}

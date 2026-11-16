@@ -1,65 +1,71 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { PICTURED, RATIO_OF, type Launch } from './LaunchesCloud';
 
-/* The launches as a draggable, endless grid (/home-2, Launches "Grid"), after cordia.studio:
-   a strict grid — fixed column pitch, one tile height, even gaps — of wide (16:9) and tall (9:16)
-   tiles (the tall ones a centred crop of the same pictures) in a regular rhythm, over a faint
+/* The launches as a draggable, endless grid (/home-2, Launches "Grid"; /launches), after cordia.studio:
+   rows of tiles one height, each picture in its own proportions (16:9 mostly), in a regular rhythm, over a faint
    dotted ground that moves with them; soft fades at the top and bottom. Each block leaves an opening of empty cells holding one quiet line
    (2B+ views …); it moves with the grid.
    Drag (mouse, pen or touch) to pan in any direction, with a short glide after you let go; the pattern repeats without end.
    Each picture links to its X post; a drag is never a click. No glide with reduced motion. */
 
-const COL = 150; // column pitch, px
-const TILE_H = 135; // every tile's height (a wide tile is 16:9 at this height)
-const WIDE = 240; // 16:9
-const TALL = 76; // 9:16
-const ROW = TILE_H + COL / 2; // row pitch: the gap equals a tall tile's width
-const COLS = 21; // columns in one repeating block (three motifs)
-const ROWS = 4; // rows in one repeating block
+const TILE_H = 135; // every tile's height; its width follows its picture (16:9 → 240)
+const ROW = TILE_H + 75; // row pitch (75 between rows)
+const ROWS = 4, PER = 6; // one repeating block: 4 rows of 6 slots
+const SLOT = 240, GAP = 100; // a slot (a 16:9 tile's width) and the gap between slots
+const BW = PER * (SLOT + GAP); // the block's width, 2040 — wider than most screens: no picture twice in view
 
-type Tile = { l: Launch; x: number; y: number; w: number };
-
-/* One block: ROWS rows, every cell filled — no random gaps. Each row repeats one motif of wide
-   (two columns) and tall (one column) tiles, shifted by two columns from the row above so the
-   rows interlock instead of stacking; pictures are dealt in turn, offset per row. */
-const MOTIF = ['W', 'T', 'W', 'T', 'T'] as const; // 7 columns
-/* An opening in each block, as on cordia.studio: these cells stay empty and hold one quiet line. */
-const WIN = { c0: 9, c1: 12, r0: 1, r1: 2 }; // as cordia.studio: an opening about three columns wide (with the tiles it displaces) across two rows
-const inWindow = (r: number, col: number, cols: number) => r >= WIN.r0 && r <= WIN.r1 && col + cols - 1 >= WIN.c0 && col <= WIN.c1;
-const WIN_CX = ((WIN.c0 + WIN.c1 + 1) / 2) * COL - (COL - TALL) / 2; // the opening's centre in the block
-const WIN_CY = (WIN.r0 + 1) * ROW - (ROW - TILE_H) / 2; // the line sits in the gap between the opening's two rows
-const MOTIF_COLS = 7;
+const PICTURED_FILE = (l: Launch) => `${l.client} ${l.what ?? ''}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+type Tile = { l: Launch; src: string; x: number; y: number; w: number };
+/* (feedback 2026-11-16: only the launches themselves — no video frames, no repeats) each launch once a block,
+   in a fixed shuffled order, each tile in its picture's own proportions, centred in its slot. The opening in the
+   middle two rows (as on cordia.studio, one quiet line) takes the two slots there in each: 24 − 4 = 20 slots, the
+   twenty launches. */
+const POOL = PICTURED.map((l, i) => ({ l, src: `/assets/launches/${PICTURED_FILE(l)}.webp`, ratio: RATIO_OF(l), k: Math.sin(i * 91.7 + 13.1) * 43758.5453 }))
+  .sort((a, b) => (a.k - Math.floor(a.k)) - (b.k - Math.floor(b.k)));
+const WIN_X0 = BW * 0.47, WIN_X1 = BW * 0.53, WIN_R0 = 1, WIN_R1 = 2;
+const WIN_CX = BW / 2; // the opening's centre in the block
+const WIN_CY = (WIN_R0 + 1) * ROW - (ROW - TILE_H) / 2; // the line sits in the gap between the opening's two rows
 function buildBlock() {
   const tiles: Tile[] = [];
+  let deal = 0;
   for (let r = 0; r < ROWS; r++) {
-    const shift = (r * 2) % MOTIF_COLS;
-    let c = -shift; // start before 0 so the shifted motif still fills the row from its left edge
-    let deal = r * 5;
-    while (c < COLS - shift) {
-      for (const kind of MOTIF) {
-        const cols = kind === 'W' ? 2 : 1;
-        const col = ((c % COLS) + COLS) % COLS; // wrap into the block (the block repeats)
-        if (inWindow(r, col, cols)) { c += cols; continue; }
-        tiles.push({ l: PICTURED[deal++ % PICTURED.length], x: col * COL, y: r * ROW, w: kind === 'W' ? WIDE : TALL });
-        c += cols;
-      }
+    for (let i = 0; i < PER; i++) {
+      const sx = GAP / 2 + i * (SLOT + GAP);
+      if (r >= WIN_R0 && r <= WIN_R1 && sx + SLOT > WIN_X0 && sx < WIN_X1) continue; // the opening
+      const pick = POOL[deal++ % POOL.length];
+      const w = Math.round(TILE_H * pick.ratio);
+      tiles.push({ l: pick.l, src: pick.src, x: sx + (SLOT - w) / 2, y: r * ROW, w });
     }
   }
-  return { tiles, width: COLS * COL, height: ROWS * ROW };
+  return { tiles, width: BW, height: ROWS * ROW };
 }
 
-export default function LaunchesGrid() {
+// `onOpen` (/launches): a tile opens its launch (the video dialog) instead of the X post; `full`: the whole screen
+export default function LaunchesGrid({ onOpen, full = false }: { onOpen?: (l: Launch) => void; full?: boolean } = {}) {
   const stageRef = useRef<HTMLDivElement>(null);
   const planeRef = useRef<HTMLDivElement>(null);
-  const block = useMemo(buildBlock, []);
+  /* scaled to the screen: a block (the twenty launches, each once) is always at least the view's width and height,
+     so no picture is ever in view twice — big screens get slightly bigger tiles */
+  const base = useMemo(buildBlock, []);
+  const [f, setF] = useState(1);
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const fit = () => setF(Math.max(1, (stage.clientWidth + 40) / base.width, (stage.clientHeight + 40) / base.height));
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(stage);
+    return () => ro.disconnect();
+  }, [base]);
+  const block = useMemo(() => ({ tiles: base.tiles.map((t) => ({ ...t, x: t.x * f, y: t.y * f, w: t.w * f })), width: base.width * f, height: base.height * f }), [base, f]);
 
   useEffect(() => {
     const stage = stageRef.current, plane = planeRef.current;
     if (!stage || !plane) return;
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let ox = stage.clientWidth / 2 - WIN_CX, oy = stage.clientHeight / 2 - WIN_CY; // the opening starts centred
+    let ox = stage.clientWidth / 2 - WIN_CX * f, oy = stage.clientHeight / 2 - WIN_CY * f; // the opening starts centred
     let vx = 0, vy = 0;
     let dragging = false, moved = 0, lx = 0, ly = 0, lt = 0;
     let raf = 0;
@@ -114,24 +120,25 @@ export default function LaunchesGrid() {
       stage.removeEventListener('pointerup', up); stage.removeEventListener('pointercancel', up);
       stage.removeEventListener('click', click, true);
     };
-  }, [block]);
+  }, [block, f]);
 
   const copies = [[0, 0], [1, 0], [0, 1], [1, 1]]; // the block is larger than the view: 2 × 2 copies cover it
   return (
-    <div className="lcg" ref={stageRef} aria-label="Launches — drag to look around">
+    <div className="lcg" ref={stageRef} data-full={full || undefined} aria-label="Launches — drag to look around">
       <div className="lcg-plane" ref={planeRef}>
         {copies.map(([cx, cy], ci) => (
           <p key={`line-${ci}`} className="lcg-line" aria-hidden={ci > 0 || undefined}
-            style={{ left: WIN_CX + cx * block.width, top: WIN_CY + cy * block.height }}>
+            style={{ left: WIN_CX * f + cx * block.width, top: WIN_CY * f + cy * block.height }}>
             2B+ views across the launches we’ve done for our clients
           </p>
         ))}
         {copies.map(([cx, cy], ci) => block.tiles.map((t, ti) => (
           <a key={`${ci}-${ti}`} className="lcg-tile" href={t.l.x} target="_blank" rel="noopener noreferrer" draggable={false}
             tabIndex={ci === 0 ? 0 : -1} aria-hidden={ci > 0 || undefined}
-            aria-label={ci === 0 ? `${t.l.client}${t.l.what ? ` — ${t.l.what}` : ''} (opens in a new tab)` : undefined}
-            style={{ left: t.x + cx * block.width, top: t.y + cy * block.height, width: t.w, height: TILE_H }}>
-            <img src={`/assets/launches/${PICTURED_FILE(t.l)}.webp`} alt="" decoding="async" loading="lazy" draggable={false} />
+            aria-label={ci === 0 ? `${t.l.client}${t.l.what ? ` — ${t.l.what}` : ''}${onOpen ? ' — play the launch' : ' (opens in a new tab)'}` : undefined}
+            onClick={onOpen ? (e) => { e.preventDefault(); onOpen(t.l); } : undefined}
+            style={{ left: t.x + cx * block.width, top: t.y + cy * block.height, width: t.w, height: TILE_H * f }}>
+            <img src={t.src} alt="" decoding="async" loading="lazy" draggable={false} />
           </a>
         )))}
       </div>
@@ -139,4 +146,3 @@ export default function LaunchesGrid() {
   );
 }
 
-const PICTURED_FILE = (l: Launch) => `${l.client} ${l.what ?? ''}`.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');

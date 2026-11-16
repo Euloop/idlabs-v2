@@ -243,3 +243,50 @@ html[data-theme='night'] .lcf-rails::before, html[data-theme='night'] .lcf-rails
 .lcr[data-end] :is(.lcr-side[data-side='r'], .lcr-peekhit[data-side='r'], .lcr-nav) { visibility: hidden; }
 /* the zoomed card under the reel can show a hairline past the dark end slide's edges: cover it */
 .lcr[data-track] .lcr-slide.lcr-end { box-shadow: 0 0 0 2px #111214; }
+
+/* ───────── /launches (LaunchesPage): the grid over the whole screen, and the launch dialog ───────── */
+.lcp-grid { position: relative; height: 100svh; }
+.lcp-grid .lcg { --lcg-bg: #fff; background-image: none; } /* no dotted ground here (feedback 2026-11-16) */
+/* no top and bottom fades here (feedback 2026-11-16) */
+.lcp-grid .lcg::before, .lcp-grid .lcg::after { display: none; }
+/* the margin lines dashed, as the launches section on / (.lcf-rails) */
+html[data-lcp] .frame.rails::before, html[data-lcp] .frame.rails::after,
+html[data-lcp] .frame.rails > .rails-light::before, html[data-lcp] .frame.rails > .rails-light::after {
+  background: repeating-linear-gradient(to bottom, #e0e0e0 0 6px, transparent 6px 12px);
+}
+/* under the tiles (feedback 2026-11-16: not over the videos) — seen in the gaps between them */
+.lcp-grid { z-index: 1; }
+.lcp-dialog {
+  position: fixed; inset: 0; z-index: 3000; display: grid; place-items: center; padding: 56px 24px 24px;
+  background: rgb(17 18 20 / .72); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  animation: lcp-in 260ms var(--ease-out) both;
+}
+/* 16:9, as large as the screen allows round the margins */
+.lcp-box {
+  position: relative; width: min(100%, (100svh - 80px) * 16 / 9, 1280px); aspect-ratio: 16 / 9;
+  overflow: hidden; box-shadow: 0 30px 80px rgb(0 0 0 / .35);
+  animation: lcp-box-in 420ms cubic-bezier(.2, .7, .2, 1) both;
+}
+.lcp-close {
+  position: absolute; top: 16px; right: 16px; width: 36px; height: 36px; display: grid; place-items: center;
+  border: 1px solid rgb(255 255 255 / .28); background: rgb(17 18 20 / .4); color: #fff; cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+.lcp-close:hover, .lcp-close:focus-visible { background: rgb(255 255 255 / .12); border-color: rgb(255 255 255 / .6); outline: none; }
+@keyframes lcp-in { from { opacity: 0; } }
+@keyframes lcp-box-in { from { opacity: 0; transform: translateY(14px) scale(.97); } }
+@media (prefers-reduced-motion: reduce) { .lcp-dialog, .lcp-box { animation: none; } }
+@media (max-width: 719px) { .lcp-dialog { padding: 56px 12px 12px; } }
+/* in the dialog the reel's caption and controls sit inside the box (the reel aligns them with the page header,
+   which is outside it here), a size down to suit it */
+.lcp-box .lcr[data-alt] .lcr-cap { left: max(20px, 4%); right: 40%; bottom: max(20px, 6%); }
+.lcp-box .lcr[data-alt] .lcr-nav { right: max(20px, 4%); bottom: max(20px, 6%); }
+.lcp-box .lcr[data-alt] .lcr-reach { font-size: clamp(28px, 3.2vw, 48px); }
+
+/* /launches: the fixed header over the moving grid, readable on any picture without a background (feedback
+   2026-11-16) — the whole header layer blends as "difference" (the layer: its own stacking context, so blending its
+   parts alone would blend with nothing). Its shades are the inverse of the usual ones, so on white they come out as
+   the site's ink (#e0e0e0 → #1f1f1f) and grey marks (#191919 → #e6e6e6); over a picture they invert. */
+html[data-lcp] .chrome { mix-blend-mode: difference; }
+html[data-lcp] .chrome .s2-header .wordmark, html[data-lcp] .chrome .chrome-nav a, html[data-lcp] .chrome .s2-foot { color: #e0e0e0 !important; }
+html[data-lcp] .chrome .tick { background: #191919 !important; }
