@@ -4,7 +4,7 @@ import SectionFourIso from '../SectionFourIso';
 import ToolsGraph from './ToolsGraph';
 import ToolsStack from './ToolsStack';
 import ToolsCollage, { type CollageTheme as Paper } from './ToolsCollage';
-import ToolsShowcase, { type ShowcaseBg, type ShowcaseIntro } from './ToolsShowcase';
+import ToolsShowcase, { type ShowcaseIntro } from './ToolsShowcase';
 import OptionTabs, { THEMES, useOption, type Group } from './OptionTabs';
 
 /* /home-2: the analytical tools in one of four layouts — Collage (glass card over archive scraps,
@@ -18,15 +18,13 @@ import OptionTabs, { THEMES, useOption, type Group } from './OptionTabs';
    copy centred under it (ToolsShowcase.tsx).
    Bottom tabs while the section is on screen; ?tools= &toolsTheme= (&collageTheme=). */
 
-type Layout = 'graph' | 'device' | 'stack' | 'collage' | 'motion' | 'motionScroll' | 'showcase';
+type Layout = 'graph' | 'device' | 'stack' | 'collage' | 'motion' | 'motionScroll' | 'showcase' | 'research' | 'scatter' | 'sequence';
 type Theme = 'light' | 'dark';
-const LAYOUTS: [Layout, string][] = [['motion', 'Motion'], ['showcase', 'Showcase'], ['motionScroll', 'Motion scroll'], ['collage', 'Collage'], ['stack', 'Stack'], ['graph', 'Graph'], ['device', 'Device']];
+const LAYOUTS: [Layout, string][] = [['motion', 'Motion'], ['showcase', 'Showcase'], ['motionScroll', 'Motion scroll'], ['research', 'Research live'], ['scatter', 'Research scatter'], ['sequence', 'Research sequence'], ['collage', 'Collage'], ['stack', 'Stack'], ['graph', 'Graph'], ['device', 'Device']];
 type Intro = 'small' | 'large';
 const INTROS: [Intro, string][] = [['small', '12px'], ['large', '20px']];
 // Showcase's intro screen: the typed line we had, or the headline (?toolsLine=)
 const LINES: [ShowcaseIntro, string][] = [['typed', 'Typed line'], ['headline', 'Headline']];
-// Showcase's colour field: the soft wash or dithered (?toolsBg=)
-const BGS: [ShowcaseBg, string][] = [['soft', 'Soft'], ['dither', 'Dither'], ['type', 'Type']];
 const PAPERS: [Paper, string][] = [['gather', 'Gather'], ['white', 'White'], ['paper', 'Paper'], ['dark', 'Paper dark']];
 // From when the section's top reaches the middle of the screen until the next section comes up.
 const inView = (r: DOMRect, vh: number, nextTop: number) => r.top <= vh * 0.5 && nextTop >= vh - 1;
@@ -41,7 +39,6 @@ export default function ToolsOptions({ only }: { only?: Layout[] } = {}) {
   const [paper, pickPaper] = useOption<Paper>('collageTheme', PAPERS, 'gather');
   const [intro, pickIntro] = useOption<Intro>('toolsIntro', INTROS, 'small');
   const [line, pickLine] = useOption<ShowcaseIntro>('toolsLine', LINES, 'typed');
-  const [bg, pickBg] = useOption<ShowcaseBg>('toolsBg', BGS, 'soft');
   const light = theme === 'light';
   const collage = layout === 'collage';
   return (
@@ -50,15 +47,18 @@ export default function ToolsOptions({ only }: { only?: Layout[] } = {}) {
         : layout === 'stack' ? <ToolsStack key={theme} light={light} />
         : collage ? <ToolsCollage theme={paper} />
         : layout === 'motion' ? <ToolsCollage key="motion" theme="white" motion intro={intro} />
-        : layout === 'showcase' ? <ToolsShowcase intro={line} bg={bg} />
-        : layout === 'motionScroll' ? <ToolsCollage key="motionScroll" theme="white" motion scroll intro={intro} ground={bg === 'soft' ? undefined : bg} />
+        : layout === 'showcase' ? <ToolsShowcase intro={line} />
+        : layout === 'sequence' ? <ToolsCollage key="sequence" theme="white" motion scroll research="sequence" intro={intro} />
+        : layout === 'scatter' ? <ToolsCollage key="scatter" theme="white" motion scroll research="scatter" intro={intro} />
+        : layout === 'research' ? <ToolsCollage key="research" theme="white" motion scroll research intro={intro} />
+        : layout === 'motionScroll' ? <ToolsCollage key="motionScroll" theme="white" motion scroll intro={intro} />
         : <ToolsGraph key={theme} light={light} />}
       <OptionTabs
         groups={[
           { label: 'Tools layout', options: layouts, value: layout, onChange: (v) => pickLayout(v as Layout) },
           // Motion is the Collage in White with the tools' walkthroughs: no theme to pick, but its
           // intro line comes in two sizes
-          ...(layout === 'showcase' ? [{ label: 'Tools intro', options: LINES, value: line, onChange: (v) => pickLine(v as ShowcaseIntro) } as Group, { label: 'Background', options: BGS, value: bg, onChange: (v) => pickBg(v as ShowcaseBg) } as Group] : layout === 'motion' || layout === 'motionScroll' ? [{ label: 'Intro size', options: INTROS, value: intro, onChange: (v) => pickIntro(v as Intro) } as Group, ...(layout === 'motionScroll' ? [{ label: 'Background', options: BGS, value: bg, onChange: (v) => pickBg(v as ShowcaseBg) } as Group] : [])] : [(collage
+          ...(layout === 'showcase' ? [{ label: 'Tools intro', options: LINES, value: line, onChange: (v) => pickLine(v as ShowcaseIntro) } as Group] : layout === 'motion' || layout === 'motionScroll' || layout === 'research' || layout === 'scatter' || layout === 'sequence' ? [{ label: 'Intro size', options: INTROS, value: intro, onChange: (v) => pickIntro(v as Intro) } as Group] : [(collage
             ? { label: 'Collage theme', options: PAPERS, value: paper, onChange: (v) => pickPaper(v as Paper) }
             : { label: 'Tools theme', options: THEMES, value: theme, onChange: (v) => pickTheme(v as Theme) }) as Group]),
         ]}

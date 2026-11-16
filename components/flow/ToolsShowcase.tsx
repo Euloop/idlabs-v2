@@ -4,8 +4,6 @@ import { useEffect, useRef, useState } from 'react';
 import ScrollText, { type ScrollTextHandle } from '../ScrollText';
 import { TOOLS, LOOPS } from './ToolsCollage';
 import { LOOP, preloadAvatars } from './tool-motion/shared';
-import DitherField from './DitherField';
-import GlyphField from './GlyphField';
 import './tools-showcase.css';
 
 /* Analytical tools, "Showcase" layout (/home-2 and /home-4 Tools tabs). Two pinned screens:
@@ -25,9 +23,6 @@ import './tools-showcase.css';
    Sizes are Figma px × --px (the frame's unit). */
 
 export type ShowcaseIntro = 'typed' | 'headline';
-// the colour field: the soft wash, the same dithered (DitherField.tsx), or a typed research plate
-// (GlyphField.tsx) — ?toolsBg=
-export type ShowcaseBg = 'soft' | 'dither' | 'type';
 
 const INTRO =
   'We turned this research into software, built on 2B+ data points, that weights every engagement by the engager’s influence, measures engagement velocity in real time, and maps how deep a post penetrates each niche, to forecast its reach and shelf-life within the first 30 minutes.';
@@ -38,7 +33,7 @@ const SUB = 'that weights every engagement by the engager’s influence, measure
 const clamp = (v: number) => Math.max(0, Math.min(1, v));
 const range = (v: number, a: number, b: number) => clamp((v - a) / (b - a));
 
-export default function ToolsShowcase({ intro = 'typed', bg = 'soft' }: { intro?: ShowcaseIntro; bg?: ShowcaseBg }) {
+export default function ToolsShowcase({ intro = 'typed' }: { intro?: ShowcaseIntro }) {
   const introRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<ScrollTextHandle>(null);
   const subRef = useRef<HTMLParagraphElement>(null);
@@ -157,7 +152,7 @@ export default function ToolsShowcase({ intro = 'typed', bg = 'soft' }: { intro?
             </div>
 
             <div className="tsc-field">
-              {bg === 'dither' ? <DitherField /> : bg === 'type' ? <GlyphField /> : <div className="tsc-glow" aria-hidden="true" />}
+              <div className="tsc-glow" aria-hidden="true" />
               <a id="tsc-panel" role="tabpanel" aria-labelledby={`tsc-tab-${active}`} className="tsc-window"
                 href={t.href} target="_blank" rel="noopener noreferrer" aria-label={`Try ${t.name} (opens in a new tab)`}
                 onPointerEnter={() => setHeld(true)} onPointerLeave={() => setHeld(false)}

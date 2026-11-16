@@ -17,7 +17,7 @@ import HeroNetwork from './flow/HeroNetwork';
 import './flow/flow.css';
 
 /* /home-4 and /home-4/classic (the page's body; the routes add their metadata). /home-4: /home-2 with the picks made — the new light hero (HeroVertical.tsx, Figma 183:3), Section 2 Diagram, research papers with the
-   Paper cover, tools Showcase or Motion (tabs, ?tools=), Services Columns (light). Tabs remain only for Launches
+   Paper cover, tools Showcase or Motion scroll (tabs, ?tools=), Services Columns (light). Tabs remain only for Launches
    (Float II · Float III · Float IV, ?launches=) and the footer's reading list (Classic · IL colours,
    ?books=). Not linked from the site.
    The loader: `new`, today's (/hero's: the logo, the reel, the golden spirals, onto the clean hero),
@@ -48,8 +48,8 @@ export default function Home4({ loader = 'new' }: { loader?: 'new' | 'classic' }
       <ResearchLab />
       <SectionThree lead="Read our published findings" cover="paper" holes={false} />
       <MonoTrail selector="section.s3 .s3-band" />
-      {/* tools: Showcase (default), Motion, or Motion scroll (the scroll moves through the tools, as /), bottom tabs (?tools=) */}
-      <ToolsOptions only={['showcase', 'motion', 'motionScroll']} />
+      {/* tools: Showcase (default), Motion scroll (the scroll moves through the tools, as /) Research live (research typing in, then the glass card) Research scatter (the same loose, print-style) or Research sequence (the scatter's pieces one by one, growing, then all), bottom tabs (?tools=) */}
+      <ToolsOptions only={['showcase', 'motionScroll', 'research', 'scatter', 'sequence']} />
       <ServicesCards light layout="columns" />
       {/* launches: Selected (default: the client's six and See all → /launches) or Float II–IV (?launches=) */}
       <LaunchesOptions only={['selected', 'float2', 'float3', 'float4']} words={['Our trajectory', 'changing launches']} />
