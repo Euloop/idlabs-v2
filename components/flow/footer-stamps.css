@@ -116,3 +116,18 @@
    only meet transparency and the paper would stay bright; the same result is applied to the paper itself:
    hard-light on the footer's #2a2c31 is, for the paper's light tones, ≈ a steeper curve pinned at white. */
 .fst-paper-sq, .fst-paper-tall { mix-blend-mode: normal; filter: contrast(1.6) brightness(.76); }
+
+/* the drawing's notes (FooterFibFull quiet), as Fibonacci + Focus has them: small, faint mono — a dimension
+   line just over the drawing's top (ticked at the ends and the cut), the measures over it, the squares' notes in
+   their corners, the frame's square where the first cuts cross and P beside it */
+.fff-notes { position: absolute; inset: 0; pointer-events: none; }
+.fff-dim { position: absolute; left: 0; right: 0; top: -20px; height: 1px; background: rgb(235 235 235 / .14); }
+.fff-dim-tick { position: absolute; top: -25px; width: 1px; height: 11px; translate: -50% 0; background: rgb(235 235 235 / .14); }
+.fff-note { position: absolute; padding: 16px; font-family: var(--mono); font-size: 10px; letter-spacing: .06em; color: #4f4f4f; white-space: nowrap; }
+.fff-note-dx { top: -20px; padding: 0 0 10px; translate: -50% -100%; }
+.fff-note-p { padding: 0 0 0 14px; translate: 0 76px; }
+.fff-tick-sq { position: absolute; width: 10px; height: 10px; translate: -50% -50%; background: #35363b; }
+/* …and the squares' numbers in their corners (FooterFibFull: top right, the 34's and 13's top left) — still
+   (the sequence, the rule and φ read-out taken out, 2026-11-16) */
+.fff-n.fff-n-r { translate: -100% 0; }
+.fff-top.fff-top-own { position: relative; }

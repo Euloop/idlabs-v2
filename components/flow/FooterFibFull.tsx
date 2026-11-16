@@ -24,11 +24,16 @@ const SEQ = T.seq;
 // square i (largest first) ↔ its place in SEQ
 const seqAt = (i: number) => N - 1 - i;
 // the squares big enough to carry their number (3 and up: ~70px at 1056 wide)
+// the first cuts, as fractions: across, the big square's side over the width (34/55 ≈ 0.618); down (turned over),
+// the third square's side over the height (13/34 ≈ 0.382)
+const CUT_X = T.squares[0].s / FW;
+const CUT_Y = T.squares[2].s / T.H;
 const LABELLED = T.squares.filter((q) => q.n >= 3).length;
 const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
 
 // `say` false (Fibonacci · low): no statement — the open part only the drawing and the read-out
 // `top` (Moneyball): that in the open part instead of the statement, and the drawing quiet behind it — the
+// lines, the spiral (drawn in once) and the figure's notes as Fibonacci + Focus has them — no pointing; formerly:
 // lines and the spiral (drawn in once) only: no numbers, no read-out, no pointing
 export default function FooterFibFull({ children, say = true, top }: { children?: ReactNode; say?: boolean; top?: ReactNode }) {
   const quiet = top !== undefined;
@@ -76,14 +81,39 @@ export default function FooterFibFull({ children, say = true, top }: { children?
           ))}
           </g>
         </svg>
-        {!quiet && <div className="fff-nums">
+        {quiet ? (
+          // Moneyball: the figure's notes as Fibonacci + Focus has them — a dimension line over the top, ticked at
+          // the cut (0.618 | 0.382 of the width: 34 and 21 of 55), the three largest squares' ratios to the whole
+          // height (A 34, B 21, C 13 of 34), and the point where the first two cuts cross, P (0.618, 0.382)
+          <div className="fff-notes" aria-hidden="true">
+            <span className="fff-dim" />
+            {[0, CUT_X, 1].map((t) => <span key={t} className="fff-dim-tick" style={{ left: `${t * 100}%` }} />)}
+            <span className="fff-note fff-note-dx" style={{ left: `${(CUT_X / 2) * 100}%` }}>0.618</span>
+            <span className="fff-note fff-note-dx" style={{ left: `${((1 + CUT_X) / 2) * 100}%` }}>0.382</span>
+            <span className="fff-note" style={{ left: 0, bottom: 0 }}>A · 1.000</span>
+            <span className="fff-note" style={{ right: 0, bottom: 0, textAlign: 'right' }}>B · 0.618</span>
+            <span className="fff-note" style={{ right: 0, top: 0, textAlign: 'right' }}>C · 0.382</span>
+            <span className="fff-tick-sq" style={{ left: `${CUT_X * 100}%`, top: `${CUT_Y * 100}%` }} />
+            {/* (P's label beside the cut line, under the words: on the point itself it sat on the description) */}
+            <span className="fff-note fff-note-p" style={{ left: `${CUT_X * 100}%`, top: `${CUT_Y * 100}%` }}>P (0.618, 0.382)</span>
+          </div>
+        ) : null}
+        {<div className="fff-nums">
           {T.squares.slice(0, LABELLED).map((q, i) => (
-            <span key={i} className="fff-n" data-on={active === i || undefined} style={{ left: pct(q.x, FW), top: pct(FH - q.y - q.s, FH) }}>{q.n}</span>
+            // Moneyball (quiet): the numbers in the squares' top-right corners, clear of the stamps and the words —
+            // but the 34's and the 13's top left (the 13's top right carries "C · 0.382")
+            quiet && i !== 0 && i !== 2
+              ? <span key={i} className="fff-n fff-n-r" style={{ left: pct(q.x + q.s, FW), top: pct(FH - q.y - q.s, FH) }}>{q.n}</span>
+              : <span key={i} className="fff-n" data-on={active === i || undefined} style={{ left: pct(q.x, FW), top: pct(FH - q.y - q.s, FH) }}>{q.n}</span>
           ))}
         </div>}
       </div>
 
-      {quiet ? <div className="fff-top fff-top-own">{top}</div> : <div className="fff-top">
+      {quiet ? (
+        <div className="fff-top fff-top-own">
+          {top}
+        </div>
+      ) : <div className="fff-top">
         {say ? (
           <div className="fff-say fg">
             <p className="fg-say">Built on research.<br />Engineered to spread.</p>
