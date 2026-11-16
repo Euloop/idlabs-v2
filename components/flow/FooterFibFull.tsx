@@ -28,7 +28,10 @@ const LABELLED = T.squares.filter((q) => q.n >= 3).length;
 const pct = (v: number, of: number) => `${((v / of) * 100).toFixed(3)}%`;
 
 // `say` false (Fibonacci · low): no statement — the open part only the drawing and the read-out
-export default function FooterFibFull({ children, say = true }: { children?: ReactNode; say?: boolean }) {
+// `top` (Moneyball): that in the open part instead of the statement, and the drawing quiet behind it — the
+// lines and the spiral (drawn in once) only: no numbers, no read-out, no pointing
+export default function FooterFibFull({ children, say = true, top }: { children?: ReactNode; say?: boolean; top?: ReactNode }) {
+  const quiet = top !== undefined;
   const ref = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState<number | null>(null);
 
@@ -58,7 +61,8 @@ export default function FooterFibFull({ children, say = true }: { children?: Rea
   const ratio = k === null || k === 0 ? null : SEQ[k] / SEQ[k - 1];
 
   return (
-    <div className={say ? 'fff' : 'fff fff-low'} ref={ref} onPointerMove={pick} onPointerDown={pick} onPointerLeave={() => setActive(null)}>
+    <div className={quiet ? 'fff fff-quiet' : say ? 'fff' : 'fff fff-low'} ref={ref}
+      {...(quiet ? {} : { onPointerMove: pick, onPointerDown: pick, onPointerLeave: () => setActive(null) })}>
       <div className="fff-art" aria-hidden="true">
         <FibLines className="fff-lines" depth={9} flip />
         <svg className="fff-over" viewBox={`0 0 ${FW} ${+FH.toFixed(2)}`} preserveAspectRatio="none">
@@ -66,20 +70,20 @@ export default function FooterFibFull({ children, say = true }: { children?: Rea
           {sq && <rect className="fff-lit" x={sq.x} y={sq.y} width={sq.s} height={sq.s} vectorEffect="non-scaling-stroke" />}
           {/* the whole spiral (drawn in once); then the arcs out to the square pointed at, outside in */}
           <path className="fff-arc fff-arc-all" d={T.arcs.join('').replace(/(?!^)M[\d. ]+/g, '')} pathLength={1} data-dim={active !== null || undefined} />
-          {T.arcs.map((d, i) => (
+          {!quiet && T.arcs.map((d, i) => (
             <path key={i} className="fff-arc fff-arc-on" d={d} pathLength={1} data-on={(active !== null && i <= active) || undefined}
               style={{ '--d': `${i * 60}ms` } as CSSProperties} />
           ))}
           </g>
         </svg>
-        <div className="fff-nums">
+        {!quiet && <div className="fff-nums">
           {T.squares.slice(0, LABELLED).map((q, i) => (
             <span key={i} className="fff-n" data-on={active === i || undefined} style={{ left: pct(q.x, FW), top: pct(FH - q.y - q.s, FH) }}>{q.n}</span>
           ))}
-        </div>
+        </div>}
       </div>
 
-      <div className="fff-top">
+      {quiet ? <div className="fff-top fff-top-own">{top}</div> : <div className="fff-top">
         {say ? (
           <div className="fff-say fg">
             <p className="fg-say">Built on research.<br />Engineered to spread.</p>
@@ -98,7 +102,7 @@ export default function FooterFibFull({ children, say = true }: { children?: Rea
             {k === null ? `φ ≈ ${PHI.toFixed(6)}` : ratio === null ? 'the first square' : `${SEQ[k]} / ${SEQ[k - 1]} = ${ratio.toFixed(3)}  ·  φ ${ratio > PHI ? '+' : '−'} ${Math.abs(ratio - PHI).toFixed(3)}`}
           </span>
         </div>
-      </div>
+      </div>}
       {children}
     </div>
   );

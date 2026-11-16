@@ -89,7 +89,9 @@ function Construction() {
    statement and this links box over it, the box's bottom on the drawing's */
 /* `full` 'low' (/footer's "Fibonacci · low"): the same without the statement, the drawing down to the footer's
    very bottom (behind the closing bar), the footer only as tall as it */
-export default function FooterFib({ top, full = false }: { top?: ReactNode; full?: boolean | 'low' } = {}) {
+/* `behind` (with `top`, /footer's "Moneyball"): the construction kept behind the top band */
+/* `fullTop` (with `full`, /footer's "Moneyball"): Fibonacci · full's drawing, quiet, with this in its open part */
+export default function FooterFib({ top, full = false, behind = false, fullTop }: { top?: ReactNode; full?: boolean | 'low'; behind?: boolean; fullTop?: ReactNode } = {}) {
   const nav = (
         <nav className="ftf-box" aria-label="Site">
           {COLUMNS.map((c) => (
@@ -121,10 +123,10 @@ export default function FooterFib({ top, full = false }: { top?: ReactNode; full
   );
   return (
     <>
-      {top ? <div className="ftf-top">{top}</div> : full ? null : <Construction />}
+      {top ? <>{behind && <Construction />}<div className="ftf-top">{top}</div></> : full ? null : <Construction />}
       <div className={top ? 'ftf ftf-after-top' : full ? `ftf ftf-full${full === 'low' ? ' ftf-low' : ''}` : 'ftf'}>
         {full === 'low' ? <FooterFibFull say={false}>{nav}{bar}</FooterFibFull> : <>
-        {full ? <FooterFibFull>{nav}</FooterFibFull> : nav}
+        {full ? <FooterFibFull top={fullTop}>{nav}</FooterFibFull> : nav}
         {bar}
         </>}
       </div>

@@ -5,6 +5,7 @@ import Bookshelf, { type ShelfPalette } from './Bookshelf';
 import OptionTabs, { useOption } from './OptionTabs';
 import FooterGolden, { type GoldenVariant } from './FooterGolden';
 import FooterFib from './FooterFib';
+import FooterStamps from './FooterStamps';
 import './footer.css';
 
 /* /home-2 footer: always dark — its own dark ground and grain, whatever the page theme; it does
@@ -32,10 +33,11 @@ const footerInView = (r: DOMRect, vh: number) => r.top <= vh * 0.5;
 // `fib-full` (feedback 2026-11-16): that footer with the whole construction shown inside the frame,
 // interactive as Fibonacci + Focus (FooterFibFull.tsx)
 // `fib-low`: that without the statement, the drawing to the footer's bottom, the footer shorter than the screen
-export type Middle = GoldenVariant | 'books' | 'fib' | 'fib-focus' | 'fib-full' | 'fib-low';
+// `stamps`: "Moneyball" — the Fibonacci footer with the four stamps and the statement in its top band (FooterStamps)
+export type Middle = GoldenVariant | 'books' | 'fib' | 'fib-focus' | 'fib-full' | 'fib-low' | 'stamps';
 const MIDDLES: [Middle, string][] = [
   ['spiral', 'Spiral'], ['compound', 'Compound'], ['focus', 'Focus'], ['reel', 'Reel'], ['trace', 'Trace'], ['books', 'Reading list'],
-  ['fib', 'Fibonacci (/)'], ['fib-focus', 'Fibonacci + Focus'], ['fib-full', 'Fibonacci · full'], ['fib-low', 'Fibonacci · low'],
+  ['stamps', 'Moneyball (/)'], ['fib', 'Fibonacci'], ['fib-focus', 'Fibonacci + Focus'], ['fib-full', 'Fibonacci · full'], ['fib-low', 'Fibonacci · low'],
 ];
 
 // /home-4 (`fib`): the Fibonacci footer (Figma Zoomcast 200:4, FooterFib.tsx) or this one, ?footer=
@@ -61,14 +63,17 @@ function Rule() {
 
 // `layout`: a fixed layout with no tabs (the live pages: / and /launches use 'fib')
 // `start` (with `golden`): the variant the tabs open on (/footer: Spiral; /home-4: Fibonacci, as /)
-export default function SiteFooter({ golden = false, fib = false, layout: fixed, start = 'spiral' }: { golden?: boolean; fib?: boolean; layout?: Layout; start?: Middle } = {}) {
+// `live` (with layout 'fib', no tabs): which Fibonacci footer the live pages show — Moneyball since 2026-11-16
+export default function SiteFooter({ golden = false, fib = false, layout: fixed, start = 'spiral', live = 'stamps' }: { golden?: boolean; fib?: boolean; layout?: Layout; start?: Middle; live?: Middle } = {}) {
   const ref = useRef<HTMLElement>(null);
   const [layoutPicked, pickLayout] = useOption<Layout>('footer', LAYOUTS, 'fib');
   const [shelf, pickShelf] = useOption<ShelfPalette>('books', SHELVES, 'classic');
   const [picked, pickMiddle] = useOption<Middle>('golden', MIDDLES, start);
   const middle: Middle = golden ? picked : 'books';
+  // the Fibonacci footer's variant: the tab's pick (/footer, /home-4), else the live one (/, /launches)
+  const fm: Middle = golden ? picked : fixed === 'fib' ? live : 'fib';
   // /footer's Fibonacci tab: the / footer's layout
-  const layout: Layout = fixed ?? (golden && (picked === 'fib' || picked === 'fib-focus' || picked === 'fib-full' || picked === 'fib-low') ? 'fib' : fib ? layoutPicked : 'classic');
+  const layout: Layout = fixed ?? (golden && (picked === 'fib' || picked === 'fib-focus' || picked === 'fib-full' || picked === 'fib-low' || picked === 'stamps') ? 'fib' : fib ? layoutPicked : 'classic');
 
   useEffect(() => {
     const el = ref.current;
@@ -102,10 +107,10 @@ export default function SiteFooter({ golden = false, fib = false, layout: fixed,
     <section ref={ref} className={layout === 'fib' ? 'ft ft-fib' : 'ft'} data-foot="/Footer" aria-label="Footer">
       <div className="ft-texture" aria-hidden="true" />
       <div className="frame ft-frame">
-        {layout === 'fib' ? <FooterFib full={golden && picked === 'fib-full' ? true : golden && picked === 'fib-low' ? 'low' : false} top={golden && picked === 'fib-focus' ? <FooterGolden variant="focus" interactive caption={false} /> : undefined} /> : <>
+        {layout === 'fib' ? <FooterFib full={fm === 'fib-full' || fm === 'stamps' ? true : fm === 'fib-low' ? 'low' : false} fullTop={fm === 'stamps' ? <FooterStamps /> : undefined} top={fm === 'fib-focus' ? <FooterGolden variant="focus" interactive caption={false} /> : undefined} /> : <>
         {/* /footer (golden): the golden band above, the links under it; otherwise the links, then
             the reading list */}
-        {middle !== 'books' && middle !== 'fib' && middle !== 'fib-focus' && middle !== 'fib-full' && middle !== 'fib-low' && <><FooterGolden variant={middle} /><Rule /></>}
+        {middle !== 'books' && middle !== 'fib' && middle !== 'fib-focus' && middle !== 'fib-full' && middle !== 'fib-low' && middle !== 'stamps' && <><FooterGolden variant={middle} /><Rule /></>}
         <nav className="ft-cols" aria-label="Site">
           {COLUMNS.map((c) => (
             <div className="ft-col" key={c.title}>

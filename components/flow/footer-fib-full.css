@@ -4,8 +4,8 @@
 
 .ftf.ftf-full { padding-top: calc(56 * var(--px)); }
 /* the dark footer at least a screen tall: the room goes above the drawing (feedback 2026-11-16) */
-.ft.ft-fib:has(.fff:not(.fff-low)) { min-height: 100svh; display: flex; flex-direction: column; }
-.ft.ft-fib:has(.fff:not(.fff-low)) > .ft-frame { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; }
+.ft.ft-fib:has(.fff:not(.fff-low, .fff-quiet)) { min-height: 100svh; display: flex; flex-direction: column; }
+.ft.ft-fib:has(.fff:not(.fff-low, .fff-quiet)) > .ft-frame { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; }
 .fff { position: relative; display: flex; flex-direction: column; aspect-ratio: 55 / 34; touch-action: pan-y; }
 
 /* the drawing, behind everything: one grey (opacity on the whole, so shared edges read as any line) */

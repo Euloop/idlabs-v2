@@ -209,9 +209,10 @@ const END_LOGO = 1.65; // the Fade ending's logo, in the image slot (170 × 38)
 // moment — its first half cut down to VIDEO_KEEP — the Fibonacci diagram faint behind it all (.sl-fib),
 // and the logo drawn in the frame at the end, before the white lifts
 // `video` (/, since 2026-11-16): always that flow. /home-4 (`choice`) opens on it too; ?loader=new and
-// ?loader=first bring back the logo-opening loader (whole, or its first half)
+// ?loader=first bring back the logo-opening loader (whole, or its first half); ?loader=videobg is Video first
+// with the diagram staying on as the hero's background (html[data-fib-hero], HeroVertical .hv-fib)
 const BOOT = (fixed: boolean, choice: boolean, video: boolean) => `(function(){var d=document.documentElement,u=new URLSearchParams(location.search),q=u.get('intro'),L=u.get('loader');${
-  fixed ? `d.dataset.intro='fade';d.dataset.slEnd='reel';${video ? "d.dataset.slFlow='video';" : choice ? "if(L!=='new'&&L!=='first')d.dataset.slFlow='video';else d.dataset.slOpen='logo';" : "d.dataset.slOpen='logo';"}` : "d.dataset.intro=q==='fade'?'fade':'zoom';"}${
+  fixed ? `d.dataset.intro='fade';d.dataset.slEnd='reel';${video ? "d.dataset.slFlow='video';" : choice ? "if(L!=='new'&&L!=='first')d.dataset.slFlow='video';else d.dataset.slOpen='logo';if(L==='videobg')d.dataset.fibHero='';" : "d.dataset.slOpen='logo';"}` : "d.dataset.intro=q==='fade'?'fade':'zoom';"}${
   choice ? "d.dataset.slReel=L==='first'?'first':'full';" : ''}if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;d.dataset.loader='run';try{history.scrollRestoration='manual'}catch(e){}scrollTo(0,0)})()`;
 
 export default function StartLoader({ fixed = false, choice = false, video = false }: { fixed?: boolean; choice?: boolean; video?: boolean }) {

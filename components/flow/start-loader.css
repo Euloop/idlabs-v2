@@ -429,3 +429,13 @@ html[data-sl-flow='video'] .sl[data-end] .sl-zoom-b { opacity: 0; transition: op
    fades with the last picture. */
 html[data-sl-flow='video'] .sl[data-end] .sl-stage .sl-frame:not(.sl-last) { opacity: 0 !important; transition: none; }
 html[data-sl-flow='video'] .sl[data-end] .sl-stage { opacity: 0; transition: opacity 250ms var(--ease-out); }
+
+/* "Video first · diagram stays" (?loader=videobg, html[data-fib-hero]): the diagram doesn't fade with
+   the white — the hero's own copy of it (.hv-fib, hero-vertical.css) lies under it in the same place,
+   so it holds until the overlay goes and the hero's carries on */
+html[data-fib-hero][data-sl-flow='video'][data-loader='zoom'] .sl-fib,
+html[data-fib-hero][data-sl-flow='video'][data-loader='done'] .sl-fib { opacity: 1; transition: none; }
+/* …and as the hero's words come in (html[data-sl-land]) it dims a little (feedback 2026-11-16) — the
+   loader's copy and the hero's together, so the two never differ while the white lifts */
+html[data-fib-hero][data-sl-land] .sl-fib,
+html[data-fib-hero][data-sl-land] .hv-fib { color: #f4f4f4; transition: color 900ms var(--ease-out); }

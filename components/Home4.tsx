@@ -56,7 +56,7 @@ export default function Home4({ loader = 'new' }: { loader?: 'new' | 'classic' }
       {/* footer: Fibonacci (default, Figma Zoomcast 200:4) or the reading list, bottom tabs (?footer=) */}
       {/* every footer variant, as /footer (bottom tabs, ?golden=): Spiral · Compound · Focus · Reel · Trace ·
           Reading list · Fibonacci (/) · Fibonacci + Focus — opening on Fibonacci, the footer / has */}
-      <SiteFooter golden start="fib" />
+      <SiteFooter golden start="stamps" />
       <SiteChrome />
       <ThemeDriver />
     </>

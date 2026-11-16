@@ -208,3 +208,14 @@ html[data-intro='fade'] .hv-clients { display: block; }
 html:not([data-clients='picked']) .hv [data-set='picked'],
 html[data-clients='picked'] .hv [data-set='all'] { display: none !important; }
 html[data-clients='picked'] section.hn { display: none; }
+
+/* /home-4 "Video first · diagram stays" (?loader=videobg, html[data-fib-hero]): the loader's Fibonacci
+   diagram (FibLines, .sl-fib) stays on as the hero's background — the same drawing, the same grey, over
+   the first screen exactly where the loader had it, already drawn, so the white lifts off it and it
+   simply stays. It scrolls away with the hero. Hidden on every other loader. */
+.hv-fib { display: none; }
+html[data-fib-hero] .hv-fib {
+  display: block; position: absolute; top: 0; left: 0; width: 100%; height: 100svh;
+  color: #ebebeb; pointer-events: none; z-index: 0;
+}
+html[data-fib-hero] .hero.hv > .frame { position: relative; z-index: 1; }

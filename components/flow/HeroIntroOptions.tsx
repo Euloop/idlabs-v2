@@ -19,9 +19,11 @@ const never = () => false;
    on /home-4 itself (?loader=first, read before first paint by StartLoader `choice`) */
 // `video` (feedback 2026-11-16): the reel from the first moment, the words already split, the Fibonacci
 // diagram behind, the logo at the end (?loader=video)
-type Loader = 'new' | 'first' | 'video' | 'zoom' | 'fade';
+// `videobg` (feedback 2026-11-16): Video first, with its Fibonacci diagram kept as the hero's background
+// once the white lifts (?loader=videobg, html[data-fib-hero])
+type Loader = 'new' | 'first' | 'video' | 'videobg' | 'zoom' | 'fade';
 // Video first is /home-4's default (and /'s) since 2026-11-16
-const LOADERS: [Loader, string][] = [['video', 'Video first'], ['new', 'Logo first'], ['first', 'Logo first · half'], ['zoom', 'Zoom'], ['fade', 'Fade']];
+const LOADERS: [Loader, string][] = [['video', 'Video first'], ['videobg', 'Video first · diagram stays'], ['new', 'Logo first'], ['first', 'Logo first · half'], ['zoom', 'Zoom'], ['fade', 'Fade']];
 
 export default function HeroIntroOptions({ loader = 'new' }: { loader?: 'new' | 'classic' } = {}) {
   const [clients, pickClients] = useOption<Clients>('clients', CLIENTS, 'picked');
@@ -32,15 +34,16 @@ export default function HeroIntroOptions({ loader = 'new' }: { loader?: 'new' | 
     if (loader === 'classic') setCurrent(q.get('intro') === 'fade' ? 'fade' : 'zoom');
     else if (q.get('loader') === 'first') setCurrent('first');
     else if (q.get('loader') === 'new') setCurrent('new');
+    else if (q.get('loader') === 'videobg') setCurrent('videobg');
   }, [loader]);
   const pickLoader = (v: Loader) => {
     const q = new URLSearchParams(window.location.search);
     q.delete('intro');
     q.delete('loader');
     if (v === 'zoom' || v === 'fade') q.set('intro', v);
-    if (v === 'first' || v === 'new') q.set('loader', v);
+    if (v === 'first' || v === 'new' || v === 'videobg') q.set('loader', v);
     const qs = q.toString();
-    window.location.href = `${v === 'new' || v === 'first' || v === 'video' ? '/home-4' : '/home-4/classic'}${qs ? `?${qs}` : ''}`;
+    window.location.href = `${v === 'new' || v === 'first' || v === 'video' || v === 'videobg' ? '/home-4' : '/home-4/classic'}${qs ? `?${qs}` : ''}`;
   };
   const [heroIn, setHeroIn] = useState(false);
 
