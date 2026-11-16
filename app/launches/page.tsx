@@ -1,14 +1,14 @@
 import type { Metadata } from 'next';
-import LaunchesGridPage from '../../components/flow/LaunchesPage';
+import LaunchesAll from '../../components/flow/LaunchesSelected';
 import SiteFooter from '../../components/flow/SiteFooter';
 import SiteChrome from '../../components/SiteChrome';
 import '../../components/sections.css';
 import '../../components/flow/flow.css';
 import HtmlMark from '../../components/HtmlMark';
+import '../../components/flow/launches-float.css';
 
-/* /launches: every launch (/home-4's See all button) — the launches grid over the whole screen (drag to look
-   around); a tile opens its launch in the video dialog (LaunchesPage). Light page from the start (no hero),
-   the fixed nav and the Fibonacci footer, as on /. */
+/* /launches: every launch, as the cards of Launches "Selected" (/home-4's See all button). Light page
+   from the start (no hero), the fixed nav and the Fibonacci footer, as on /. */
 
 export const metadata: Metadata = {
   title: 'Launches — Identity Labs',
@@ -23,15 +23,15 @@ export default function LaunchesPage() {
       <script dangerouslySetInnerHTML={{ __html: "document.documentElement.dataset.theme='light'" }} />
       <span className="s2-flow" hidden />
       <HtmlMark name="s2" />
-      {/* html[data-lcp]: this page (its dashed margin lines, launches-float.css) */}
-      <HtmlMark name="lcp" />
+      {/* html[data-lchdr]: the header blends with what is under it, readable over the cards (launches-float.css) */}
+      <HtmlMark name="lchdr" />
       <div className="backdrop" aria-hidden="true">
         <div className="backdrop-dark"><div className="texture" /></div>
         <div className="backdrop-light" />
       </div>
       <div className="frame rails" aria-hidden="true"><span className="rails-light" /></div>
       <main>
-        <section className="lc lcp" data-variant="grid-page" data-foot="/Launches" aria-labelledby="lc-title"><LaunchesGridPage /></section>
+        <section className="lc" data-variant="all" data-foot="/Launches" aria-labelledby="lc-title"><LaunchesAll /></section>
       </main>
       <SiteFooter layout="fib" />
       <SiteChrome />

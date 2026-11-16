@@ -287,6 +287,6 @@ html[data-lcp] .frame.rails > .rails-light::before, html[data-lcp] .frame.rails 
    2026-11-16) — the whole header layer blends as "difference" (the layer: its own stacking context, so blending its
    parts alone would blend with nothing). Its shades are the inverse of the usual ones, so on white they come out as
    the site's ink (#e0e0e0 → #1f1f1f) and grey marks (#191919 → #e6e6e6); over a picture they invert. */
-html[data-lcp] .chrome { mix-blend-mode: difference; }
-html[data-lcp] .chrome .s2-header .wordmark, html[data-lcp] .chrome .chrome-nav a, html[data-lcp] .chrome .s2-foot { color: #e0e0e0 !important; }
-html[data-lcp] .chrome .tick { background: #191919 !important; }
+html:is([data-lcp], [data-lchdr]) .chrome { mix-blend-mode: difference; }
+html:is([data-lcp], [data-lchdr]) :is(.chrome .s2-header .wordmark, .chrome .chrome-nav a, .chrome .s2-foot) { color: #e0e0e0 !important; }
+html:is([data-lcp], [data-lchdr]) .chrome .tick { background: #191919 !important; }

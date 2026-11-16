@@ -20,15 +20,17 @@ export const SELECTED = [
 ];
 const BY_SLUG = new Map(LAUNCHES.map((l) => [slug(l), l]));
 export const PICKS = SELECTED.map((s) => BY_SLUG.get(s)).filter((l): l is Launch => !!l);
+// launches with no picture at all (Icon: its post is gone from X — 404 on 2026-11-16 — so no picture or video
+// to take, and its card linked nowhere): left out of the list until they have one
+const NO_IMAGE = new Set(['icon-launch']);
 // every launch: the six first, then the rest in the list's order
-const ALL = [...PICKS, ...LAUNCHES.filter((l) => !SELECTED.includes(slug(l)))];
+const ALL = [...PICKS, ...LAUNCHES.filter((l) => !SELECTED.includes(slug(l)) && !NO_IMAGE.has(slug(l)))];
 export const LAUNCH_COUNT = ALL.length;
 
 // launches with a sharp picture in /assets/launches/hd; the rest use the small one; Icon has none
 const HD = new Set(['airwallex-growth-story', 'akai', 'cartesia-fundraise-model-launch', 'deel-growth-story', 'fish-audio-seed-raise',
   'gamma-100m-arr-announcement', 'lovable-fundraise', 'matic-robots-design-documentary', 'matic-robots-launch', 'playerzero',
   'pocket-fm-product-launch', 'polyai-product-demo', 'wispr-flow-feature-release']);
-const NO_IMAGE = new Set(['icon-launch']);
 const pad = (n: number) => String(n).padStart(2, '0');
 
 function Card({ l, n }: { l: Launch; n: number }) {
