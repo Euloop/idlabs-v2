@@ -260,3 +260,9 @@ html[data-theme='night'] .ti-text { color: #ebebeb; }
 .chrome .s2-header { transition: opacity 300ms var(--ease-out); }
 html[data-page-end]:has(.ftf-top) .chrome .s2-header { opacity: 0; pointer-events: none; }
 html[data-page-end]:has(.ftf-top) .chrome .s2-header * { pointer-events: none !important; }
+/* …and with the Fibonacci · low footer (shorter than the screen, so the launches above still show at the
+   page's end): while the footer is on screen but the fixed wordmark and nav are still over the section
+   above it — over the launch video's own controls — they step away; back when scrolling up
+   (html[data-footer] / [data-over-footer]: SiteFooter) */
+html[data-footer]:not([data-over-footer]):has(.fff-low) .chrome .s2-header { opacity: 0; pointer-events: none; }
+html[data-footer]:not([data-over-footer]):has(.fff-low) .chrome .s2-header * { pointer-events: none !important; }

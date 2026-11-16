@@ -29,10 +29,13 @@ const footerInView = (r: DOMRect, vh: number) => r.top <= vh * 0.5;
 // /footer (`golden`): the golden-ratio variants in place of the reading list (FooterGolden.tsx), ?golden=;
 // or `fib`, the whole footer as / has it (the Fibonacci layout, FooterFib.tsx), to compare against; or
 // `fib-focus`, that footer with Focus's golden section in place of its empty top band
-export type Middle = GoldenVariant | 'books' | 'fib' | 'fib-focus';
+// `fib-full` (feedback 2026-11-16): that footer with the whole construction shown inside the frame,
+// interactive as Fibonacci + Focus (FooterFibFull.tsx)
+// `fib-low`: that without the statement, the drawing to the footer's bottom, the footer shorter than the screen
+export type Middle = GoldenVariant | 'books' | 'fib' | 'fib-focus' | 'fib-full' | 'fib-low';
 const MIDDLES: [Middle, string][] = [
   ['spiral', 'Spiral'], ['compound', 'Compound'], ['focus', 'Focus'], ['reel', 'Reel'], ['trace', 'Trace'], ['books', 'Reading list'],
-  ['fib', 'Fibonacci (/)'], ['fib-focus', 'Fibonacci + Focus'],
+  ['fib', 'Fibonacci (/)'], ['fib-focus', 'Fibonacci + Focus'], ['fib-full', 'Fibonacci · full'], ['fib-low', 'Fibonacci · low'],
 ];
 
 // /home-4 (`fib`): the Fibonacci footer (Figma Zoomcast 200:4, FooterFib.tsx) or this one, ?footer=
@@ -65,7 +68,7 @@ export default function SiteFooter({ golden = false, fib = false, layout: fixed,
   const [picked, pickMiddle] = useOption<Middle>('golden', MIDDLES, start);
   const middle: Middle = golden ? picked : 'books';
   // /footer's Fibonacci tab: the / footer's layout
-  const layout: Layout = fixed ?? (golden && (picked === 'fib' || picked === 'fib-focus') ? 'fib' : fib ? layoutPicked : 'classic');
+  const layout: Layout = fixed ?? (golden && (picked === 'fib' || picked === 'fib-focus' || picked === 'fib-full' || picked === 'fib-low') ? 'fib' : fib ? layoutPicked : 'classic');
 
   useEffect(() => {
     const el = ref.current;
@@ -99,10 +102,10 @@ export default function SiteFooter({ golden = false, fib = false, layout: fixed,
     <section ref={ref} className={layout === 'fib' ? 'ft ft-fib' : 'ft'} data-foot="/Footer" aria-label="Footer">
       <div className="ft-texture" aria-hidden="true" />
       <div className="frame ft-frame">
-        {layout === 'fib' ? <FooterFib top={golden && picked === 'fib-focus' ? <FooterGolden variant="focus" interactive caption={false} /> : undefined} /> : <>
+        {layout === 'fib' ? <FooterFib full={golden && picked === 'fib-full' ? true : golden && picked === 'fib-low' ? 'low' : false} top={golden && picked === 'fib-focus' ? <FooterGolden variant="focus" interactive caption={false} /> : undefined} /> : <>
         {/* /footer (golden): the golden band above, the links under it; otherwise the links, then
             the reading list */}
-        {middle !== 'books' && middle !== 'fib' && middle !== 'fib-focus' && <><FooterGolden variant={middle} /><Rule /></>}
+        {middle !== 'books' && middle !== 'fib' && middle !== 'fib-focus' && middle !== 'fib-full' && middle !== 'fib-low' && <><FooterGolden variant={middle} /><Rule /></>}
         <nav className="ft-cols" aria-label="Site">
           {COLUMNS.map((c) => (
             <div className="ft-col" key={c.title}>

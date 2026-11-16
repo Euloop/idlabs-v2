@@ -352,3 +352,73 @@ html[data-sl-end='reel'] .sl-zoom-a > .sl-frame:first-child { opacity: 1; }
    golden half's last does */
 html[data-sl-reel='first'] .sl-zoom-b { display: none; }
 html[data-sl-reel='first'] .sl[data-reel] .sl-stage .sl-frame.sl-last-a { animation: sl-cut-last 4000ms linear calc(var(--at) - 3150ms) none; }
+
+/* ───────── /home-4 "Video first" (html[data-sl-flow='video'], ?loader=video) ─────────
+   Feedback 2026-11-16: starts with the reel, ends with Identity Labs. No logo opening (and, for now, no
+   ENGINEERING · VIRALITY either side), the first image opens at once (250ms), the whole reel plays —
+   its first half cut to 16 cuts (StartLoader VIDEO_KEEP), the golden half's spiral quieter — then the
+   last image and the spiral fade as the logo draws in the frame; the white lifts.
+   Behind it all the Fibonacci diagram (FibLines, the footer's construction), edge to edge and a subtle
+   grey, its pieces coming in one after another as the reel starts. */
+.sl-fib { display: none; }
+html[data-sl-flow='video'] .sl-fib {
+  display: block; position: absolute; inset: 0; width: 100%; height: 100%;
+  /* one solid grey for every line (no transparency, so a shared edge or a crossing never reads darker) */
+  color: #ebebeb; overflow: hidden;
+}
+/* drawn in as strokes (each piece's dash runs out, --i apart), never faded: the colour is the same solid
+   grey while it draws as once it has settled. Unseen until it has measured the screen (data-fit, FibLines),
+   so it never draws in its unsnapped first-paint form. */
+html[data-sl-flow='video'] .sl-fib:not([data-fit]) { visibility: hidden; }
+html[data-sl-flow='video'] .sl-fib > g > * {
+  stroke-dasharray: 1 1; stroke-dashoffset: 1;
+  animation: sl-fib-draw 1400ms cubic-bezier(.65, 0, .35, 1) calc(var(--i) * 70ms) forwards paused;
+}
+html[data-sl-flow='video'][data-sl-ready] .sl-fib[data-fit] > g > * { animation-play-state: running; }
+@keyframes sl-fib-draw { to { stroke-dashoffset: 0; } }
+html[data-sl-flow='video'][data-loader='zoom'] .sl-fib,
+html[data-sl-flow='video'][data-loader='done'] .sl-fib { opacity: 0; transition: opacity 450ms var(--ease-out); }
+
+/* the words hidden for now (feedback 2026-11-16) — kept in layout, unseen, as the ready script measures them */
+html[data-sl-flow='video'] .sl-word { display: block; visibility: hidden; }
+html[data-sl-flow='video'] .sl-logo { display: none; }
+html[data-sl-flow='video'] .sl-side { animation: sl-fade 700ms var(--ease-out) 100ms backwards paused; }
+html[data-sl-flow='video'][data-sl-ready] .sl-side { animation-play-state: running; }
+html[data-sl-flow='video'] .sl-frame:first-child,
+html[data-sl-flow='video'] .sl-frame:first-child::before,
+html[data-sl-flow='video'] .sl-frame:first-child::after,
+html[data-sl-flow='video'] .sl-frame:first-child img { animation-delay: 250ms; }
+html[data-sl-flow='video'] .sl-caption { animation-delay: 800ms; }
+
+/* the logo at the end, centred on the frame (the slot's middle: 9px above the screen's), drawing in as
+   the last image fades (from 350ms after data-end, so the two only just cross) */
+html[data-sl-flow='video'] .sl-endlogo {
+  display: block; position: absolute; left: 50%; top: calc(50% - 9px); translate: -50% -50%; --ink-at: 350ms;
+}
+
+/* Video first's reel: the first half's dropped frames gone, every cut on its new beat (--atv, StartLoader),
+   and everything keyed to the golden half's start moved from 2400 to 1600ms */
+html[data-sl-flow='video'] .sl-zoom-a > .sl-drop { display: none; }
+html[data-sl-flow='video'] .sl[data-reel] .sl-stage .sl-frame[style*='--atv'] { animation-delay: calc(var(--atv) - 3900ms); }
+html[data-sl-flow='video'] .sl[data-reel] .sl-stage .sl-frame.sl-last { animation-delay: calc(var(--atv) - 3150ms); }
+html[data-sl-flow='video'] .sl[data-reel] .sl-zoom-a { animation-duration: 1600ms, 1600ms; }
+html[data-sl-flow='video'] .sl[data-reel] .sl-zoom-b { animation: sl-push-bv 3950ms linear both; }
+@keyframes sl-push-bv {
+  0%, 40.5063% { transform: scale(0.88); animation-timing-function: linear(0.0000, 0.0785, 0.1579, 0.2381, 0.3192, 0.4012, 0.4840, 0.5677, 0.6524, 0.7379, 0.8243, 0.9117, 1.0000); }
+  100% { transform: scale(1); }
+}
+html[data-sl-flow='video'] .sl[data-reel] .sl-sp-arc { animation-delay: 1600ms; }
+html[data-sl-flow='video'] .sl[data-reel] .sl-sp-line { animation-delay: 2000ms; }
+
+/* the golden half's spiral, lit but not glaring (feedback 2026-11-16: first too highlighted, then too
+   faint): a white line with a soft halo on a light dark edge, so it reads on light and dark images;
+   no flash on the beat; the construction lines a little fainter */
+html[data-sl-flow='video'] .sl-spiral-flash { display: none; }
+html[data-sl-flow='video'] .sl-sp-arc { stroke: rgb(255 255 255 / .92); stroke-width: 1.6; }
+html[data-sl-flow='video'] .sl-spiral-glow .sl-sp-halo { stroke: rgb(255 255 255 / .2); stroke-width: 4.5; }
+html[data-sl-flow='video'] .sl-sp-edge { stroke: rgb(0 0 0 / .24); stroke-width: 3; }
+html[data-sl-flow='video'] .sl-sp-line { stroke-opacity: .55; }
+
+/* at the end: the spiral and the last picture go at once, quickly (250ms), before the logo starts at 350 —
+   a slower fade left a pale ghost of them behind the logo */
+html[data-sl-flow='video'] .sl[data-end] .sl-zoom-b { opacity: 0; transition: opacity 250ms var(--ease-out); }

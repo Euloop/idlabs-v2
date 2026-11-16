@@ -1,6 +1,7 @@
 import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react';
 import { TOOLS } from './ToolsCollage';
 import { PAPERS } from '../SectionThree';
+import FooterFibFull from './FooterFibFull';
 import './footer-fib.css';
 
 /* Footer "Fibonacci" (Figma Zoomcast 200:4, /home-4): the dark footer with the golden-ratio
@@ -84,11 +85,12 @@ function Construction() {
 /* `top`: something in place of the empty band at the top (/footer's "Fibonacci + Focus": FooterGolden's
    Focus) — then no construction behind (tried behind the whole, and behind the links only: neither
    looked right), the links box under it */
-export default function FooterFib({ top }: { top?: ReactNode } = {}) {
-  return (
-    <>
-      {top ? <div className="ftf-top">{top}</div> : <Construction />}
-      <div className={top ? 'ftf ftf-after-top' : 'ftf'}>
+/* `full` (/footer's "Fibonacci · full", FooterFibFull.tsx): the construction whole inside the frame, the
+   statement and this links box over it, the box's bottom on the drawing's */
+/* `full` 'low' (/footer's "Fibonacci · low"): the same without the statement, the drawing down to the footer's
+   very bottom (behind the closing bar), the footer only as tall as it */
+export default function FooterFib({ top, full = false }: { top?: ReactNode; full?: boolean | 'low' } = {}) {
+  const nav = (
         <nav className="ftf-box" aria-label="Site">
           {COLUMNS.map((c) => (
             <div className="ftf-col" key={c.title}>
@@ -105,6 +107,8 @@ export default function FooterFib({ top }: { top?: ReactNode } = {}) {
           <span className="ftf-sqs ftf-sqs-t" aria-hidden="true"><i /><i /></span>
           <span className="ftf-sqs ftf-sqs-b" aria-hidden="true"><i /><i /></span>
         </nav>
+  );
+  const bar = (
         <div className="ftf-bar">
           <span className="ftf-status">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -114,6 +118,15 @@ export default function FooterFib({ top }: { top?: ReactNode } = {}) {
           <span className="ftf-offices">{OFFICES.map((o) => <span key={o}>{o}</span>)}</span>
           <span className="ftf-legal">{LEGAL.map((l) => <a key={l.label} href={l.href}>{l.label}</a>)}</span>
         </div>
+  );
+  return (
+    <>
+      {top ? <div className="ftf-top">{top}</div> : full ? null : <Construction />}
+      <div className={top ? 'ftf ftf-after-top' : full ? `ftf ftf-full${full === 'low' ? ' ftf-low' : ''}` : 'ftf'}>
+        {full === 'low' ? <FooterFibFull say={false}>{nav}{bar}</FooterFibFull> : <>
+        {full ? <FooterFibFull>{nav}</FooterFibFull> : nav}
+        {bar}
+        </>}
       </div>
       {/* the frame's squares at the top (Figma 200:19, y 59) */}
       <span className="ftf-sqs ftf-sqs-frame" aria-hidden="true"><i /><i /></span>

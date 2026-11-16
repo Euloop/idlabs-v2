@@ -1,0 +1,76 @@
+/* Footer "Fibonacci · full" (FooterFibFull.tsx, FooterFib `full`): the whole construction faint inside the
+   frame, rule to rule, at its own 13 : 8; over it the statement (top left), the read-out (bottom left of
+   the open part) and the links box, whose bottom is the drawing's. Then the closing bar. */
+
+.ftf.ftf-full { padding-top: calc(56 * var(--px)); }
+/* the dark footer at least a screen tall: the room goes above the drawing (feedback 2026-11-16) */
+.ft.ft-fib:has(.fff:not(.fff-low)) { min-height: 100svh; display: flex; flex-direction: column; }
+.ft.ft-fib:has(.fff:not(.fff-low)) > .ft-frame { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; }
+.fff { position: relative; display: flex; flex-direction: column; aspect-ratio: 55 / 34; touch-action: pan-y; }
+
+/* the drawing, behind everything: one grey (opacity on the whole, so shared edges read as any line) */
+/* always at its own 55 : 34, never stretched (the box can grow taller than that when its text and links need
+   the room — stretched, the circles went oval): as wide as the frame, its bottom on the links box's */
+.fff-art { position: absolute; left: 0; right: 0; bottom: 0; aspect-ratio: 55 / 34; pointer-events: none; }
+.fff-lines, .fff-over { position: absolute; inset: 0; width: 100%; height: 100%; display: block; overflow: hidden; }
+.fff-lines { color: #ebebeb; opacity: .07; }
+
+/* the spiral: drawn in once on arrival, quiet; dimmed while a square is pointed at, the arcs out to it bright */
+.fff-over { fill: none; }
+.fff-arc { stroke-width: 1; stroke-linecap: round; }
+/* at rest the spiral is one of the lines: their grey, their weight (feedback 2026-11-16) */
+.fff-arc-all { stroke: #ebebeb; stroke-opacity: .07; stroke-width: 1.2; /* ≈ 1px at the frame's width (non-scaling would break its dash) */ stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-opacity 300ms var(--ease-out); }
+.fff[data-drawn] .fff-arc-all { stroke-dashoffset: 0; transition: stroke-dashoffset 2200ms cubic-bezier(.65, 0, .35, 1) 200ms, stroke-opacity 300ms var(--ease-out); }
+
+.fff-arc-on { stroke-width: 1.25; stroke: rgb(235 235 235 / .85); stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 0ms; }
+.fff-arc-on[data-on] { stroke-dashoffset: 0; transition: stroke-dashoffset 420ms cubic-bezier(.4, 0, .2, 1) var(--d); }
+.fff-lit { fill: rgb(235 235 235 / .03); stroke: rgb(235 235 235 / .32); stroke-width: 1; }
+
+/* each square's number, small, in its corner */
+.fff-nums { position: absolute; inset: 0; }
+.fff-n, .fff-read { font-family: var(--mono); font-size: 10px; line-height: 1.6; letter-spacing: .06em; }
+.fff-n { position: absolute; padding: 8px 10px; color: #4a4a4a; transition: color 200ms var(--ease-out); }
+.fff-n[data-on] { color: #ebebeb; }
+
+/* the open part above the links: the statement at the top, the read-out at the bottom */
+.fff-top {
+  /* one row, set on its bottom: the statement low on the left, just above the links, the read-out on the right */
+  position: relative; z-index: 1; flex: 1; display: flex; flex-direction: row; align-items: flex-end; justify-content: space-between; gap: 48px;
+  /* inset 25px either side: the links' own edge (the box's 24px padding inside its 1px border), so the
+     statement starts on the same line as ANALYTICAL TOOLS and the read-out ends on the links' right */
+  padding: calc(140 * var(--px)) 25px 56px; pointer-events: none;
+}
+.fff-say.fg { margin: 0; padding: 0; }
+.fff-say .fg-say { font-size: calc(40 * var(--px)); max-width: none; line-height: 1.2; }
+.fff-say .fg-body { max-width: 46ch; margin-top: calc(32 * var(--px)); }
+/* the read-out on the right, set flush right (feedback 2026-11-16) */
+.fff-read { display: flex; flex-direction: column; align-items: flex-end; text-align: right; gap: 4px; color: #666; white-space: pre; }
+.fff-seq { display: flex; gap: 10px; }
+.fff-seq > span { transition: color 200ms var(--ease-out); }
+.fff-seq > [data-prev] { color: #999; }
+.fff-seq > [data-on] { color: #ebebeb; }
+.fff-ratio { color: #999; }
+
+/* the links box over the drawing's bottom, see-through */
+.fff > .ftf-box { z-index: 1; }
+
+@media (max-width: 759px) {
+  .fff { aspect-ratio: auto; }
+  .fff-top { padding: 56px 20px 20px; flex-direction: column; align-items: flex-start; }
+  .fff-read { align-self: flex-end; }
+  .fff-say .fg-say { font-size: 30px; }
+  .fff-n { padding: 4px 6px; font-size: 9px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fff-arc-all, .fff-arc-on { transition: none !important; }
+}
+
+/* Fibonacci · low (FooterFib full 'low'): no statement, the drawing from the footer's top to its very bottom,
+   the closing bar inside it; the footer only as tall as the drawing (shorter than the screen), so the
+   section above still shows over it (feedback 2026-11-16) */
+.ftf.ftf-low { padding-top: 0; }
+.fff-low { aspect-ratio: 55 / 34; }
+.fff-low .fff-top { padding-top: 24px; }
+.fff-low > .ftf-bar { position: relative; z-index: 1; }
+/* the frame's squares on the footer's top edge, where the drawing starts (not 59 down) */
+.ft-fib:has(.fff-low) .ftf-sqs-frame { top: 0; }

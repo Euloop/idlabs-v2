@@ -8,6 +8,8 @@ import Classifier from './tool-motion/Classifier';
 import Weighted from './tool-motion/Weighted';
 import Velocity from './tool-motion/Velocity';
 import Clusters from './tool-motion/Clusters';
+import DitherField from './DitherField';
+import GlyphField from './GlyphField';
 
 /* Motion (the "Motion" layout, White): in place of the two screenshots, one window per tool
    playing a walkthrough of the tool's own UI (tool-motion/), a loop per turn of the cycle. */
@@ -214,7 +216,9 @@ function Scraps({ blur = false }: { blur?: boolean }) {
 
 export type CollageTheme = 'white' | 'gather' | 'paper' | 'dark';
 
-export default function ToolsCollage({ theme = 'white', motion = false, scroll = false, intro = 'small' }: { theme?: CollageTheme; motion?: boolean; scroll?: boolean; intro?: 'small' | 'large' }) {
+// `ground` (/home-4 Motion scroll, ?toolsBg=dither|type): the Showcase's dithered field (DitherField) or typed
+// research plate (GlyphField) in place of the scraps
+export default function ToolsCollage({ theme = 'white', motion = false, scroll = false, intro = 'small', ground }: { theme?: CollageTheme; motion?: boolean; scroll?: boolean; intro?: 'small' | 'large'; ground?: 'dither' | 'type' }) {
   const ref = useRef<HTMLElement>(null);
   const [active, setActive] = useState(0);
   const [inView, setInView] = useState(false);
@@ -434,7 +438,8 @@ export default function ToolsCollage({ theme = 'white', motion = false, scroll =
       {immersive && <ScrollText ref={introRef} className="tcl-intro" text={INTRO} hl="2B+ data points" />}
       <div className="frame tcl-frame">
         <div className="tcl-box" ref={boxRef}>
-          <Scraps />
+          {/* the collage covers the whole box, so the dither takes its place rather than lying under it */}
+          {ground === 'dither' ? <DitherField /> : ground === 'type' ? <GlyphField /> : <Scraps />}
 
           {/* keyboard focus in the card holds the cycle (a mouse click on a name does not) */}
           <div className="tcl-card"

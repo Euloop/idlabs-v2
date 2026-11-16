@@ -55,3 +55,15 @@ html[data-theme='night'] .opt-tabs-rule, .opt-tabs[data-dark] .opt-tabs-rule { b
 html[data-theme='night'] .opt-tabs-open, .opt-tabs-open[data-dark] { background: #232427; outline-color: #3a3a3a; color: #ebebeb; }
 html[data-theme='night'] .opt-tabs-open:hover, .opt-tabs-open[data-dark]:hover { color: #a3a3a3; }
 @media (max-width: 719px) { .opt-tabs-open { right: 16px; bottom: 16px; } }
+
+/* Laptops and desktops: a bar with many options (the footer's ten) wraps onto more lines inside its box
+   instead of running off the screen; short bars are unchanged (one line). Phones keep the sideways scroll. */
+@media (min-width: 720px) {
+  /* (placed from the screen's centre, a bar sized to its content is held to half the screen: sized
+     explicitly instead, up to 880) */
+  .opt-tabs { width: max-content; max-width: min(880px, calc(100vw - 48px)); }
+  .opt-tabs-scroll { flex: 1 1 auto; flex-wrap: wrap; justify-content: center; row-gap: 6px; overflow: visible; }
+  /* (a block-level flex that may shrink: as inline-flex it kept its one-line width and spilled out) */
+  .opt-tabs-scroll .opt-tabs-group { display: flex; flex: 0 1 auto; min-width: 0; flex-wrap: wrap; justify-content: center; row-gap: 6px; }
+  .opt-tabs-group > span { flex: none; }
+}

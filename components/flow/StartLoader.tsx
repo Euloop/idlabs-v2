@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import StartLoaderRun from './StartLoaderRun';
+import FibLines from './FibLines';
 import { IDENTITY, IDENTITY_W, LABS, LABS_X, WORDMARK_H, WORDMARK_W } from './wordmark-paths';
 import './start-loader.css';
 
@@ -77,6 +78,11 @@ const REEL_HERO: ReelImage[] = [
   { src: 'assets/loader/reel-oppenheimer.webp', w: 157.5 },
   R('nautilus-construction', 161),
 ];
+
+// /home-4 "Video first": the first half cut to 17 (the opener and four bars of four, 1.6s instead of 2.4s),
+// so the whole loader runs shorter. These stay, by their place in REEL_HERO; the rest are dropped there
+// (.sl-drop, start-loader.css) and every later cut moves up (--atv).
+const VIDEO_KEEP = [0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 16, 18, 20, 23, 24];
 
 // Second half: the golden ratio at work. Each image is warped so its own upright
 // golden rectangle — big square on top, the spiral's eye low on the right — lands on one rectangle:
@@ -199,28 +205,43 @@ const END_LOGO = 1.65; // the Fade ending's logo, in the image slot (170 × 38)
 // clean hero (data-intro 'fade') with no golden ratio (html[data-sl-end='reel']).
 // `choice` (/home-4): ?loader=first plays only the reel's first half (html[data-sl-reel='first']): no golden
 // half, the white lifting after the nautilus drawing (HeroIntroOptions' Loader tab)
-const BOOT = (fixed: boolean, choice: boolean) => `(function(){var d=document.documentElement,u=new URLSearchParams(location.search),q=u.get('intro');${
-  fixed ? "d.dataset.intro='fade';d.dataset.slOpen='logo';d.dataset.slEnd='reel';" : "d.dataset.intro=q==='fade'?'fade':'zoom';"}${
-  choice ? "d.dataset.slReel=u.get('loader')==='first'?'first':'full';" : ''}if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;d.dataset.loader='run';try{history.scrollRestoration='manual'}catch(e){}scrollTo(0,0)})()`;
+// `choice` also offers ?loader=video (html[data-sl-flow='video']): the whole reel from the very first
+// moment — its first half cut down to VIDEO_KEEP — the Fibonacci diagram faint behind it all (.sl-fib),
+// and the logo drawn in the frame at the end, before the white lifts
+// `video` (/, since 2026-11-16): always that flow. /home-4 (`choice`) opens on it too; ?loader=new and
+// ?loader=first bring back the logo-opening loader (whole, or its first half)
+const BOOT = (fixed: boolean, choice: boolean, video: boolean) => `(function(){var d=document.documentElement,u=new URLSearchParams(location.search),q=u.get('intro'),L=u.get('loader');${
+  fixed ? `d.dataset.intro='fade';d.dataset.slEnd='reel';${video ? "d.dataset.slFlow='video';" : choice ? "if(L!=='new'&&L!=='first')d.dataset.slFlow='video';else d.dataset.slOpen='logo';" : "d.dataset.slOpen='logo';"}` : "d.dataset.intro=q==='fade'?'fade':'zoom';"}${
+  choice ? "d.dataset.slReel=L==='first'?'first':'full';" : ''}if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;d.dataset.loader='run';try{history.scrollRestoration='manual'}catch(e){}scrollTo(0,0)})()`;
 
-export default function StartLoader({ fixed = false, choice = false }: { fixed?: boolean; choice?: boolean }) {
+export default function StartLoader({ fixed = false, choice = false, video = false }: { fixed?: boolean; choice?: boolean; video?: boolean }) {
+  // the Video first flow's parts (the shortened first half, the Fibonacci background) are rendered for it
+  const v = choice || video;
   const reel = fixed ? REEL_HERO : REEL;
   // /hero: each image already cropped to the frame and bulged (assets/loader/bulged, by its file name)
   const bulged = (src: string) => `assets/loader/bulged/${src.split('/').pop()!.replace(/\.\w+$/, '')}.webp`;
   // /hero: each frame's moment on the beat (ms from the reel's start), for its own CSS animation
   // (start-loader.css .sl[data-reel]): the opener before the first cut, then one beat each
-  const at = (i: number) => (fixed && i > 0 ? { '--at': `${(i - 1) * REEL_BEAT}ms` } : {});
+  // `--atv`: the same in "Video first" (choice), with the first half cut to VIDEO_KEEP
+  const vIndex = (i: number) => (i < reel.length ? VIDEO_KEEP.indexOf(i) : VIDEO_KEEP.length + i - reel.length);
+  const at = (i: number) => (fixed && i > 0 ? {
+    '--at': `${(i - 1) * REEL_BEAT}ms`,
+    ...(v && vIndex(i) > 0 ? { '--atv': `${(vIndex(i) - 1) * REEL_BEAT}ms` } : {}),
+  } : {});
+  const drop = (i: number) => (v && fixed && vIndex(i) < 0 ? ' sl-drop' : '');
   const reelFrames = reel.map((r, i) => (
-    <span className={fixed && i === reel.length - 1 ? 'sl-frame sl-last-a' : 'sl-frame'} data-on={i === 0 ? '' : undefined} key={r.src} style={{ width: `${fixed ? G_W : r.w}px`, ...at(i) } as CSSProperties}>
+    <span className={(fixed && i === reel.length - 1 ? 'sl-frame sl-last-a' : 'sl-frame') + drop(i)} data-on={i === 0 ? '' : undefined} key={r.src} style={{ width: `${fixed ? G_W : r.w}px`, ...at(i) } as CSSProperties}>
       <img src={`/${fixed ? bulged(r.src) : r.src}`} alt="" decoding="async" fetchPriority={i === 0 ? 'high' : 'auto'}
         style={r.crop && !fixed ? { height: `${r.crop}%`, objectFit: 'fill' } : undefined} />
     </span>
   ));
   return (
     <>
-      <script dangerouslySetInnerHTML={{ __html: BOOT(fixed, choice) }} />
+      <script dangerouslySetInnerHTML={{ __html: BOOT(fixed, choice, video) }} />
       {/* its script sets the halves' offsets (style) before React hydrates */}
       <div className="sl" aria-hidden="true" suppressHydrationWarning>
+        {/* ?loader=video: the Fibonacci diagram, edge to edge, faint (start-loader.css; hidden otherwise) */}
+        {v && <FibLines className="sl-fib" fit="slice" />}
         {/* Fade: the words; Zoom: the logo in two halves that overlap where the italic L tucks under the y */}
         <p className="sl-side sl-word sl-l">Engineering</p>
         <p className="sl-side sl-word sl-r">Virality</p>
@@ -265,7 +286,7 @@ export default function StartLoader({ fixed = false, choice = false }: { fixed?:
         </p>
       </div>
       <script dangerouslySetInnerHTML={{ __html: READY }} />
-      <StartLoaderRun frames={reel.length + (fixed ? GOLDEN.length : 0)} golden={fixed ? GOLDEN.length : 0} />
+      <StartLoaderRun frames={reel.length + (fixed ? GOLDEN.length : 0)} golden={fixed ? GOLDEN.length : 0} videoPlain={v && fixed ? VIDEO_KEEP.length : undefined} />
     </>
   );
 }

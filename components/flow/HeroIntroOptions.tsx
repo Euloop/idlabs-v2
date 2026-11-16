@@ -17,26 +17,30 @@ const onHero = (r: DOMRect, vh: number) => r.top > -vh * 0.25 && r.bottom > vh *
 const never = () => false;
 /* `first`: the New loader with only the reel's first half (the people and papers, no golden spirals),
    on /home-4 itself (?loader=first, read before first paint by StartLoader `choice`) */
-type Loader = 'new' | 'first' | 'zoom' | 'fade';
-const LOADERS: [Loader, string][] = [['new', 'New loader'], ['first', 'New · first half'], ['zoom', 'Zoom'], ['fade', 'Fade']];
+// `video` (feedback 2026-11-16): the reel from the first moment, the words already split, the Fibonacci
+// diagram behind, the logo at the end (?loader=video)
+type Loader = 'new' | 'first' | 'video' | 'zoom' | 'fade';
+// Video first is /home-4's default (and /'s) since 2026-11-16
+const LOADERS: [Loader, string][] = [['video', 'Video first'], ['new', 'Logo first'], ['first', 'Logo first · half'], ['zoom', 'Zoom'], ['fade', 'Fade']];
 
 export default function HeroIntroOptions({ loader = 'new' }: { loader?: 'new' | 'classic' } = {}) {
   const [clients, pickClients] = useOption<Clients>('clients', CLIENTS, 'picked');
   // which loader this page plays: New here; on /home-4/classic its ending, from ?intro= (Zoom by default)
-  const [current, setCurrent] = useState<Loader>(loader === 'new' ? 'new' : 'zoom');
+  const [current, setCurrent] = useState<Loader>(loader === 'new' ? 'video' : 'zoom');
   useEffect(() => {
     const q = new URLSearchParams(window.location.search);
     if (loader === 'classic') setCurrent(q.get('intro') === 'fade' ? 'fade' : 'zoom');
     else if (q.get('loader') === 'first') setCurrent('first');
+    else if (q.get('loader') === 'new') setCurrent('new');
   }, [loader]);
   const pickLoader = (v: Loader) => {
     const q = new URLSearchParams(window.location.search);
     q.delete('intro');
     q.delete('loader');
     if (v === 'zoom' || v === 'fade') q.set('intro', v);
-    if (v === 'first') q.set('loader', 'first');
+    if (v === 'first' || v === 'new') q.set('loader', v);
     const qs = q.toString();
-    window.location.href = `${v === 'new' || v === 'first' ? '/home-4' : '/home-4/classic'}${qs ? `?${qs}` : ''}`;
+    window.location.href = `${v === 'new' || v === 'first' || v === 'video' ? '/home-4' : '/home-4/classic'}${qs ? `?${qs}` : ''}`;
   };
   const [heroIn, setHeroIn] = useState(false);
 

@@ -11,6 +11,8 @@ const T = {
   endFade: 600, // Fade: the golden ratio fades (550ms, .sl[data-end]), then the white lifts (no ending logo any more)
   cut: 120, // each showreel image (hard cuts)
   passes: 1, // times through the reel (the first image is not repeated at the very start)
+  video: 1700, // /home-4 ?loader=video: the first image opens at 250 (no logo before it), then holds a moment
+  endLogo: 2900, // ...and at the end the logo draws in the frame (~2.9s from 350ms in), holds, then the white lifts
   golden: 650, // the golden ratio holds before the zoom
   land: 550, // into the zoom: the hero's entrance starts (the drawing is ~95% there, gliding in)
   zoom: 850, // golden ratio → the hero's construction (= the transform transitions in start-loader.css)
@@ -26,7 +28,8 @@ const MAX_WAIT = 2500; // start anyway if the images are slow
 const BEAT = 100;
 const G = { hold: 3 * BEAT };
 
-export default function StartLoaderRun({ frames, golden = 0 }: { frames: number; golden?: number }) {
+// `videoPlain`: /home-4 "Video first" plays only this many of the first half (StartLoader VIDEO_KEEP)
+export default function StartLoaderRun({ frames, golden = 0, videoPlain }: { frames: number; golden?: number; videoPlain?: number }) {
   useEffect(() => {
     const root = document.documentElement;
     const el = document.querySelector<HTMLElement>('.sl');
@@ -112,7 +115,8 @@ export default function StartLoaderRun({ frames, golden = 0 }: { frames: number;
       // the logo opening, for every ending (the words are no longer used)
       const logo = root.dataset.intro !== undefined || root.dataset.slOpen === 'logo';
       const reelEnd = root.dataset.slEnd === 'reel';
-      const hold = logo ? T.holdLogo + (root.dataset.slOpen === 'logo' ? T.logoLater : 0) : T.hold;
+      const video = root.dataset.slFlow === 'video';
+      const hold = video ? T.video : logo ? T.holdLogo + (root.dataset.slOpen === 'logo' ? T.logoLater : 0) : T.hold;
       let t = Math.max(0, opened + hold - performance.now());
       // The schedule: what shows from when (ms after the reel starts).
       type Step = { show: number | 'golden'; at: number; fx?: () => void };
@@ -121,7 +125,9 @@ export default function StartLoaderRun({ frames, golden = 0 }: { frames: number;
       const push = (show: Step['show'], dur: number, fx?: () => void) => { order.push({ show, at: clock, fx }); clock += dur; };
       const plain = frames - golden;
       const cut = golden ? BEAT : T.cut;
-      for (let p = 0; p < T.passes; p++) for (let i = 0; i < plain; i++) if (p || i) {
+      // (Video first: fewer first-half steps; which frame data-on marks doesn't matter here, the CSS cuts)
+      const plainSteps = video && videoPlain ? videoPlain : plain;
+      for (let p = 0; p < T.passes; p++) for (let i = 0; i < plainSteps; i++) if (p || i) {
         // /hero: the slow push-in starts with the first cut and runs the length of the half
         // (start-loader.css .sl[data-push]); the golden half's starts with the spiral
         push(i, cut, golden && !p && i === 1 ? () => el.setAttribute('data-push', '') : undefined);
@@ -155,6 +161,7 @@ export default function StartLoaderRun({ frames, golden = 0 }: { frames: number;
           if (k !== shown) { shown = k; show(order[k].show); order[k].fx?.(); }
           if (k < order.length - 1) raf = requestAnimationFrame(step);
           // Zoom: the golden ratio zooms. Fade: it goes, the logo draws in its place, then the white lifts.
+          else if (reelEnd && video) at(G.hold, () => { el.setAttribute('data-end', ''); at(T.endLogo, zoom); }); // the logo, then the white lifts
           else if (reelEnd) at(golden ? G.hold : T.cut, zoom); // /hero: the last image's beat, then the white lifts
           else at(T.golden, root.dataset.intro === 'zoom' ? zoom : () => { el.setAttribute('data-end', ''); at(T.endFade, zoom); });
         };
@@ -175,6 +182,6 @@ export default function StartLoaderRun({ frames, golden = 0 }: { frames: number;
       timers.forEach(clearTimeout);
       release();
     };
-  }, [frames]);
+  }, [frames, videoPlain]);
   return null;
 }

@@ -15,7 +15,8 @@ import HeroLight from '../components/flow/HeroLight';
 // the diagram's styles (on /home-2 they come with the flowchart variants of Section 2)
 import '../components/flow/flow.css';
 
-/* The home page: /home-4 with its picks made and no option tabs (2026-11-14). The /hero loader and
+/* The home page: /home-4 with its picks made and no option tabs (2026-11-14). The "Video first" loader
+   (since 2026-11-16; before it, the /hero loader) and
    the clean light hero after it (StartLoader fixed: html[data-intro='fade']); the client's 12 logos,
    no "Our Network" (html[data-clients='picked']); Section 2 Diagram; research papers with the
    Paper cover; tools Motion scroll (the scroll moves through the tools); Services Columns (light); Launches Selected (Float IV with the six,
@@ -38,9 +39,10 @@ export default function Home() {
       <script dangerouslySetInnerHTML={{ __html: "var d=document.documentElement;d.dataset.hero='light';d.dataset.clients='picked'" }} />
       {/* page marker: the shared /home-2 styles key off body:has(.s2-flow) */}
       <span className="s2-flow" hidden />
-      {/* the start loader as /hero: the logo drawn and split, the reel, then the golden spirals, onto
-          the clean hero (no golden construction); before the hero, so it covers it from first paint */}
-      <StartLoader fixed />
+      {/* the start loader, "Video first" (2026-11-16): the reel from the first moment (its first half
+          shortened), the golden half's spiral, the Fibonacci diagram drawn faint behind it all, then the logo
+          drawn in the frame, onto the clean hero; before the hero, so it covers it from first paint */}
+      <StartLoader fixed video />
       <HeroVertical />
       <HeroLight />
       <SectionTwo noOutro compact />

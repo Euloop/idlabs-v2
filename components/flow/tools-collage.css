@@ -302,3 +302,7 @@ section.tcl[data-motion] .tcl-list { width: calc(236 * var(--u)); top: calc(342 
   section.tcl[data-motion] .tcl-shot.tcl-motion { display: block; aspect-ratio: 720 / 370; }
   .tcl-mnotes { position: static; width: auto; }
 }
+
+/* Motion scroll, Dither (?toolsBg=dither, DitherField): the dithered field as the box's ground, under the scraps */
+.tcl-box > .tsc-dither { position: absolute; inset: 0; width: 100%; height: 100%; display: block; image-rendering: pixelated; pointer-events: none; }
+.tcl-box > .tsc-dither.tsc-glyph { image-rendering: auto; }
