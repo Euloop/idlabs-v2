@@ -38,8 +38,8 @@
 
 /* the square ones behind: a box (the rotated paper's bounding box), the paper turned inside it, the photo
    inset 18px and turned the same */
-.fst-sq-l { left: 0; top: 45.27px; width: 168.593px; height: 168.593px; --rot: -4.4deg; --paper: 157px; --pw: 119.473px; --ph: 120.239px; }
-.fst-sq-r { left: 153.18px; top: 0; width: 191.978px; height: 191.978px; --rot: 9.86deg; --paper: 166px; --pw: 129.561px; --ph: 129.561px; }
+.fst-sq-l { left: 0; top: 45.27px; width: 168.593px; height: 168.593px; --rot: -4.4deg; --paper: 157px; --pw: var(--lw, 119.473px); --ph: var(--lh, 120.239px); --pfit: fill; }
+.fst-sq-r { left: 153.18px; top: 0; width: 191.978px; height: 191.978px; --rot: 9.86deg; --paper: 166px; --pw: var(--rw, 129.561px); --ph: var(--rh, 129.561px); --pfit: var(--rfit, fill); }
 .fst-tilt { position: absolute; inset: 0; rotate: var(--rot); }
 .fst-paper-sq {
   position: absolute; left: 50%; top: 50%; width: var(--paper); height: var(--paper); translate: -50% -50%;
@@ -55,7 +55,7 @@
   content: ''; position: absolute; left: -42.22%; top: -14.95%; width: 186.67%; height: 129.9%;
   background: url('/assets/footer-stamps/frame-tall.webp') center / 100% 100% no-repeat;
 }
-.fst-pic-tall { position: absolute; left: 9px; top: 9px; width: 118px; height: 158px; }
+.fst-pic-tall { position: absolute; left: var(--fl, 9px); top: 9px; width: var(--fw, 118px); height: var(--fh, 158px); }
 
 .fst-pic { display: block; overflow: hidden; background: #1f1f20; }
 .fst-pic img { display: block; width: 100%; height: 100%; object-fit: cover; }
@@ -106,3 +106,13 @@
    80px down (the design's 209:106), the links box after it; not the full variant's one-screen height
    (footer-fib-full.css leaves .fff-quiet out of it) */
 .fff-top.fff-top-own { display: block; padding: 80px 0 72px; pointer-events: auto; }
+/* the photos as the design draws them (FooterStamps `fit`, from each slide's own frame): stretched to their
+   boxes, the designer's crop — not cropped again here; the front one at the frame's own offset and scale */
+.fst-pic-sq img { object-fit: var(--pfit); }
+.fst-pic-tall { overflow: hidden; }
+.fst-pic-tall img { position: absolute; left: var(--fil, 0); top: var(--fit, 0); width: var(--fiw, 100%); height: var(--fih, 100%); max-width: none; object-fit: fill; }
+/* The design lays the stamp papers over the dark ground in hard-light, which deepens their greys (paper at 0.8
+   comes out ~0.67, the whites stay). Here each stamp is its own layer (it turns and moves), so the blend would
+   only meet transparency and the paper would stay bright; the same result is applied to the paper itself:
+   hard-light on the footer's #2a2c31 is, for the paper's light tones, ≈ a steeper curve pinned at white. */
+.fst-paper-sq, .fst-paper-tall { mix-blend-mode: normal; filter: contrast(1.6) brightness(.76); }

@@ -16,15 +16,17 @@ import './footer-stamps.css';
    their places (the words fading out with the gather and up with the scatter); a click moves on. Pointing at the stack spreads
    its three a little. No tabs, no progress (as the design).
    Stamp papers: the design's own (image 29, image 634452728; public/assets/footer-stamps/frame-*.webp).
-   Photos: Wikimedia Commons, cropped and in grey; each carries its credit as its title (the licences ask
-   for credit; CREDIT is the full list, for a credits page). Identity Labs' three are drawn until the team
-   photo the client wants exists. Sizes are the design's px (a 481px column). */
+   Photos: the design's own, from its four frames (Zoomcast 210:128 main, 210:250 advertising, 210:372
+   baseball, 210:494 finance; public/assets/footer-stamps/fig, in grey). Identity Labs' three are drawn until
+   the team photo the client wants exists. Sizes are the design's px (a 481px column). */
 
-type Pic = { src: string; by: string } | { draw: ReactNode };
-type Slide = { id: string; field: string; year: string; head: string; body: string; front: Pic; left: Pic; right: Pic };
+type Pic = { src: string; by?: string } | { draw: ReactNode };
+// `fit`: the photos' boxes as the slide's own Figma frame has them (CSS vars, footer-stamps.css): each photo is
+// stretched to its box as Figma draws it (the designer cropped them there), the front one with the frame's crop
+type Slide = { id: string; field: string; year: string; head: string; body: string; front: Pic; left: Pic; right: Pic; fit?: Record<string, string> };
+const MAIN_FRONT = { '--fiw': '101.41%', '--fih': '103.89%', '--fil': '0.17%', '--fit': '-0.88%' };
 
 const A = '/assets/footer-stamps/';
-const WC = 'via Wikimedia Commons (cropped, in grey)';
 
 // Identity Labs' own, drawn: the wordmark; an exact golden rectangle (80 × 80φ) cut nine times; a data card
 const IlMark = (
@@ -56,35 +58,39 @@ const SLIDES: Slide[] = [
   // the opening, all of them together: one face from each field
   {
     id: 'all', field: 'Revolutions', year: '1977–Now',
+    fit: { '--lw': '119.858px', '--lh': '121.07px', '--rw': '126.79px', '--rh': '127.955px', ...MAIN_FRONT }, // 210:232
     head: 'Every industry gets its Revolution',
     body: 'The right people, with the right point of view, reorganise a field, bringing analytical rigour to a world that ran on gut feel. It has happened before.',
-    front: { src: `${A}zuck-3.webp`, by: `Mark Zuckerberg, 2008 — JD Lasica, CC BY 2.0, ${WC}` },
-    left: { src: `${A}simons.webp`, by: `Jim Simons, 2007 — Bill Cramer, CC BY-SA 4.0, ${WC}` },
-    right: { src: `${A}james.webp`, by: `Bill James, 2010 — Colette Morton & Dan Holden, CC BY-SA 2.0, ${WC}` },
+    front: { src: `${A}fig/main-front.webp` },
+    left: { src: `${A}fig/main-left.webp` },
+    right: { src: `${A}fig/main-right.webp` },
   },
   {
     id: 'baseball', field: 'Baseball', year: '1977',
+    fit: { '--lw': '120.484px', '--lh': '119.933px', '--rw': '126.79px', '--rh': '127.955px', '--fw': '115px', '--fh': '157px', '--fl': '8.7px' }, // 210:476
     head: 'Baseball got its revolution',
     body: 'In 1977 Bill James self-published his first Baseball Abstract. Sabermetrics put the box score over the scout’s eye, and a game run on instinct started counting.',
-    front: { src: `${A}james.webp`, by: `Bill James, 2010 — Colette Morton & Dan Holden, CC BY-SA 2.0, ${WC}` },
-    left: { src: `${A}james-2.webp`, by: 'Box score, 1859 — public domain, via Wikimedia Commons' },
-    right: { src: `${A}james-3.webp`, by: 'Fenway Park postcard — Tichnor Bros., public domain, via Wikimedia Commons' },
+    front: { src: `${A}fig/base-front.webp` },
+    left: { src: `${A}fig/base-left.webp` },
+    right: { src: `${A}fig/base-right.webp` },
   },
   {
     id: 'finance', field: 'Finance', year: '1982',
+    fit: { '--lw': '119.858px', '--lh': '121.07px', '--rw': '126.768px', '--rh': '128.053px', '--fw': '118px', '--fh': '159px', '--fl': '8.7px' }, // 210:598
     head: 'Finance got its revolution',
     body: 'Jim Simons, a codebreaker turned mathematician, founded Renaissance Technologies in 1982. Its Medallion fund traded on models instead of hunches, and the models won.',
-    front: { src: `${A}simons.webp`, by: `Jim Simons, 2007 — Bill Cramer, CC BY-SA 4.0, ${WC}` },
-    left: { src: `${A}simons-2.webp`, by: `Jim Simons, 2007 — Bill Cramer, CC BY-SA 4.0, ${WC}` },
-    right: { src: `${A}simons-3.webp`, by: `Jim Simons, 2007 — Gleuschk, CC BY-SA 3.0, ${WC}` },
+    front: { src: `${A}fig/fin-front.webp` },
+    left: { src: `${A}fig/fin-left.webp` },
+    right: { src: `${A}fig/fin-right.webp` },
   },
   {
     id: 'ads', field: 'Advertising', year: '2007',
+    fit: { '--lw': '119.473px', '--lh': '120.239px', '--rw': '129.561px', '--rh': '129.561px', '--rfit': 'cover', ...MAIN_FRONT }, // 210:354
     head: 'Advertising got its revolution',
     body: 'In 2007 Mark Zuckerberg launched Facebook Ads: every impression targeted, measured and paid for on results. Billboards gave way to performance you could count.',
-    front: { src: `${A}zuck.webp`, by: `Mark Zuckerberg, 2005 — Elaine & Priscilla Chan, CC BY 2.5, ${WC}` },
-    left: { src: `${A}zuck-2.webp`, by: `Mark Zuckerberg, 2007 — Morgan Sherwood, CC BY 2.0, ${WC}` },
-    right: { src: `${A}zuck-3.webp`, by: `Mark Zuckerberg, 2008 — JD Lasica, CC BY 2.0, ${WC}` },
+    front: { src: `${A}fig/ads-front.webp` },
+    left: { src: `${A}fig/ads-left.webp` },
+    right: { src: `${A}fig/ads-right.webp` },
   },
   {
     id: 'organic', field: 'Organic content', year: 'Now',
@@ -93,7 +99,6 @@ const SLIDES: Slide[] = [
     front: { draw: IlMark }, left: { draw: IlGolden }, right: { draw: IlData },
   },
 ];
-export const CREDIT = 'Photos via Wikimedia Commons, cropped and in grey: Bill James by Colette Morton & Dan Holden (CC BY-SA 2.0) · 1859 box score; Fenway Park, Tichnor Bros. (public domain) · Jim Simons by Bill Cramer (CC BY-SA 4.0), by Gleuschk (CC BY-SA 3.0) · Mark Zuckerberg by Elaine & Priscilla Chan (CC BY 2.5), by Morgan Sherwood and by JD Lasica (CC BY 2.0)';
 // how long each slide holds: quick while the footer is just looked at, so it visibly moves on; slow while
 // pointed at, so its words can be read (feedback 2026-11-16)
 const QUICK = 5000;
@@ -169,7 +174,7 @@ export default function FooterStamps() {
     <div className="fst" ref={ref} data-gathered={gathered || undefined}
       onPointerEnter={() => setHeld(true)} onPointerLeave={() => setHeld(false)}>
       {/* the stack (209:107) */}
-      <button type="button" className="fst-stack" onClick={next} aria-label={`${s.field}, ${s.year}. Next`}>
+      <button type="button" className="fst-stack" style={s.fit as CSSProperties} onClick={next} aria-label={`${s.field}, ${s.year}. Next`}>
         {/* left, behind: the square paper at −4.4°, its photo inset (209:108) */}
         <span className="fst-sq fst-sq-l">
           <span className="fst-tilt">
