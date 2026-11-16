@@ -561,6 +561,10 @@ const ResearchTerminal = forwardRef<ResearchTerminalHandle, { scatter?: boolean;
           // played: held as it ended, however the scroll goes back, until it leaves above the start (reset)
           P = 1;
           if (p.current <= 0) { done = false; playFrom = -1; P = 0; }
+        } else if (p.current >= 1 && playFrom < 0 && !visible) {
+          // passed without being seen (a jump down the page, a fast fling): it counts as played — never starts
+          // off screen, where it would hold the page somewhere else
+          done = true; doneAt = now - 10000; P = 1;
         } else if (p.current >= 1) {
           if (playFrom < 0) { playFrom = now; hold(); }
           P = Math.min(1, SEQ_PRE + (now - playFrom) / 1000 / SEQ_DUR);

@@ -92,9 +92,27 @@ const TILES: Tile[] = (() => {
   });
 })();
 // the ribbon's order: shuffled, so pictures and blanks interleave along the wave
-const ORDER = TILES.map((t) => t.key).sort((a, b) => rnd(a + 97) - rnd(b + 97));
-const RIBBON_POS = new Map(ORDER.map((k, i) => [k, i]));
-const N = TILES.length;
+/* The curve (the load), feedback 2026-11-16: the launches' own pictures, each once (no duplicates), arranged as
+   the client liked it before — the same picture at its centre, the same ones close by. Before, all the tiles
+   were on it (ORDER_WAS), the later ones repeating launches (PIC_WAS); now each launch keeps the place it had
+   nearest the centre, in the same order, spread evenly over its half of the curve, the centre one at the
+   middle. The video-frame tiles aren't on it: each starts from a point of the curve unseen and fades in as it
+   flies out to the field. */
+const ORDER_WAS = TILES.map((t) => t.key).sort((a, b) => rnd(a + 97) - rnd(b + 97));
+const PIC_WAS = (k: number) => (k < PICTURED.length ? TILES[k].l! : PICTURED[k % PICTURED.length]); // (the later tiles showed launches in turn)
+const RIBBON_POS = (() => {
+  const mid = (ORDER_WAS.length - 1) / 2;
+  const byNear = ORDER_WAS.map((k, j) => ({ k, j })).sort((a, b) => Math.abs(a.j - mid) - Math.abs(b.j - mid));
+  const placeOf = new Map<string, number>(); // each launch: its slot nearest the centre
+  for (const { k, j } of byNear) { const id = slug(PIC_WAS(k)); if (!placeOf.has(id)) placeOf.set(id, j); }
+  const covers = TILES.filter((t) => !t.frame && t.l).map((t) => ({ key: t.key, j: placeOf.get(slug(t.l!)) ?? mid }));
+  covers.sort((a, b) => a.j - b.j);
+  const ci = covers.reduce((best, c, i) => (Math.abs(c.j - mid) < Math.abs(covers[best].j - mid) ? i : best), 0);
+  const pos = new Map<number, number>();
+  covers.forEach((c, i) => pos.set(c.key, i < ci ? (0.5 * i) / ci : i === ci ? 0.5 : 0.5 + (0.5 * (i - ci)) / Math.max(1, covers.length - 1 - ci)));
+  TILES.forEach((t) => { if (t.frame) pos.set(t.key, 0.08 + rnd(t.key + 211) * 0.84); });
+  return pos;
+})();
 /* The launch the zoom goes into: the picture tile nearest the middle of the screen when the float
    ends (a launch with a video first, and one the reel has), so the zoom starts from a tile you can
    see. The reel then opens on that launch. */
@@ -254,7 +272,7 @@ export default function LaunchesFloat({ alt = false, card = false, track = false
       TILES.forEach((tile, i) => {
         const el = cardRefs.current[i];
         if (!el) return;
-        const u = (RIBBON_POS.get(tile.key) ?? 0) / (N - 1);
+        const u = RIBBON_POS.get(tile.key) ?? 0;
         const from = Math.abs(u - 0.5) * 2; // 0 at the centre of the wave … 1 at its ends
         // the field size and place
         const fw = Math.max(tile.w * W, 56 * tile.d);
@@ -267,6 +285,7 @@ export default function LaunchesFloat({ alt = false, card = false, track = false
         const ribScale = (cardH / fh) * mix(0.55, 1, b);
         // 2 · scatter: each tile leaves its spot on the curve, centre first, bowing outward on the way
         const si = ease(clamp((s - from * 0.32 - rnd(i + 31) * 0.12) / 0.56)); // each tile flies over about half the scatter
+        const bOn = tile.frame ? b * span(si, 0.02, 0.3) : b; // the frame tiles: not on the curve, in as they leave it
         // 3 · float: depth parallax with the scroll, the pointer and a slow bob
         const fx = tile.fx * W + (reduce ? 0 : mx * 16 * tile.d + Math.cos(t * 0.42 + tile.ph) * 5 * tile.d);
         const fy = (tile.fy - (i === HERO ? Math.min(q, 1) : q) * FLOAT_TRAVEL * tile.d) * H + (reduce ? 0 : my * 10 * tile.d + Math.sin(t * 0.55 + tile.ph) * 7 * tile.d);
@@ -274,7 +293,7 @@ export default function LaunchesFloat({ alt = false, card = false, track = false
         const bow = Math.sin(Math.PI * si) * Math.min(90, dl * 0.18); // sideways to the path
         const x = mix(wx, fx, si) - (dy / dl) * bow, y = mix(wy, fy, si) + (dx / dl) * bow;
         const sc = mix(ribScale, 1, si);
-        P[i] = { x, y, sc, fw, fh, b, si, from };
+        P[i] = { x, y, sc, fw, fh, b: bOn, si, from };
       });
 
       // 4 · zoom: only the hero tile moves — it grows from its place to the full stage (its picture

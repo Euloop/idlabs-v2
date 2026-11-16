@@ -219,3 +219,14 @@ html[data-fib-hero] .hv-fib {
   color: #ebebeb; pointer-events: none; z-index: 0;
 }
 html[data-fib-hero] .hero.hv > .frame { position: relative; z-index: 1; }
+
+/* Fade (the default hero, / and /home-4): two rows of the client logos on the first screen (feedback
+   2026-11-16). The spacing round the card tightens with the screen's height (64px on tall screens, down to
+   28px), and the hero sits so the second row ends ~40px above the bottom: the copy, the gap, the card's
+   title, its top padding, two rows and the gap between them (583px + three spacings, measured). On screens too short
+   for all of that it starts just under the header and the second row comes up with the first scroll. */
+html[data-intro='fade'] { --hvc-sp: clamp(28px, 4.5svh, 64px); }
+html[data-intro='fade'] .hv-main { margin-top: max(20px, calc(100svh - 639px - 3 * var(--hvc-sp) - 40px)); } /* 639: measured, the copy to the second row less the three spacings, plus the 56px header */
+html[data-intro='fade'] .hv-golden { gap: var(--hvc-sp); }
+html[data-intro='fade'] .hv-clients-title { margin-bottom: 16px; }
+html[data-intro='fade'] .hvc-grid { padding-block: var(--hvc-sp); row-gap: var(--hvc-sp); }
