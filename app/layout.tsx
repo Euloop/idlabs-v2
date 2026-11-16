@@ -2,8 +2,15 @@ import type { Metadata, Viewport } from 'next';
 import SmoothScroll from '../components/SmoothScroll';
 import './globals.css';
 
+// the site's address, for the link previews' absolute URLs (opengraph-image / twitter-image): the production domain
+// Vercel gives the build, else identitylabs.com
+const SITE = process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : 'https://identitylabs.com';
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE),
   title: 'Identity Labs',
+  openGraph: { siteName: 'Identity Labs', type: 'website' },
+  twitter: { card: 'summary_large_image' },
   description:
     'Identity Labs is a consulting firm based in San Francisco. The largest tech companies on earth rely on our algorithm research, analytics software, and deployed services to reach a billion people.',
 };
