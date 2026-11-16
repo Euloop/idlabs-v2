@@ -422,3 +422,10 @@ html[data-sl-flow='video'] .sl-sp-line { stroke-opacity: .55; }
 /* at the end: the spiral and the last picture go at once, quickly (250ms), before the logo starts at 350 —
    a slower fade left a pale ghost of them behind the logo */
 html[data-sl-flow='video'] .sl[data-end] .sl-zoom-b { opacity: 0; transition: opacity 250ms var(--ease-out); }
+/* …and the reel's waiting pictures with them. Every one is held at 0.002 so a cut never waits; in Chrome
+   (GPU) each rounds up to the smallest visible step and the stack adds up to a pale grey box — the old
+   endings cleared them as the white lifted (html[data-loader] != run), but here the logo comes first,
+   over them. So at data-end they go at once (important: over their running cut animations) and the stage
+   fades with the last picture. */
+html[data-sl-flow='video'] .sl[data-end] .sl-stage .sl-frame:not(.sl-last) { opacity: 0 !important; transition: none; }
+html[data-sl-flow='video'] .sl[data-end] .sl-stage { opacity: 0; transition: opacity 250ms var(--ease-out); }
