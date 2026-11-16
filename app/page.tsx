@@ -27,7 +27,7 @@ import HtmlMark from '../components/HtmlMark';
 export const metadata: Metadata = {
   title: 'Identity Labs',
   description:
-    'Identity Labs is a consulting firm based in San Francisco. The largest tech companies on earth rely on our algorithm research, analytics software, and deployed services to reach a billion people.',
+    'Identity Labs is a consulting firm based in London. The largest tech companies on earth rely on our algorithm research, analytics software, and deployed services to reach a billion people.',
   // the launch reel plays X's videos, which refuse another site's referrer (flow/launch-videos.ts)
   referrer: 'no-referrer',
 };

@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   openGraph: { siteName: 'Identity Labs', type: 'website' },
   twitter: { card: 'summary_large_image' },
   description:
-    'Identity Labs is a consulting firm based in San Francisco. The largest tech companies on earth rely on our algorithm research, analytics software, and deployed services to reach a billion people.',
+    'Identity Labs is a consulting firm based in London. The largest tech companies on earth rely on our algorithm research, analytics software, and deployed services to reach a billion people.',
 };
 
 export const viewport: Viewport = { width: 'device-width', initialScale: 1, themeColor: '#2a2c31' };
