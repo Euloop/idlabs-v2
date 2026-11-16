@@ -8,6 +8,7 @@ import Classifier from './tool-motion/Classifier';
 import Weighted from './tool-motion/Weighted';
 import Velocity from './tool-motion/Velocity';
 import Clusters from './tool-motion/Clusters';
+import DitherBg from './DitherBg';
 import ResearchTerminal, { type ResearchTerminalHandle } from './ResearchTerminal';
 
 /* Motion (the "Motion" layout, White): in place of the two screenshots, one window per tool
@@ -182,6 +183,10 @@ const T_WHITE = { typeA: -0.6, typeB: 0.3, textOutA: 0.7, textOutB: 0.97, scrap0
    running (ResearchTerminal) opens from its centre and types in with the scroll (termA–termB); once it
    is done the glass card comes up over it, the research blurred behind and still running. */
 const T_R = { ...T_WHITE, bgA: 0.85, bgB: 1.15, termA: 1.0, termB: 2.3, cardA: 2.4, cardB: 2.7, inA: 2.57, shots: [2.77, 2.97], lines: [2.92, 3.12], notes: [3.04, 3.22], live: 3.22, drift0: 3.22 };
+/* Motion glyphs / Motion numbers (`dither`, /home-4): Motion scroll with the new collage (Figma 213:618)
+   drawn in small moving letters and numbers, or in flowing digits (`dither='numbers'`) (DitherBg). The intro line types in as in Motion scroll; then, with no build, the dithered frame
+   and the card come into view together (one rise, bgA–bgB = cardA–cardB); then a screen per tool. */
+const T_D = { ...T_WHITE, bgA: 0.78, bgB: 1.08, cardA: 0.78, cardB: 1.08, inA: 0.8, inStep: 0.03, inLen: 0.18, shots: [0.84, 1.0], lines: [0.9, 1.06], notes: [0.96, 1.12], live: 1.2, drift0: 1.2 };
 // Research sequence: the pieces one by one need more room (2.8 screens, then the settle), the rest after
 const T_S = { ...T_R, termA: 1.0, termB: 4.2, cardA: 4.3, cardB: 4.6, inA: 4.47, shots: [4.67, 4.87], lines: [4.82, 5.02], notes: [4.94, 5.12], live: 5.12, drift0: 5.12 };
 const TG = { typeA: -0.6, typeB: 0.25, textOutA: 0.95, textOutB: 1.3, gather0: 1.0, gatherStep: 0.08, gatherLen: 0.9, bgA: 2.35, bgB: 2.7, cardA: 2.65, cardB: 2.95, inA: 2.82, inStep: 0.08, inLen: 0.2, shots: [3.02, 3.22], lines: [3.17, 3.37], notes: [3.27, 3.45], live: 3.45, drift0: 3.45 }; // release at 4.3
@@ -221,7 +226,7 @@ function Scraps({ blur = false }: { blur?: boolean }) {
 
 export type CollageTheme = 'white' | 'gather' | 'paper' | 'dark';
 
-export default function ToolsCollage({ theme = 'white', motion = false, scroll = false, intro = 'small', research = false }: { theme?: CollageTheme; motion?: boolean; scroll?: boolean; intro?: 'small' | 'large'; research?: boolean | 'scatter' | 'sequence' }) {
+export default function ToolsCollage({ theme = 'white', motion = false, scroll = false, intro = 'small', research = false, dither = false }: { theme?: CollageTheme; motion?: boolean; scroll?: boolean; intro?: 'small' | 'large'; research?: boolean | 'scatter' | 'sequence'; dither?: boolean | 'numbers' }) {
   const termRef = useRef<ResearchTerminalHandle>(null);
   const ref = useRef<HTMLElement>(null);
   const [active, setActive] = useState(0);
@@ -229,7 +234,7 @@ export default function ToolsCollage({ theme = 'white', motion = false, scroll =
   const [paused, setPaused] = useState(false);
   const immersive = theme === 'white' || theme === 'gather';
   const gather = theme === 'gather';
-  const TL = gather ? TG : research === 'sequence' ? T_S : research ? T_R : T_WHITE;
+  const TL = gather ? TG : dither ? T_D : research === 'sequence' ? T_S : research ? T_R : T_WHITE;
   const boxRef = useRef<HTMLDivElement>(null);
   const introRef = useRef<ScrollTextHandle>(null);
   // White: during the build the panel (views, leaders, notes) is drawn by the scroll (data-static);
@@ -360,7 +365,7 @@ export default function ToolsCollage({ theme = 'white', motion = false, scroll =
         put('--a-text', 1 - smooth(spanT(y, T.textOutA, T.textOutB)));
         put('--a-bg', smooth(spanT(y, T.bgA, T.bgB)));
         if (research) termRef.current?.set(spanT(y, (research === 'sequence' ? T_S : T_R).termA, (research === 'sequence' ? T_S : T_R).termB));
-        if (!research) SCRAPS.forEach((_, i) => {
+        if (!research && !dither) SCRAPS.forEach((_, i) => {
           const a = T.scrap0 + i * T.scrapStep;
           put(`--a-s${i}`, smooth(spanT(y, a, a + T.scrapLen)));
           // the drift: deeper scraps move a little more as the section scrolls on (Motion Scroll:
@@ -440,13 +445,13 @@ export default function ToolsCollage({ theme = 'white', motion = false, scroll =
   const noteA = motion ? t.mA : t.noteA, noteB = motion ? t.mB : t.noteB;
 
   return (
-    <section ref={ref} className="tcl" data-theme-tc={theme} data-immersive={immersive || undefined} data-gather={gather || undefined} data-motion={motion || undefined} data-scroll={scroll || undefined} data-research={research || undefined} data-intro={intro} data-foot="/Analytical Tools" aria-label="Analytical tools">
+    <section ref={ref} className="tcl" data-theme-tc={theme} data-immersive={immersive || undefined} data-gather={gather || undefined} data-motion={motion || undefined} data-scroll={scroll || undefined} data-research={research || undefined} data-dither={dither || undefined} data-numbers={dither === 'numbers' || undefined} data-intro={intro} data-foot="/Analytical Tools" aria-label="Analytical tools">
       <div className="tcl-pin">
       {immersive && <ScrollText ref={introRef} className="tcl-intro" text={INTRO} hl="2B+ data points" />}
       <div className="frame tcl-frame">
         <div className="tcl-box" ref={boxRef}>
           {/* the collage covers the whole box, so the dither takes its place rather than lying under it */}
-          {research ? <ResearchTerminal ref={termRef} scatter={research === 'scatter'} sequence={research === 'sequence'} /> : <Scraps />}
+          {research ? <ResearchTerminal ref={termRef} scatter={research === 'scatter'} sequence={research === 'sequence'} /> : dither ? <DitherBg numbers={dither === 'numbers'} /> : <Scraps />}
           {/* research: the glass fills the whole frame once the card comes in, so the research behind it is a
               quiet blur, not a busy edge round the card (feedback 2026-11-16) */}
           {research && <div className="tcl-glass" aria-hidden="true" />}
@@ -456,7 +461,7 @@ export default function ToolsCollage({ theme = 'white', motion = false, scroll =
             onFocus={(e) => setPaused(e.target.matches(':focus-visible'))} onBlur={() => setPaused(false)}>
             {/* the glass: the same collage, blurred, seen through the card (a copy rather than
                 backdrop-filter, which drops the blended scraps in some browsers) */}
-            {!research && <Scraps blur />}
+            {!research && !dither && <Scraps blur />}
             <h2 className="tcl-title tcl-in0">/Analytical Tool</h2>
             {!motion && <p key={`lead-${idx}`} className="tcl-lead tcl-in1">{t.lead}</p>}
 

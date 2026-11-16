@@ -48,8 +48,8 @@ export default function Home4({ loader = 'new' }: { loader?: 'new' | 'classic' }
       <ResearchLab />
       <SectionThree lead="Read our published findings" cover="paper" holes={false} />
       <MonoTrail selector="section.s3 .s3-band" />
-      {/* tools: Showcase (default), Motion scroll (the scroll moves through the tools, as /) Research live (research typing in, then the glass card) Research scatter (the same loose, print-style) or Research sequence (the scatter's pieces one by one, growing, then all), bottom tabs (?tools=) */}
-      <ToolsOptions only={['showcase', 'motionScroll', 'research', 'scatter', 'sequence']} />
+      {/* tools: Showcase (default); Motion scroll (the scroll moves through the tools, as /); Motion glyphs (that over the new collage, in small moving letters and numbers, no build); Motion numbers (the same in flowing digits); Research live (research typing in, then the glass card); Research scatter (the same loose, print-style); Research sequence (the scatter's pieces one by one, then all) — bottom tabs (?tools=) */}
+      <ToolsOptions only={['showcase', 'motionScroll', 'dither', 'numbers', 'research', 'scatter', 'sequence']} />
       <ServicesCards light layout="columns" />
       {/* launches: Selected (default: the client's six and See all → /launches) or Float II–IV (?launches=) */}
       <LaunchesOptions only={['selected', 'float2', 'float3', 'float4']} words={['Our trajectory', 'changing launches']} />
