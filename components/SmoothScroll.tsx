@@ -16,6 +16,8 @@ export default function SmoothScroll() {
       lenis = preference.matches
         ? undefined
         : new Lenis({ autoRaf: true, lerp: 0.1, smoothWheel: true, syncTouch: false, anchors: true });
+      // shared, so a section can hold the page still for a moment (ResearchTerminal's sequence)
+      (window as unknown as { __lenis?: Lenis }).__lenis = lenis;
     };
     update();
     preference.addEventListener('change', update);

@@ -4,6 +4,7 @@ import SiteFooter from '../../components/flow/SiteFooter';
 import SiteChrome from '../../components/SiteChrome';
 import '../../components/sections.css';
 import '../../components/flow/flow.css';
+import HtmlMark from '../../components/HtmlMark';
 
 /* /launches: every launch, as the cards of Launches "Selected" (/home-4's See all button). Light page
    from the start (no hero), the fixed nav and the Fibonacci footer, as on /. */
@@ -20,6 +21,7 @@ export default function LaunchesPage() {
     <>
       <script dangerouslySetInnerHTML={{ __html: "document.documentElement.dataset.theme='light'" }} />
       <span className="s2-flow" hidden />
+      <HtmlMark name="s2" />
       <div className="backdrop" aria-hidden="true">
         <div className="backdrop-dark"><div className="texture" /></div>
         <div className="backdrop-light" />

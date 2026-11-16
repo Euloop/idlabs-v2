@@ -17,8 +17,9 @@ type Props = {
   className?: string;
   probs?: boolean;
   /* a phrase to highlight: its words are kept on one line, and light(q) wipes a dark bar across
-     its letters (0 → 1), each letter turning white as the bar passes (as "500M posts/week") */
-  hl?: string;
+     its letters (0 → 1), each letter turning white as the bar passes (as "500M posts/week"). A list:
+     whichever of them the text holds (a line whose text changes, as Section 2's step label) */
+  hl?: string | string[];
   ref?: Ref<ScrollTextHandle>;
 };
 
@@ -35,7 +36,8 @@ export default function ScrollText({ text, as: Tag = 'p', className, probs = fal
     const s = st.current;
     el.textContent = '';
     s.chars = []; s.words = []; s.wordOf = []; s.hlc = []; s.m = 0;
-    const h0 = hl ? t.indexOf(hl) : -1, h1 = h0 + (hl?.length ?? 0);
+    const phrase = Array.isArray(hl) ? hl.find((h) => t.includes(h)) : hl;
+    const h0 = phrase ? t.indexOf(phrase) : -1, h1 = h0 + (phrase?.length ?? 0);
     let group: HTMLElement | null = null, pos = 0;
     (t.match(/\S+\s*|\s+/g) ?? []).forEach((w) => {
       const w0 = pos, w1 = pos + w.length;

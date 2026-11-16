@@ -393,7 +393,7 @@ html[data-sl-flow='video'] .sl-caption { animation-delay: 800ms; }
 /* the logo at the end, centred on the frame (the slot's middle: 9px above the screen's), drawing in as
    the last image fades (from 350ms after data-end, so the two only just cross) */
 html[data-sl-flow='video'] .sl-endlogo {
-  display: block; position: absolute; left: 50%; top: calc(50% - 9px); translate: -50% -50%; --ink-at: 350ms;
+  display: block; position: absolute; left: 50%; top: calc(50% - 9px); translate: -50% -50%; --ink-at: 550ms; /* (350 → 550 with the softer fade below: the picture mostly gone before the first stroke) */
 }
 
 /* Video first's reel: the first half's dropped frames gone, every cut on its new beat (--atv, StartLoader),
@@ -421,14 +421,15 @@ html[data-sl-flow='video'] .sl-sp-line { stroke-opacity: .55; }
 
 /* at the end: the spiral and the last picture go at once, quickly (250ms), before the logo starts at 350 —
    a slower fade left a pale ghost of them behind the logo */
-html[data-sl-flow='video'] .sl[data-end] .sl-zoom-b { opacity: 0; transition: opacity 250ms var(--ease-out); }
+/* (feedback 2026-11-16: 250ms read as a cut) a soft 700ms fade, easing in and out, a touch of settle in scale */
+html[data-sl-flow='video'] .sl[data-end] .sl-zoom-b { opacity: 0; transition: opacity 700ms cubic-bezier(.4, 0, .2, 1); }
 /* …and the reel's waiting pictures with them. Every one is held at 0.002 so a cut never waits; in Chrome
    (GPU) each rounds up to the smallest visible step and the stack adds up to a pale grey box — the old
    endings cleared them as the white lifted (html[data-loader] != run), but here the logo comes first,
    over them. So at data-end they go at once (important: over their running cut animations) and the stage
    fades with the last picture. */
 html[data-sl-flow='video'] .sl[data-end] .sl-stage .sl-frame:not(.sl-last) { opacity: 0 !important; transition: none; }
-html[data-sl-flow='video'] .sl[data-end] .sl-stage { opacity: 0; transition: opacity 250ms var(--ease-out); }
+html[data-sl-flow='video'] .sl[data-end] .sl-stage { opacity: 0; scale: .985; transition: opacity 700ms cubic-bezier(.4, 0, .2, 1), scale 900ms cubic-bezier(.2, .7, .2, 1); }
 
 /* "Video first · diagram stays" (?loader=videobg, html[data-fib-hero]): the diagram doesn't fade with
    the white — the hero's own copy of it (.hv-fib, hero-vertical.css) lies under it in the same place,

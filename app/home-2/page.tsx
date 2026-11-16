@@ -10,6 +10,7 @@ import LaunchesOptions from '../../components/flow/LaunchesOptions';
 import ThemeDriver from '../../components/flow/ThemeDriver';
 import HeroOptions from '../../components/flow/HeroOptions';
 import SiteFooter from '../../components/flow/SiteFooter';
+import HtmlMark from '../../components/HtmlMark';
 
 /* /home-2: the full home page with Section 2's funnel diagram replaced by the client's pipeline
    flowchart (components/flow/), in three styles the client can switch between (line, cards,
@@ -26,8 +27,9 @@ export const metadata: Metadata = {
 export default function Home2() {
   return (
     <>
-      {/* page marker: the /home-2 styles key off body:has(.s2-flow), whichever Section 2 is shown */}
+      {/* page marker: the /home-2 styles key off html[data-s2] (HtmlMark), whichever Section 2 is shown */}
       <span className="s2-flow" hidden />
+      <HtmlMark name="s2" />
       <Hero />
       {/* The hero dark (as live) or light (Dark · Light tabs at the bottom, ?hero=). */}
       <HeroOptions />

@@ -74,3 +74,7 @@
 .fff-low > .ftf-bar { position: relative; z-index: 1; }
 /* the frame's squares on the footer's top edge, where the drawing starts (not 59 down) */
 .ft-fib:has(.fff-low) .ftf-sqs-frame { top: 0; }
+
+/* Fibonacci · low, cleaner (feedback 2026-11-16: it felt cluttered): only the squares, their circles and the
+   spiral — no long diagonals, no section lines carried across the whole */
+.fff-low .fff-lines .fl-d, .fff-low .fff-lines .fl-l { display: none; }

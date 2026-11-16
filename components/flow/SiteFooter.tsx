@@ -37,7 +37,7 @@ const footerInView = (r: DOMRect, vh: number) => r.top <= vh * 0.5;
 export type Middle = GoldenVariant | 'books' | 'fib' | 'fib-focus' | 'fib-full' | 'fib-low' | 'stamps';
 const MIDDLES: [Middle, string][] = [
   ['spiral', 'Spiral'], ['compound', 'Compound'], ['focus', 'Focus'], ['reel', 'Reel'], ['trace', 'Trace'], ['books', 'Reading list'],
-  ['stamps', 'Moneyball (/)'], ['fib', 'Fibonacci'], ['fib-focus', 'Fibonacci + Focus'], ['fib-full', 'Fibonacci · full'], ['fib-low', 'Fibonacci · low'],
+  ['fib-low', 'Fibonacci · low (/)'], ['stamps', 'Moneyball'], ['fib', 'Fibonacci'], ['fib-focus', 'Fibonacci + Focus'], ['fib-full', 'Fibonacci · full'],
 ];
 
 // /home-4 (`fib`): the Fibonacci footer (Figma Zoomcast 200:4, FooterFib.tsx) or this one, ?footer=
@@ -63,8 +63,8 @@ function Rule() {
 
 // `layout`: a fixed layout with no tabs (the live pages: / and /launches use 'fib')
 // `start` (with `golden`): the variant the tabs open on (/footer: Spiral; /home-4: Fibonacci, as /)
-// `live` (with layout 'fib', no tabs): which Fibonacci footer the live pages show — Moneyball since 2026-11-16
-export default function SiteFooter({ golden = false, fib = false, layout: fixed, start = 'spiral', live = 'stamps' }: { golden?: boolean; fib?: boolean; layout?: Layout; start?: Middle; live?: Middle } = {}) {
+// `live` (with layout 'fib', no tabs): which Fibonacci footer the live pages show — Fibonacci · low since 2026-11-16 (Moneyball before)
+export default function SiteFooter({ golden = false, fib = false, layout: fixed, start = 'spiral', live = 'fib-low' }: { golden?: boolean; fib?: boolean; layout?: Layout; start?: Middle; live?: Middle } = {}) {
   const ref = useRef<HTMLElement>(null);
   const [layoutPicked, pickLayout] = useOption<Layout>('footer', LAYOUTS, 'fib');
   const [shelf, pickShelf] = useOption<ShelfPalette>('books', SHELVES, 'classic');

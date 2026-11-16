@@ -3,7 +3,7 @@
 
 .lcs { --edge: calc(1px - var(--pad)); width: calc(100% + 2 * var(--pad) - 2px); margin-inline: var(--edge); }
 /* the carousel runs out past the screen edge; the section clips it there (no sideways scroll) */
-body:has(.s2-flow) .lc:has(.lcs) { overflow-x: clip; }
+html[data-s2] :where(body) .lc:has(.lcs) { overflow-x: clip; }
 
 .lcs-view { container-type: inline-size; touch-action: pan-y; cursor: grab; user-select: none; -webkit-user-select: none; }
 .lcs-view:active { cursor: grabbing; }
@@ -18,7 +18,7 @@ body:has(.s2-flow) .lc:has(.lcs) { overflow-x: clip; }
 .lcs[data-mode='carousel'] { position: relative; }
 /* (no clip: the slides either side show past the rules; the section clips at the screen edge) */
 .lcs[data-mode='carousel'] .lcs-slide { box-shadow: 0 30px 60px -34px rgb(0 0 0 / .35); }
-body:has(.s2-flow) .lc[data-variant='carousel'] .lc-label { text-align: left; }
+html[data-s2] :where(body) .lc[data-variant='carousel'] .lc-label { text-align: left; }
 .lcs-nav { position: absolute; right: calc(var(--pad) - 1px); bottom: calc(100% + 14px); display: flex; gap: 10px; }
 .lcs[data-mode='carousel'] .lcs-btn {
   width: 36px; height: 36px; padding: 0; background: #fff; color: #1f1f1f;

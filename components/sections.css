@@ -266,3 +266,19 @@ html[data-page-end]:has(.ftf-top) .chrome .s2-header * { pointer-events: none !i
    (html[data-footer] / [data-over-footer]: SiteFooter) */
 html[data-footer]:not([data-over-footer]):has(.fff-low) .chrome .s2-header { opacity: 0; pointer-events: none; }
 html[data-footer]:not([data-over-footer]):has(.fff-low) .chrome .s2-header * { pointer-events: none !important; }
+
+/* Section 2's step label: "Sourcing module" / "Ranking module" highlighted as the research lab's phrase —
+   a black bar wiping across, its letters turning white (ScrollText hl, light) */
+.s2-step .tc-hlg { white-space: nowrap; }
+.s2-step .tc.tc-hl { transition: opacity 120ms linear, background-color 120ms linear, color 120ms linear; padding-block: 2px; }
+.s2-step .tc.tc-hl.lit { background: #1f1f1f; color: #fff; }
+.s2-step .tc-hl-a { padding-left: 4px; margin-left: -1px; }
+.s2-step .tc-hl-b { padding-right: 4px; margin-right: -1px; }
+
+/* The fixed header's sides, even (2026-11-16): the wordmark and the nav each 25px in from the frame's rule — the
+   links' own inset in the footer box (24px padding inside its 1px border) — instead of 33 (+9 units) on the left
+   and 19 (−5 units) on the right. Phones keep their even 24 (globals.css, ≤559px). */
+@media (min-width: 560px) {
+  .chrome .s2-header .wordmark { margin-left: calc(25px - var(--pad)); }
+  .chrome-nav { right: calc(25px - var(--pad)); }
+}

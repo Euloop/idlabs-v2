@@ -6,6 +6,7 @@ import SiteChrome from '../../components/SiteChrome';
 // the fixed nav's styles (SiteChrome) — on /home-4 they come in with the later sections
 import '../../components/sections.css';
 import '../../components/flow/flow.css';
+import HtmlMark from '../../components/HtmlMark';
 
 /* /footer: to work on the footer. The Fade hero (the clean hero, no golden-ratio construction) with
    no start loader, and the footer straight below it, with its golden-ratio variants in place of the reading list
@@ -24,8 +25,9 @@ export default function FooterPage() {
       {/* light hero, and the Fade hero (html[data-intro], which StartLoader's script sets elsewhere),
           before first paint (HeroLight keeps the light and clears it on leaving) */}
       <script dangerouslySetInnerHTML={{ __html: "var d=document.documentElement;d.dataset.hero='light';d.dataset.intro='fade'" }} />
-      {/* page marker: the shared /home-2 styles key off body:has(.s2-flow) */}
+      {/* page marker: the shared /home-2 styles key off html[data-s2] (HtmlMark) */}
       <span className="s2-flow" hidden />
+      <HtmlMark name="s2" />
       <HeroVertical />
       <HeroLight />
       <SiteFooter golden />

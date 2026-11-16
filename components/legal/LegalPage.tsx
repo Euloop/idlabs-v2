@@ -5,6 +5,7 @@ import type { LegalDoc } from './content';
 import '../sections.css';
 import '../flow/flow.css';
 import './legal.css';
+import HtmlMark from '../HtmlMark';
 
 /* /privacy and /terms in the clean hero's style (HeroVertical, Fade): the white page between the
    hero's rails, the fixed wordmark and nav, a 512px column — the title in the hero's headline face
@@ -33,8 +34,9 @@ export default function LegalPage({ doc }: { doc: LegalDoc; kind: 'privacy' | 't
       {/* a light page from the start, as /launches: the site's backdrop and its frame rules (rails), so
           the rules sit where the nav and the footer expect them at every frame width */}
       <script dangerouslySetInnerHTML={{ __html: "document.documentElement.dataset.theme='light'" }} />
-      {/* page marker: the fixed chrome's light-page styles key off body:has(.s2-flow) */}
+      {/* page marker: the fixed chrome's light-page styles key off html[data-s2] (HtmlMark) */}
       <span className="s2-flow" hidden />
+      <HtmlMark name="s2" />
       <div className="backdrop" aria-hidden="true">
         <div className="backdrop-dark"><div className="texture" /></div>
         <div className="backdrop-light" />

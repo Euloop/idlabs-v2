@@ -4,6 +4,7 @@ import './sections.css';
 import './flow/flow.css';
 import './legal/legal.css';
 import './coming-soon.css';
+import HtmlMark from './HtmlMark';
 
 /* /manifesto and /careers, until they are written: the legal pages' clean hero style (white, the hero's
    rails and markers, the fixed wordmark and nav) with one screen in the middle — the page's name pale
@@ -21,8 +22,9 @@ export default function ComingSoon({ page }: { page: 'manifesto' | 'careers' }) 
   return (
     <>
       <script dangerouslySetInnerHTML={{ __html: "document.documentElement.dataset.theme='light'" }} />
-      {/* page marker: the fixed chrome's light-page styles key off body:has(.s2-flow) */}
+      {/* page marker: the fixed chrome's light-page styles key off html[data-s2] (HtmlMark) */}
       <span className="s2-flow" hidden />
+      <HtmlMark name="s2" />
       <div className="backdrop" aria-hidden="true">
         <div className="backdrop-dark"><div className="texture" /></div>
         <div className="backdrop-light" />

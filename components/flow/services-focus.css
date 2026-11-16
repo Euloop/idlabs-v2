@@ -59,8 +59,8 @@
 
 /* Layout in the page: the last section, so it simply scrolls (no pin). The column is anchored
    to the top (switching services never shifts it) with room at the bottom for the layout tabs. */
-body:has(.s2-flow) .svf .sv-pin { position: relative; height: auto; }
-body:has(.s2-flow) .svf .sv-frame {
+html[data-s2] :where(body) .svf .sv-pin { position: relative; height: auto; }
+html[data-s2] :where(body) .svf .sv-frame {
   height: auto; min-height: 100svh; align-content: start;
   padding-block: calc(var(--box) + 48px) calc(var(--box) + 96px);
 }

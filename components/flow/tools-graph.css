@@ -98,7 +98,7 @@ section.tg[data-mode='dark'] {
 }
 
 /* corners: the boundaries above (papers → tools) and below (tools → services) */
-body:has(.s2-flow) .tg-frame::after {
+html[data-s2] :where(body) .tg-frame::after {
   content: ''; position: absolute; pointer-events: none; inset: calc(var(--box) - 4px) -4px;
   background:
     linear-gradient(var(--box-mark), var(--box-mark)) left top / 9px 9px no-repeat,

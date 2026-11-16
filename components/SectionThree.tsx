@@ -108,10 +108,9 @@ export default function SectionThree({ lead, cover = 'site', holes = true }: { l
       const vh = window.innerHeight;
       const leadEl = sec.querySelector<HTMLElement>('.s3-lead');
       if (leadEl) {
-        // The lead starts typing just before it comes on screen and is complete once it is 20%
-        // into the viewport (its top at 80% of the screen height): written as it arrives.
-        const top = leadEl.getBoundingClientRect().top;
-        readRef.current?.set(Math.max(0, Math.min(1, (1.12 * vh - top) / (0.32 * vh))));
+        // The lead is simply there, written in full (feedback 2026-11-16: no typing — it started before the
+        // research text above had moved)
+        readRef.current?.set(1);
         return;
       }
       const arrive = Math.max(0, Math.min(1, 1 - sec.getBoundingClientRect().top / vh));

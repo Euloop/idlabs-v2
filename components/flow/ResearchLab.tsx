@@ -7,7 +7,7 @@ import OptionTabs, { useOption } from './OptionTabs';
    One short centred column of 12px mono caps. The stage pins while the line types in with the
    scroll (letter by letter, the site's .tc letters), then a black bar wipes across
    "1B+ views worth of posts" and each letter it passes turns white. Scrolling back un-does both.
-   The stage is half a screen, held mid-screen (flow.css). Two sizes, 12px or 20px (bottom tabs; ?lab=). */
+   The stage is half a screen, held mid-screen (flow.css); the papers after it come up only as it lets go. Two sizes, 12px or 20px (bottom tabs; ?lab=). */
 
 type Size = 'small' | 'large';
 const SIZES: [Size, string][] = [['small', '12px'], ['large', '20px']];
@@ -44,6 +44,7 @@ export default function ResearchLab({ fixed = false }: { fixed?: boolean } = {})
       // 0 → 1 as the section comes up (its top from the bottom of the screen to where the
       // half-screen stage holds, 25% down), then 1 → 2 over the held stretch
       const s = clamp((vh - r.top) / (0.75 * vh)) + clamp((0.25 * vh - r.top) / Math.max(1, r.height - 0.5 * vh));
+
       const type = reduce ? 1 : range(s, 0.55, 1.35);
       const bar = reduce ? 1 : range(s, 1.4, 1.8);
       const nn = Math.round(type * chars.length);

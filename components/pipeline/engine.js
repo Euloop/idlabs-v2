@@ -329,6 +329,10 @@ function v31Story(DUR){
   ST+='<g id="ovG"></g>';
 
   let E=null,frame=0,lastHint='',lastF='';
+  /* writes only when the value changes (2026-11-16, lag): a same-value write still makes the browser recheck the
+     diagram — the viewBox one re-laid-out the whole SVG every frame */
+  const was=new WeakMap();
+  const put=(el,k,v)=>{let m=was.get(el);if(!m)was.set(el,m={});if(m[k]===v)return;m[k]=v;if(k[0]==='.')el.style[k.slice(1)]=v;else el.setAttribute(k,v);};
   /* I = the diagram drawing itself in (0 → 1) before the scroll story starts */
   return {st:ST,timeline:{TR,HW,MID},notes:NOTES.map(n=>({id:n.id,text:n.text,x:n.x,y:n.y,w:n.w})),visible,noteProg,chapter,setRects,dyn:(t,P,B,RM,I)=>{P=P||0;B=B||1;I=I===undefined?1:I;
     if(!E||!E.w.isConnected){const q=id=>svg.querySelector('#'+id);
@@ -337,7 +341,7 @@ function v31Story(DUR){
     stageQ(P);
     const u=TR.map(r=>seg(P,r[0],r[1])),e=u.map(EIO),M=RM?0:1,v=u[0];
     const inWorld=P<TR[0][1];
-    const setG=(g,a,b)=>{g.setAttribute('x1',R1(a));g.setAttribute('x2',R1(b));};
+    const setG=(g,a,b)=>{put(g,'x1',R1(a));put(g,'x2',R1(b));};
 
     /* camera on the zoom: the globe's screen position eases from the overview to where the
        stage globe sits, while Z grows exponentially to the radius ratio — so the overview
@@ -351,28 +355,30 @@ function v31Story(DUR){
     const drawn=RM?1:I,erased=RM?0:seg(v,.1,.85),solid=I<1?seg(I,.88,1):1-seg(v,0,.15);
     const aux=I<1?seg(I,.85,1):1-seg(v,0,.25);
 
-    svg.setAttribute('viewBox','0 0 1200 560');
-    E.w.style.display=inWorld&&I>0?'':'none';
+    put(svg,'viewBox','0 0 1200 560');
+    put(E.w,'.display',inWorld&&I>0?'':'none');
     if(inWorld&&I>0){
-      E.w.setAttribute('transform','translate('+CX+' '+CY+') scale('+Z.toFixed(4)+') translate('+R1(-cx)+' '+R1(-cy)+')');
-      E.l.style.opacity=aux.toFixed(3);E.q.style.opacity=aux.toFixed(3);E.e.style.opacity=aux.toFixed(3);
-      E.gl.style.opacity=(I<1?seg(I,.08,.35):1-seg(v,.85,1)).toFixed(3);
+      put(E.w,'transform','translate('+CX+' '+CY+') scale('+Z.toFixed(4)+') translate('+R1(-cx)+' '+R1(-cy)+')');
+      put(E.l,'.opacity',aux.toFixed(3));put(E.q,'.opacity',aux.toFixed(3));put(E.e,'.opacity',aux.toFixed(3));
+      put(E.gl,'.opacity',(I<1?seg(I,.08,.35):1-seg(v,.85,1)).toFixed(3));
       const key=drawn.toFixed(4)+'|'+erased.toFixed(4)+'|'+solid.toFixed(2);if(key!==lastF){E.f.innerHTML=strokes(drawn,erased,solid);lastF=key;}}
 
     /* stages */
     const op=[Math.min(seg(v,.25,.6),OUT(u[1])),Math.min(IN(u[1]),OUT(u[2])),IN(u[2])];
     if(RM)op[0]=Math.min(IN(v),OUT(u[1]));
     const dx=[-D*e[1],D*(1-e[1]-e[2]),D*(1-e[2])];
-    op.forEach((o,j)=>{const g=E.sg[j],on=o>.001;g.style.opacity=o.toFixed(3);g.style.display=on?'':'none';if(!on)return;
+    op.forEach((o,j)=>{const g=E.sg[j],on=o>.001;put(g,'.opacity',o.toFixed(3));put(g,'.display',on?'':'none');if(!on)return;
       if(j===0&&inWorld&&!RM){/* ride the world globe, revealed behind the erase front */
         const sc=Z/A0.r,fs=CX+(eraseFront(erased)-cx)*Z,fl=A0.l[0]+(fs-sx[0])/sc;
-        g.setAttribute('transform','translate('+R1(sx[0])+' '+R1(sx[1])+') scale('+sc.toFixed(4)+') translate('+(-A0.l[0])+' '+(-A0.l[1])+')');
-        setG(E.mg,fl,fl+EDGE);g.setAttribute('mask','url(#mg)');}
-      else{g.removeAttribute('mask');
-        g.setAttribute('transform','translate('+R1(CX+dx[j]*M)+' '+CY+') scale('+(B*SS[j]).toFixed(4)+') translate('+R1(-(CX-OFF[j]))+' '+(-CY)+')');}});
+        put(g,'transform','translate('+R1(sx[0])+' '+R1(sx[1])+') scale('+sc.toFixed(4)+') translate('+(-A0.l[0])+' '+(-A0.l[1])+')');
+        setG(E.mg,fl,fl+EDGE);put(g,'mask','url(#mg)');}
+      else{if(g.hasAttribute('mask')){g.removeAttribute('mask');(was.get(g)||{}).mask=undefined;}
+        put(g,'transform','translate('+R1(CX+dx[j]*M)+' '+CY+') scale('+(B*SS[j]).toFixed(4)+') translate('+R1(-(CX-OFF[j]))+' '+(-CY)+')');}});
 
     frame++;
-    if(frame%2===0){
+    /* the looping micro-animation (globe, posts, the stages' moving parts) rebuilt 20 times a second (was 30):
+       each rebuild is fresh SVG markup to parse and lay out */
+    if(frame%3===0){
       if(inWorld&&I>0){E.gl.innerHTML=globe(t,Z);if(aux>.01){E.q.innerHTML=posts(t,false);E.e.innerHTML=posts(t,true);}}
       SC.forEach((S,j)=>{if(op[j]>.001)E.sd[j].innerHTML=S.dyn(t+j*3.1,QS[j]);});}
     const hs=leaders(noteProg(P,I));

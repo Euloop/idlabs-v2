@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 import './hero-vertical.css';
 import FibLines from './flow/FibLines';
+import HtmlMark from './HtmlMark';
 
 /* /home-4 hero — Figma "new hero light theme" (183:3). The golden construction stood upright
    (577 × 980, centred in the frame): the headline and body copy sit in its large square, the client
@@ -9,7 +10,7 @@ import FibLines from './flow/FibLines';
    first screen). Drawn 1:1 — no scaling to fit the screen. Light only. Same page material, rails and .hero wrapper as Hero.tsx, so the theme
    switch and Section 2 work unchanged. Positions are Figma px inside the construction (× --px). */
 
-const LINES = ['Identity labs is a', 'consulting firm based', 'in London.'];
+const LINES = ['Identity Labs is a', 'consulting firm based', 'in London.'];
 
 type Part = { src: string; inset: string };
 type Masked = Part & { box: string; mx: number; my: number };
@@ -191,6 +192,8 @@ export default function HeroVertical() {
       </div>
       <div className="frame rails" aria-hidden="true"><span className="rails-light" /></div>
 
+      {/* html[data-hv]: the pages with this hero (styles keyed off it, not body:has(.hero.hv)) */}
+      <HtmlMark name="hv" />
       <div className="hero hv">
         {/* /home-4 ?loader=videobg: the loader's Fibonacci diagram kept as the hero's background, in the
             same place as it is under the loader (the first screen), so the white lifts off it

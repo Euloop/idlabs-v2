@@ -1,6 +1,6 @@
 'use client';
 
-import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
+import { forwardRef, memo, useEffect, useImperativeHandle, useRef } from 'react';
 
 /* /home-4 tools "Research live" (ToolsCollage `research`): the ground under the glass card — six
    terminal panes of research running at once (the data coming in, the classifier training, the
@@ -372,22 +372,33 @@ function Gutters() {
   );
 }
 
+// the panes' titles, built once on first use
+let headsCache: { heads: { title: string; sub: string }[]; vheads: { title: string; sub: string }[] } | null = null;
+const HEADS = () => (headsCache ??= { heads: panes().map(({ title, sub }) => ({ title, sub })), vheads: [neural(), graph()].map(({ title, sub }) => ({ title, sub })) });
+
 // the grid, left to right then down (4 × 2): text panes and the two moving ones
 const ORDER: ({ t: number } | { v: number })[] = [{ t: 0 }, { v: 0 }, { t: 1 }, { t: 2 }, { t: 3 }, { v: 1 }, { t: 4 }, { t: 5 }];
 
 /* `sequence` ("Research sequence", feedback 2026-11-16): the scatter's pieces shown one at a time in the
    middle of the frame, each typing or moving while it is up, then a quick cut to the next — at its own
-   size, no zoom (feedback 2026-11-16). On the last the whole settles: it glides back
-   to its place as all the others come in at theirs — the full scatter. By the scroll (p): the pieces share
+   size, no zoom (feedback 2026-11-16). After the last the whole scatter simply appears. By the scroll (p): the pieces share
    0–SEQ_END, the settle runs SEQ_END–1. SEQ: the order, by key (o: ORDER's, a: a portrait, e: EXTRA's). */
 const SEQ = ['o0', 'o1', 'o2', 'o3', 'o4', 'a0', 'o5', 'o6', 'o7', 'e1', 'e2', 'e0'];
-const SEQ_END = 0.86;
+// the run's clock: SEQ_STEP s a piece, then SEQ_SETTLE s for the scatter to build in (a piece every
+// SETTLE_GAP s, each fading up over SETTLE_FADE s); SEQ_END is where the pieces end on it
+const SEQ_STEP = 0.35, SEQ_SETTLE = 1.4, SETTLE_GAP = 0.06, SETTLE_FADE = 0.6;
+const SEQ_END = (SEQ.length * SEQ_STEP) / (SEQ.length * SEQ_STEP + SEQ_SETTLE);
 const SEQ_W = SEQ_END / SEQ.length;
+// the sequence plays itself: SEQ_STEP seconds a piece, then the settle (the same shares of the clock)
+const SEQ_DUR = SEQ.length * SEQ_STEP + SEQ_SETTLE;
+const SEQ_PRE = SEQ_W * 0.2; // how far the scroll takes it (the first piece coming in) before the clock
 const boxOf = (key: string): Box => (key[0] === 'o' ? SCATTER : key[0] === 'a' ? ASCII.map((a) => a.b) : EXTRA)[Number(key.slice(1))];
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
-const smooth = (t: number) => t * t * (3 - 2 * t);
 
-const ResearchTerminal = forwardRef<ResearchTerminalHandle, { scatter?: boolean; sequence?: boolean }>(function ResearchTerminal({ scatter: scatterProp = false, sequence = false }, ref) {
+/* `auto` (with `sequence`): it plays itself once the scroll starts it (holding the page, the wheel playing it
+   faster, the card coming in by itself — "Research sequence · auto"); without it the scroll drives the whole
+   run, piece by piece, the settle and the card ("Research sequence · scroll"). */
+const ResearchTerminal = forwardRef<ResearchTerminalHandle, { scatter?: boolean; sequence?: boolean; auto?: boolean }>(function ResearchTerminal({ scatter: scatterProp = false, sequence = false, auto = false }, ref) {
   const scatter = scatterProp || sequence;
   const root = useRef<HTMLDivElement>(null);
   const p = useRef(0);
@@ -422,6 +433,15 @@ const ResearchTerminal = forwardRef<ResearchTerminalHandle, { scatter?: boolean;
         h = body.offsetTop + Math.min(body.offsetHeight, txt.offsetHeight);
       } else if (body) w = Math.max(w, body.offsetWidth);
       return { x: 0, y: 0, w: Math.max(1, w), h: Math.max(1, h) };
+    };
+    const extents: ({ x: number; y: number; w: number; h: number } | undefined)[] = [];
+    const lastSet = new WeakMap<HTMLElement, Record<string, string>>();
+    const setOnce = (node: HTMLElement, k: string, v: string) => {
+      let m = lastSet.get(node);
+      if (!m) lastSet.set(node, (m = {}));
+      if (m[k] === v) return;
+      m[k] = v;
+      if (k.startsWith('--')) node.style.setProperty(k, v); else (node.style as unknown as Record<string, string>)[k] = v;
     };
     const items = sequence ? SEQ.map((k) => el.querySelector<HTMLElement>(`[data-key="${k}"]`)!) : [];
     const gut = el.querySelector<SVGElement>('.rt-gutters');
@@ -474,14 +494,100 @@ const ResearchTerminal = forwardRef<ResearchTerminalHandle, { scatter?: boolean;
     const live = data.map(() => 0); // seconds live
     const lastState = data.map(() => '');
     let raf = 0, prev = performance.now(), visible = false, clock = 0;
+    let frameNo = 0;
+    let playFrom = -1; // sequence: when its own clock started (ms, −1: not started) — real time, so a slow frame never slows it
+    let done = false; // sequence: played through — held (no rewind) until the scroll leaves above its start
+    let doneAt = 0; // when it finished (ms): the wheel's leftover momentum is swallowed for a moment after
+    let lockY = -1; // sequence: the page's scroll while it plays (held there; −1: not held)
+    type LenisLike = { stop: () => void; start: () => void };
+    const lenis = () => (window as unknown as { __lenis?: LenisLike }).__lenis;
+    /* While the sequence plays the page holds still: scrolling down plays it faster instead of moving on
+       (so the card comes up with the tools at their start, not already scrolled past); scrolling up lets
+       the page go. */
+    const playing = () => sequence && auto && playFrom >= 0 && !done;
+    const hold = () => { if (lockY < 0) { lockY = window.scrollY; lenis()?.stop(); } };
+    let graceT = 0;
+    // let the page go; `after` ms later for the smooth scroll (Lenis takes the wheel before this does, so the
+    // grace that swallows a fast-forward's last ticks has to keep it paused too)
+    const release = (after = 0) => {
+      if (lockY < 0) return;
+      lockY = -1;
+      clearTimeout(graceT);
+      if (after) graceT = window.setTimeout(() => lenis()?.start(), after); else lenis()?.start();
+    };
+    const boost = (px: number) => { playFrom -= px * 3; kick.current(); }; // 100px of wheel ≈ a piece sooner
+    const onWheel = (e: WheelEvent) => {
+      // just finished: a fast-forwarding scroll's last ticks don't carry the page on into the tools
+      if (done && performance.now() - doneAt < 800) {
+        if (e.deltaY > 0) { e.preventDefault(); e.stopPropagation(); } else { clearTimeout(graceT); lenis()?.start(); }
+        return;
+      }
+      if (!playing()) return;
+      if (e.deltaY > 0) { e.preventDefault(); e.stopPropagation(); boost(e.deltaY); }
+      else release();
+    };
+    let touchY = 0;
+    const onTouchStart = (e: TouchEvent) => { touchY = e.touches[0]?.clientY ?? 0; };
+    const onTouchMove = (e: TouchEvent) => {
+      if (!playing()) return;
+      const y = e.touches[0]?.clientY ?? 0, d = touchY - y;
+      touchY = y;
+      if (d > 0) { e.preventDefault(); boost(d * 2); } else release();
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (!playing() || !['ArrowDown', 'PageDown', ' ', 'Spacebar'].includes(e.key)) return;
+      e.preventDefault(); boost(200);
+    };
+    const onScroll = () => { if (playing() && lockY >= 0 && window.scrollY > lockY) window.scrollTo(0, lockY); };
+    if (sequence && auto) {
+      window.addEventListener('wheel', onWheel, { passive: false, capture: true });
+      window.addEventListener('touchstart', onTouchStart, { passive: true });
+      window.addEventListener('touchmove', onTouchMove, { passive: false, capture: true });
+      window.addEventListener('keydown', onKey, { capture: true });
+      window.addEventListener('scroll', onScroll, { passive: true });
+    }
+    const section = el.closest('section');
     const setState = (node: HTMLElement, s: string) => { if (node.dataset.s !== s) { node.dataset.s = s; node.textContent = s; } };
 
     const draw = (now: number) => {
       raf = 0;
       const dt = Math.min(0.1, (now - prev) / 1000);
       prev = now;
-      const P = reduce ? 1 : p.current;
+      // sequence: the scroll (p) brings the first piece in; once it is all the way (p 1) the clock runs the
+      // rest; scrolling back before that rewinds it to the scroll again
+      let P = reduce ? 1 : p.current;
+      if (sequence && auto && !reduce) {
+        if (done) {
+          // played: held as it ended, however the scroll goes back, until it leaves above the start (reset)
+          P = 1;
+          if (p.current <= 0) { done = false; playFrom = -1; P = 0; }
+        } else if (p.current >= 1) {
+          if (playFrom < 0) { playFrom = now; hold(); }
+          P = Math.min(1, SEQ_PRE + (now - playFrom) / 1000 / SEQ_DUR);
+          if (P >= 1) {
+            done = true; doneAt = performance.now(); release(800);
+            // the card's entrance (a timed rise, tools-collage.css) only now, not when the scroll takes it away
+            section?.setAttribute('data-seq-in', '');
+            window.setTimeout(() => section?.removeAttribute('data-seq-in'), 2000);
+          }
+        } else { playFrom = -1; release(); P = clamp01((p.current - 0.6) / 0.4) * SEQ_PRE; } // the first piece comes in over the last of the scroll's start, after the line has gone
+        section?.toggleAttribute('data-seq-done', P >= 1);
+      }
       if (visible && !reduce) clock += dt;
+      /* sequence: what gets redrawn this frame. While the scatter fades in, nothing (the fade stays pure
+         opacity and movement, smooth: redrawing the pieces under it made every frame a full repaint); during
+         the run, the piece on stage and the next, and the hidden ones one a frame in turn, so they are
+         current when the scatter appears; once done, everything (live). */
+      frameNo++;
+      // …and on through the card's entrance after (the glass blurs what is under it: kept still, it costs nothing)
+      const settling = sequence && ((P >= SEQ_END && P < 1) || (done && now - doneAt < 1800));
+      const cur = Math.min(SEQ.length - 1, Math.floor(P / SEQ_W));
+      const turn = SEQ[frameNo % SEQ.length];
+      // just after (the card in): the pieces catch up one a frame for a second, not all in one long frame
+      // once played, the research is under the glass, blurred: it stays alive one piece a frame, in turn (all of
+      // it every frame cost as much as the rest of the page); the scroll version alike once the card is up
+      const behind = sequence && P >= 1;
+      const redraw = (key: string) => !sequence || (!settling && (behind ? key === turn : key === SEQ[cur] || key === SEQ[cur + 1] || key === turn));
       el.style.setProperty('--rt-p', P.toFixed(3));
       data.forEach((d, i) => {
         const { p: pane, lines, at, scripted } = d;
@@ -494,7 +600,7 @@ const ResearchTerminal = forwardRef<ResearchTerminalHandle, { scatter?: boolean;
         if (c >= total) c = scripted + ((c - scripted) % (total - scripted));
         const state = (sequence ? local <= 0 : P <= pane.start) ? 'queued' : local < 1 ? 'running' : 'live';
         if (state !== lastState[i]) { lastState[i] = state; setState(states[i], state); }
-        if (c === last[i]) return;
+        if (c === last[i] || !redraw(textKey(i))) return;
         last[i] = c;
         // the line being typed: the last at or before c
         let lo = 0, hi = lines.length - 1;
@@ -508,7 +614,7 @@ const ResearchTerminal = forwardRef<ResearchTerminalHandle, { scatter?: boolean;
       // the portraits print row by row with the scroll, then flicker (a few characters a frame nudged
       // one step along the ramp) while live
       arts.forEach((a, i) => {
-        if (!a.grid.length) return;
+        if (!a.grid.length || !redraw(`a${i}`)) return;
         const k = sequence ? seqLocal(`a${i}`, P) : Math.min(1, Math.max(0, (P - 0.1 - i * 0.12) / 0.55));
         const n = Math.floor(k * a.grid.length);
         const flick = k >= 1 && visible && !reduce;
@@ -523,7 +629,7 @@ const ResearchTerminal = forwardRef<ResearchTerminalHandle, { scatter?: boolean;
         }).join('')).join('\n');
       });
       // 10 / attention: a token × token map in shade characters, shifting ~12 times a second while live
-      if (heat) {
+      if (heat && redraw('e2')) {
         const k = sequence ? seqLocal('e2', P, 0.3) : Math.min(1, Math.max(0, (P - 0.35) / 0.4));
         const tick = k >= 1 && !reduce ? Math.floor(clock * 12) : -2 - Math.floor(k * 20);
         if (tick !== heatAt) {
@@ -544,6 +650,7 @@ const ResearchTerminal = forwardRef<ResearchTerminalHandle, { scatter?: boolean;
         }
       }
       viz.forEach((v, i) => {
+        if (!redraw(vizKey(i))) return;
         const k = sequence ? seqLocal(vizKey(i), P, 0.3) : Math.min(1, Math.max(0, (P - v.start) / (0.7 - v.start)));
         if (vstates[i]) setState(vstates[i], P <= v.start ? 'queued' : k < 1 ? 'running' : 'live');
         const ctx = canvases[i]?.getContext('2d');
@@ -551,36 +658,44 @@ const ResearchTerminal = forwardRef<ResearchTerminalHandle, { scatter?: boolean;
         ctx.clearRect(0, 0, cs[i].w, cs[i].h);
         if (k > 0) v.draw(ctx, cs[i].w, cs[i].h, clock, k, ink);
       });
-      // sequence: the stage — the piece whose turn it is, centred and enlarged; then the settle
+      // sequence: the stage — the piece whose turn it is, centred at its own size; then the settle (the last
+      // glides back to its place as the rest come in at theirs). All the reads first (the frame's size, the
+      // extent of the piece on stage only — measuring all twelve every frame forced a layout each and made
+      // it judder), then the writes, each only when its value changes.
       if (sequence) {
         const W = el.clientWidth, H = el.clientHeight;
-        const u = smooth(clamp01((P - SEQ_END) / (1 - SEQ_END)));
+        // the settle, in seconds: each piece's own soft fade up, one after another
+        const ts = Math.max(0, (P - SEQ_END) / (1 - SEQ_END)) * SEQ_SETTLE;
+        const inOut = (x: number) => (x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2);
+        const pieceIn = (q: number) => inOut(clamp01((ts - q * SETTLE_GAP) / SETTLE_FADE));
+        const u = inOut(clamp01(ts / SEQ_SETTLE));
         const cut = SEQ_W * 0.08;
+        // every piece the same, the last too: in, its turn, a quick cut (feedback: no glide home for the last)
+        const ons = items.map((_, q) => {
+          const a = q * SEQ_W, z = (q + 1) * SEQ_W;
+          return P < SEQ_END ? Math.min(clamp01((P - a) / cut), clamp01((z - P) / cut)) : 0;
+        });
+        // the extent of what is on stage (its label and lines so far, the art, the drawing); the last's is
+        // kept from its turn through the settle, so it glides along one steady path
+        items.forEach((node, q) => { if (ons[q] > 0) extents[q] = extent(node); });
         items.forEach((node, q) => {
           const key = SEQ[q], b = boxOf(key);
-          node.style.setProperty('--rt-p', seqLocal(key, P).toFixed(3)); // 11 / field map's parts
-          const last = q === SEQ.length - 1;
-          const a = q * SEQ_W, z = (q + 1) * SEQ_W;
-          // on stage: from its turn (a quick fade in) to the next's (a quick fade out); the last stays
-          const on = P < SEQ_END ? Math.min(clamp01((P - a) / cut), last ? 1 : clamp01((z - P) / cut)) : last ? 1 : 0;
-          // centred on what it shows (its label and the lines up so far, the art, the drawing), not its box:
-          // the content's extent inside the piece, in its own untransformed px
-          const ex = extent(node);
-          const s = 1; // its own size: no zoom
-          const ox = ex.x + ex.w / 2, oy = ex.y + ex.h / 2;
-          node.style.transformOrigin = `${ox.toFixed(1)}px ${oy.toFixed(1)}px`;
-          const dx = W / 2 - ((b.l / 100) * W + ox), dy = H / 2 - ((b.t / 100) * H + oy);
-          const k = last ? 1 - u : 0; // how far it is still on the stage, in the settle
-          if (P >= SEQ_END && !last) {
-            node.style.opacity = u.toFixed(3);
-            node.style.transform = `scale(${(0.97 + 0.03 * u).toFixed(4)})`;
-          } else {
-            const f = P >= SEQ_END ? k : 1;
-            node.style.opacity = on.toFixed(3);
-            node.style.transform = `translate(${(dx * f).toFixed(1)}px, ${(dy * f).toFixed(1)}px) scale(${(1 + (s - 1) * f).toFixed(4)})`;
+          setOnce(node, '--rt-p', seqLocal(key, P).toFixed(2)); // 11 / field map's parts
+          // then the scatter builds in, every piece at its place, one after another, each easing up a touch
+          if (P >= SEQ_END) {
+            const e = pieceIn(q);
+            setOnce(node, 'opacity', e.toFixed(3));
+            setOnce(node, 'transform', `translate3d(0, ${((1 - e) * 10).toFixed(1)}px, 0)`);
+            return;
           }
+          setOnce(node, 'opacity', ons[q].toFixed(3));
+          if (ons[q] <= 0) return; // off stage: where it is doesn't matter
+          const ex = extents[q] ?? { x: 0, y: 0, w: 1, h: 1 };
+          const ox = ex.x + ex.w / 2, oy = ex.y + ex.h / 2;
+          const dx = W / 2 - ((b.l / 100) * W + ox), dy = H / 2 - ((b.t / 100) * H + oy);
+          setOnce(node, 'transform', `translate3d(${dx.toFixed(1)}px, ${dy.toFixed(1)}px, 0)`);
         });
-        if (gut) gut.style.opacity = u.toFixed(3);
+        if (gut) setOnce(gut as unknown as HTMLElement, 'opacity', u.toFixed(3));
       }
       if (visible) raf = requestAnimationFrame(draw);
     };
@@ -589,11 +704,20 @@ const ResearchTerminal = forwardRef<ResearchTerminalHandle, { scatter?: boolean;
     const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) start(); });
     io.observe(el);
     start();
-    return () => { cancelAnimationFrame(raf); io.disconnect(); ro.disconnect(); kick.current = () => {}; };
+    return () => {
+      cancelAnimationFrame(raf); io.disconnect(); ro.disconnect(); kick.current = () => {};
+      clearTimeout(graceT); release();
+      window.removeEventListener('wheel', onWheel, { capture: true });
+      window.removeEventListener('touchstart', onTouchStart);
+      window.removeEventListener('touchmove', onTouchMove, { capture: true });
+      window.removeEventListener('keydown', onKey, { capture: true });
+      window.removeEventListener('scroll', onScroll);
+    };
   }, []);
 
-  const heads = panes();
-  const vheads = [neural(), graph()];
+  // only the titles are needed here: built once (panes() writes out every script — doing it on each render, when
+  // the card above re-rendered every frame, was most of the section's cost)
+  const { heads, vheads } = HEADS();
   let n = 0;
   return (
     <div className={sequence ? 'rt rt-scatter rt-seq' : scatter ? 'rt rt-scatter' : 'rt'} ref={root} aria-hidden="true">
@@ -630,4 +754,5 @@ const ResearchTerminal = forwardRef<ResearchTerminalHandle, { scatter?: boolean;
   );
 });
 
-export default ResearchTerminal;
+// memo: the card over it re-renders as the tools scroll; this has nothing to redraw then
+export default memo(ResearchTerminal);

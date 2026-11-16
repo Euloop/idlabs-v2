@@ -157,6 +157,9 @@ export default function SectionTwo({ noOutro = false, compact = false }: { noOut
         : label === 1 ? Math.min(sg(P, MID[0], TR[0][0] + 0.85 * zl), 1 - sg(P, TR[1][0] - 0.01, MID[1] - 0.005))
         : Math.min(sg(P, MID[1], TR[1][1] + 0.01), 1 - sg(outro, 0, 0.4));
       stepRef.current?.set(pl, STEPS[label]);
+      // "Sourcing module" / "Ranking module": a black bar wipes across once the phrase is written (as
+      // "1B+ views worth of posts"), and back as the line types out
+      stepRef.current?.light?.(label === 0 ? 0 : sg(pl, 0.35, 0.7));
 
       // Notes: leader over the first part of each note's progress, then its text types.
       const np = pipe.noteProgress(P, intro) as Record<string, number>;
@@ -269,7 +272,7 @@ export default function SectionTwo({ noOutro = false, compact = false }: { noOut
 
             <div className="s2-part2" ref={part2Ref}>
               <div className="s2-steps" aria-live="polite">
-                <ScrollText ref={stepRef} as="span" className="s2-step" text={STEPS[0]} probs />
+                <ScrollText ref={stepRef} as="span" className="s2-step" text={STEPS[0]} probs hl={['Sourcing module', 'Ranking module']} />
               </div>
               <div className="pipe">
                 <svg

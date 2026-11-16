@@ -362,7 +362,7 @@ section.tcl[data-research] .tcl-card {
 /* Research scatter (data-research='scatter', ResearchTerminal `scatter`): no outline to the frame, no
    grid — the pieces loose and overlapping on white, print-style (the client's reference) */
 /* …and no ground of its own either: the page's white, its side rules left whole */
-section.tcl[data-research='scatter'] .tcl-box::before, section.tcl[data-research='sequence'] .tcl-box::before { box-shadow: none; background: transparent; }
+section.tcl[data-research='scatter'] .tcl-box::before, section.tcl[data-seq] .tcl-box::before { box-shadow: none; background: transparent; }
 .rt-scatter { display: block; }
 .rt-scatter .rt-pane { position: absolute; padding: 0; border: 0; }
 .rt-scatter .rt-head { margin-bottom: 6px; font-size: 9px; letter-spacing: 0.04em; }
@@ -401,8 +401,24 @@ section.tcl[data-research='scatter'] .tcl-box::before, section.tcl[data-research
 
 /* Research sequence (data-research='sequence', ResearchTerminal `sequence`): one piece at a time on the
    stage, growing; then all of them in place. Set every frame by the script (opacity, transform). */
-section.tcl[data-research='sequence'] { height: 1025svh; } /* live at 5.12, a screen per tool, then the release */
-@media (max-width: 719px) { section.tcl[data-research='sequence'] { height: auto; } }
+section.tcl[data-research='sequence'] { height: 1025svh; } /* · scroll: the run over 1.0–4.2, the card, live at 5.12, a screen per tool, the release */
+section.tcl[data-research='auto'] { height: 645svh; } /* · auto: started by 1.0, plays itself; live at 1.3, a screen per tool, the release */
+/* the card and the glass wait for the sequence to finish (data-seq-done, set by ResearchTerminal), then come
+   up by themselves: the glass, the card rising, its parts after it */
+section.tcl[data-research='auto'][data-seq-in] .tcl-glass { transition: opacity 1000ms cubic-bezier(.4, 0, .2, 1) 150ms; }
+section.tcl[data-research='auto'][data-seq-in] .tcl-card { transition: opacity 900ms cubic-bezier(.4, 0, .2, 1) 300ms, transform 1100ms cubic-bezier(.2, .7, .2, 1) 300ms; }
+section.tcl[data-research='auto'][data-seq-in] .tcl-card .tcl-in0, section.tcl[data-research='auto'][data-seq-in] .tcl-card .tcl-in1,
+section.tcl[data-research='auto'][data-seq-in] .tcl-card .tcl-in2, section.tcl[data-research='auto'][data-seq-in] .tcl-card .tcl-in3 { transition: opacity 700ms cubic-bezier(.4, 0, .2, 1), transform 900ms cubic-bezier(.2, .7, .2, 1); }
+section.tcl[data-research='auto'][data-seq-in] .tcl-card .tcl-in0 { transition-delay: 550ms; }
+section.tcl[data-research='auto'][data-seq-in] .tcl-card .tcl-in1 { transition-delay: 650ms; }
+section.tcl[data-research='auto'][data-seq-in] .tcl-card .tcl-in2 { transition-delay: 750ms; }
+section.tcl[data-research='auto'][data-seq-in] .tcl-card .tcl-in3 { transition-delay: 850ms; }
+section.tcl[data-research='auto']:not([data-seq-done]) .tcl-glass { opacity: 0 !important; }
+section.tcl[data-research='auto']:not([data-seq-done]) .tcl-card { opacity: 0 !important; transform: translate3d(0, 24px, 0) scale(.985) !important; pointer-events: none; }
+section.tcl[data-research='auto']:not([data-seq-done]) .tcl-card * { pointer-events: none !important; }
+section.tcl[data-research='auto']:not([data-seq-done]) .tcl-in0, section.tcl[data-research='auto']:not([data-seq-done]) .tcl-in1,
+section.tcl[data-research='auto']:not([data-seq-done]) .tcl-in2, section.tcl[data-research='auto']:not([data-seq-done]) .tcl-in3 { opacity: 0 !important; transform: translateY(12px) !important; }
+@media (max-width: 719px) { section.tcl[data-seq] { height: auto; } }
 .rt-seq .rt-pane, .rt-seq .rt-ascii { transform-origin: center; will-change: transform, opacity; opacity: 0; }
 .rt-seq .rt-gutters { opacity: 0; }
 /* sequence: the head as wide as its words, and text as tall as its lines, so a piece measures what it
@@ -434,3 +450,6 @@ section.tcl[data-numbers] .tcl-card {
   -webkit-backdrop-filter: blur(calc(9 * var(--u))); backdrop-filter: blur(calc(9 * var(--u)));
   box-shadow: 0 0 0 1px rgb(0 0 0 / .06), 0 calc(16 * var(--u)) calc(48 * var(--u)) rgb(0 0 0 / .05);
 }
+/* sequence: the frame fades in and out with the scroll (with the card, going back up) rather than opening
+   from its centre */
+section.tcl[data-seq] .rt { clip-path: none; opacity: var(--a-bg, 1); }

@@ -12,7 +12,7 @@ const T = {
   cut: 120, // each showreel image (hard cuts)
   passes: 1, // times through the reel (the first image is not repeated at the very start)
   video: 1700, // /home-4 ?loader=video: the first image opens at 250 (no logo before it), then holds a moment
-  endLogo: 2900, // ...and at the end the logo draws in the frame (~2.9s from 350ms in), holds, then the white lifts
+  endLogo: 3100, // ...and at the end the logo draws in the frame (from 550ms in, after the last picture's soft fade), holds, then the white lifts
   golden: 650, // the golden ratio holds before the zoom
   land: 550, // into the zoom: the hero's entrance starts (the drawing is ~95% there, gliding in)
   zoom: 850, // golden ratio → the hero's construction (= the transform transitions in start-loader.css)

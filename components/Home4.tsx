@@ -15,6 +15,7 @@ import HeroIntroOptions from './flow/HeroIntroOptions';
 import HeroNetwork from './flow/HeroNetwork';
 // /home-2 gets this through the flowchart variants of Section 2; here only the diagram is shown
 import './flow/flow.css';
+import HtmlMark from './HtmlMark';
 
 /* /home-4 and /home-4/classic (the page's body; the routes add their metadata). /home-4: /home-2 with the picks made — the new light hero (HeroVertical.tsx, Figma 183:3), Section 2 Diagram, research papers with the
    Paper cover, tools Showcase or Motion scroll (tabs, ?tools=), Services Columns (light). Tabs remain only for Launches
@@ -29,8 +30,9 @@ export default function Home4({ loader = 'new' }: { loader?: 'new' | 'classic' }
     <>
       {/* light hero before first paint (HeroLight keeps it and clears it on leaving) */}
       <script dangerouslySetInnerHTML={{ __html: "var d=document.documentElement;d.dataset.hero='light';d.dataset.clients=new URLSearchParams(location.search).get('clients')==='all'?'all':'picked'" }} />
-      {/* page marker: the /home-2 styles key off body:has(.s2-flow) */}
+      {/* page marker: the /home-2 styles key off html[data-s2] (HtmlMark) */}
       <span className="s2-flow" hidden />
+      <HtmlMark name="s2" />
       {/* the new light hero: the golden construction upright (Figma 183:3) */}
       {/* start loader (Figma 184:117–174): before the hero, so its zoom lands on it */}
       {/* the start loader as /hero: the logo drawn and split, the reel of people and papers, then the
@@ -48,15 +50,15 @@ export default function Home4({ loader = 'new' }: { loader?: 'new' | 'classic' }
       <ResearchLab />
       <SectionThree lead="Read our published findings" cover="paper" holes={false} />
       <MonoTrail selector="section.s3 .s3-band" />
-      {/* tools: Showcase (default); Motion scroll (the scroll moves through the tools, as /); Motion glyphs (that over the new collage, in small moving letters and numbers, no build); Motion numbers (the same in flowing digits); Research live (research typing in, then the glass card); Research scatter (the same loose, print-style); Research sequence (the scatter's pieces one by one, then all) — bottom tabs (?tools=) */}
-      <ToolsOptions only={['showcase', 'motionScroll', 'dither', 'numbers', 'research', 'scatter', 'sequence']} />
-      <ServicesCards light layout="columns" />
+      {/* tools: Research sequence · auto (default, as /, since 2026-11-16); Showcase; Motion scroll (the scroll moves through the tools, as /); Motion glyphs (that over the new collage, in small moving letters and numbers, no build); Motion numbers (the same in flowing digits); Research live (research typing in, then the glass card); Research scatter (the same loose, print-style); Research sequence · scroll (the scatter's pieces one by one by the scroll, then all) and · auto (the same playing itself once started) — bottom tabs (?tools=) */}
+      <ToolsOptions only={['auto', 'showcase', 'motionScroll', 'dither', 'numbers', 'research', 'scatter', 'sequence']} />
+      <ServicesCards light layout="columns" still />
       {/* launches: Selected (default: the client's six and See all → /launches) or Float II–IV (?launches=) */}
       <LaunchesOptions only={['selected', 'float2', 'float3', 'float4']} words={['Our trajectory', 'changing launches']} />
       {/* footer: Fibonacci (default, Figma Zoomcast 200:4) or the reading list, bottom tabs (?footer=) */}
       {/* every footer variant, as /footer (bottom tabs, ?golden=): Spiral · Compound · Focus · Reel · Trace ·
           Reading list · Fibonacci (/) · Fibonacci + Focus — opening on Fibonacci, the footer / has */}
-      <SiteFooter golden start="stamps" />
+      <SiteFooter golden start="fib-low" />
       <SiteChrome />
       <ThemeDriver />
     </>

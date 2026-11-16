@@ -147,7 +147,7 @@ section.tk[data-mode='dark'] {
 @keyframes tk-fade { from { opacity: 0; } }
 
 /* corners, as the other sections on /home-2 */
-body:has(.s2-flow) .tk-frame::after {
+html[data-s2] :where(body) .tk-frame::after {
   content: ''; position: absolute; pointer-events: none; inset: calc(var(--box) - 4px) -4px;
   background:
     linear-gradient(var(--box-mark), var(--box-mark)) left top / 9px 9px no-repeat,
@@ -157,11 +157,11 @@ body:has(.s2-flow) .tk-frame::after {
 }
 
 /* follows the page theme (see flow.css: sections follow the page theme) */
-html[data-theme='light'] body:has(.s2-flow) section.tk {
+html[data-theme='light'][data-s2] body section.tk {
   --k-ink: #1f1f1f; --k-paper: #fff; --k-body: #6b6b6b; --k-mute: #a3a3a3; --k-mark: #e6e6e6;
   --k-line: rgb(0 0 0 / .08); --k-grid: rgb(0 0 0 / .06); --k-sheet: rgb(252 252 251 / .9); --k-accent: #1f6f73; --k-hi: #2f6b3a; --k-green: #2f4a36;
 }
-html[data-theme='night'] body:has(.s2-flow) section.tk {
+html[data-theme='night'][data-s2] body section.tk {
   --k-ink: #ebebeb; --k-paper: #232427; --k-body: #8f8f8f; --k-mute: #6a6a6a; --k-mark: #35363b;
   --k-line: rgb(255 255 255 / .1); --k-grid: rgb(255 255 255 / .07); --k-sheet: rgb(30 31 34 / .88); --k-accent: #5fb3b6; --k-hi: #6fae7a; --k-green: #4f7a5a;
 }

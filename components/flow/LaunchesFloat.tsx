@@ -47,8 +47,27 @@ function put(el: HTMLElement, k: string, v: string) {
    with the scroll), with an opening in the middle for the headline. Units: fractions of the stage
    (x from the centre, −.5 … .5; y from the centre, −.5 … 1.25). Pictures take the cells on screen
    at the end of the scatter, blank tiles the rest. */
-type Tile = { key: number; l?: Launch; dup: boolean; fx: number; fy: number; w: number; ratio: number; d: number; ph: number };
+type Tile = { key: number; l?: Launch; frame?: string; dup: boolean; fx: number; fy: number; w: number; ratio: number; d: number; ph: number };
 const COLS = 7, ROWS = 6, Y0 = -0.5, Y1 = 1.25;
+/* Past the launches' own pictures, the rest of the field (where a launch used to repeat, or a blank tile
+   sat) shows frames from the launch videos (feedback 2026-11-16: no duplicates, no empty boxes) — 29 picked
+   from the nine videos (assets/launches/frames/<launch>-<n>.webp, 640 × 360), taken a video at a time in
+   turn so two from one launch are never next in line. Each links to its launch. */
+const FRAME_SETS: [string, number[]][] = [
+  ['matic-robots-launch', [1, 2, 3, 4]], ['wispr-flow-feature-release', [1, 2, 3, 4]], ['polyai-product-demo', [1, 2, 3, 4]],
+  ['matic-robots-design-documentary', [1, 2, 3, 4]], ['cartesia-fundraise-model-launch', [2, 3, 4]], ['fish-audio-seed-raise', [1, 2, 4]],
+  ['pocket-fm-product-launch', [1, 3, 4]], ['gamma-100m-arr-announcement', [1, 3]], ['playerzero', [1, 3]],
+];
+const FRAMES: { file: string; launch: Launch }[] = (() => {
+  const out: { file: string; launch: Launch }[] = [];
+  for (let round = 0; round < 4; round++) {
+    for (const [s, ns] of FRAME_SETS) {
+      const l = PICTURED.find((p) => slug(p) === s);
+      if (l && ns[round] !== undefined) out.push({ file: `${s}-${ns[round]}`, launch: l });
+    }
+  }
+  return out;
+})();
 const TILES: Tile[] = (() => {
   const cells: { fx: number; fy: number; seen: number; i: number }[] = [];
   for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
@@ -61,13 +80,14 @@ const TILES: Tile[] = (() => {
   // on-screen cells first (shuffled), so the launches are what you see when the field opens
   cells.sort((a, b) => a.seen - b.seen || rnd(a.i + 71) - rnd(b.i + 71));
   return cells.map((c, k) => {
-    // every launch once on screen; further down, the launches again among blank tiles (about half)
-    const l = k < PICTURED.length ? PICTURED[k] : c.seen && rnd(c.i + 53) < 0.5 ? PICTURED[(k * 7) % PICTURED.length] : undefined;
+    // every launch once; then the video frames, one each, as long as they last (blank tiles after that)
+    const fr = k >= PICTURED.length ? FRAMES[k - PICTURED.length] : undefined;
+    const l = k < PICTURED.length ? PICTURED[k] : fr?.launch;
     const d = 0.62 + rnd(c.i + 5) * 0.7; // depth: 0.62 far … 1.32 near
     return {
-      key: k, l, dup: k >= PICTURED.length, fx: c.fx, fy: c.fy, d, ph: rnd(c.i + 11) * Math.PI * 2,
+      key: k, l, frame: fr?.file, dup: k >= PICTURED.length, fx: c.fx, fy: c.fy, d, ph: rnd(c.i + 11) * Math.PI * 2,
       w: (l ? 0.085 + rnd(c.i + 7) * 0.05 : 0.05 + rnd(c.i + 7) * 0.04) * d, // of the stage width
-      ratio: l ? RATIO_OF(l) : [1, 4 / 5, 4 / 3][Math.floor(rnd(c.i + 13) * 3)],
+      ratio: fr ? 16 / 9 : l ? RATIO_OF(l) : [1, 4 / 5, 4 / 3][Math.floor(rnd(c.i + 13) * 3)],
     };
   });
 })();
@@ -373,7 +393,7 @@ export default function LaunchesFloat({ alt = false, card = false, track = false
           {TILES.map((t, i) => {
             const tile = { ...t, l: tileL[i] };
             const pic = tile.l ?? PICTURED[i % PICTURED.length];
-            const img = <img className="lcf-img" src={`/assets/launches/${slug(pic)}.webp`} alt="" decoding="async" draggable={false} />;
+            const img = <img className="lcf-img" src={t.frame ? `/assets/launches/frames/${t.frame}.webp` : `/assets/launches/${slug(pic)}.webp`} alt="" decoding="async" draggable={false} />;
             const ref = (el: HTMLElement | null) => { cardRefs.current[i] = el; };
             return tile.l ? (
               <a key={tile.key} ref={ref} className="lcf-card" href={tile.l.x} target="_blank" rel="noopener noreferrer"

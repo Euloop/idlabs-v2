@@ -39,7 +39,7 @@ html[data-theme='night'] .lcf { --lcf-ink: #ebebeb; --lcf-mute: #6a6a6a; --lcf-b
 /* /home-4 (the page with the vertical hero): "Launches" / "we have done" in Season Mix, the hero
    headline's face. TRIAL build, as in hero-vertical.css — swap for the licensed files before launch. */
 @font-face { font-family: 'Season Mix'; src: url('/experiment/fonts/season-mix-regular.otf') format('opentype'); font-weight: 400; font-style: normal; font-display: swap; }
-body:has(.hero.hv) .lcf-word { font-family: 'Season Mix', var(--serif); letter-spacing: -0.02em; }
+html[data-hv][data-hv] :where(body) .lcf-word { font-family: 'Season Mix', var(--serif); letter-spacing: -0.02em; }
 
 /* the headline, in the field's opening; a soft paper glow keeps it readable over passing tiles */
 .lcf-head {
@@ -58,7 +58,7 @@ body:has(.hero.hv) .lcf-word { font-family: 'Season Mix', var(--serif); letter-s
 
 /* This variant leaves the frame: no frame box, so no corner marks. The section clips nothing
    itself (the stage does). */
-body:has(.s2-flow) .lc:is([data-variant='float'], [data-variant='float2']) { overflow: visible; }
+html[data-s2] :where(body) .lc:is([data-variant='float'], [data-variant='float2']) { overflow: visible; }
 
 /* Margin lines: dashed from the section's top edge down. The section is paper (it covers the
    page's fixed solid pair where it is), and draws its own dashed pair at the same place: a

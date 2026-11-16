@@ -14,12 +14,13 @@ import ThemeDriver from '../components/flow/ThemeDriver';
 import HeroLight from '../components/flow/HeroLight';
 // the diagram's styles (on /home-2 they come with the flowchart variants of Section 2)
 import '../components/flow/flow.css';
+import HtmlMark from '../components/HtmlMark';
 
 /* The home page: /home-4 with its picks made and no option tabs (2026-11-14). The "Video first" loader
    (since 2026-11-16; before it, the /hero loader) and
    the clean light hero after it (StartLoader fixed: html[data-intro='fade']); the client's 12 logos,
    no "Our Network" (html[data-clients='picked']); Section 2 Diagram; research papers with the
-   Paper cover; tools Motion scroll (the scroll moves through the tools); Services Columns (light); Launches Selected (Float IV with the six,
+   Paper cover; tools Research sequence · auto (the research plays itself, then the tools); Services Columns (light); Launches Selected (Float IV with the six,
    then See all → /launches); the Fibonacci footer. The previous home page is at /old-home;
    /home-4 keeps the tabs for trying variants. */
 
@@ -37,8 +38,9 @@ export default function Home() {
       {/* light hero and the client's 12 logos, before first paint (HeroLight keeps the light and
           clears it on leaving) */}
       <script dangerouslySetInnerHTML={{ __html: "var d=document.documentElement;d.dataset.hero='light';d.dataset.clients='picked'" }} />
-      {/* page marker: the shared /home-2 styles key off body:has(.s2-flow) */}
+      {/* page marker: the shared /home-2 styles key off html[data-s2] (HtmlMark) */}
       <span className="s2-flow" hidden />
+      <HtmlMark name="s2" />
       {/* the start loader, "Video first" (2026-11-16): the reel from the first moment (its first half
           shortened), the golden half's spiral, the Fibonacci diagram drawn faint behind it all, then the logo
           drawn in the frame, onto the clean hero; before the hero, so it covers it from first paint */}
@@ -49,9 +51,10 @@ export default function Home() {
       <ResearchLab fixed />
       <SectionThree lead="Read our published findings" cover="paper" holes={false} />
       <MonoTrail selector="section.s3 .s3-band" />
-      {/* the tools as /home-4's Motion scroll: the collage in White with each tool's walkthrough, pinned
-          while the scroll moves through the four tools (a screen each); phones keep the cycle */}
-      <ToolsCollage theme="white" motion scroll intro="small" />
+      {/* the tools as /home-4's Research sequence · auto (since 2026-11-16; Motion scroll before): the line, then the
+          research pieces playing one by one by themselves, the scatter, then the glass card; then the scroll moves
+          through the four tools (a screen each); phones keep the cycle */}
+      <ToolsCollage theme="white" motion scroll research="auto" intro="small" />
       <ServicesCards light layout="columns" still />
       <Launches variant="selected" />
       <SiteFooter layout="fib" />

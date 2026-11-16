@@ -5,11 +5,11 @@
   --c-line: #e0e0e0; --c-ink: #1f1f1f; --c-title: #3a3a3a; --c-body: #8f8f8f;
   --c-btn: #474747; --c-btn-ink: #fff; --c-btn-hover: #1f1f1f; --c-paper: #fff;
 }
-html[data-theme='night'] body:has(.s2-flow) .svc {
+html[data-theme='night'][data-s2] body .svc {
   --c-line: #363636; --c-ink: #ebebeb; --c-title: #d6d6d6; --c-body: #8f8f8f;
   --c-btn: #d6d6d6; --c-btn-ink: #1f1f1f; --c-btn-hover: #ebebeb; --c-paper: #232427;
 }
-body:has(.s2-flow) .svc { transition: --c-line 400ms ease, --c-ink 400ms ease, --c-title 400ms ease, --c-body 400ms ease, --c-btn 400ms ease, --c-btn-ink 400ms ease, --c-paper 400ms ease; }
+html[data-s2] :where(body) .svc { transition: --c-line 400ms ease, --c-ink 400ms ease, --c-title 400ms ease, --c-body 400ms ease, --c-btn 400ms ease, --c-btn-ink 400ms ease, --c-paper 400ms ease; }
 .svc[data-tone='dark'] { height: auto; }
 
 .svc .svc-inner { align-items: stretch; }
@@ -92,4 +92,4 @@ body:has(.s2-flow) .svc { transition: --c-line 400ms ease, --c-ink 400ms ease, -
 
 /* /home-4 (the page with the vertical hero): more room above "Our services" — it heads its section
    with no padding of its own, and came up close under the tools' caption */
-body:has(.hero.hv) section.svc { margin-top: 96px; }
+html[data-hv][data-hv] :where(body) section.svc { margin-top: 216px; } /* (96, then +120: feedback 2026-11-16, more air after the tools) */

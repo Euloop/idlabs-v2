@@ -78,33 +78,33 @@
    55 → 24. Markers 12 → 9px and paler; the top pair sits at the header base and the bottom pair
    mirrors it (56 above the bottom edge), where the content band ends. Applies to the fixed chrome
    and to Section 2's hidden spacers, so the diagram band grows into the freed space. */
-body:has(.s2-flow) .s2-header { height: calc(56 * var(--px)); padding-top: calc(20 * var(--px)); }
-body:has(.s2-flow) .chrome-nav { top: calc(20 * var(--px)); }
-body:has(.s2-flow) .s2-foot { padding-bottom: calc(24 * var(--px)); --tick-y: calc(100% - 56 * var(--px)); }
-body:has(.s2-flow) .chrome .tick { width: 9px; height: 9px; background: #e6e6e6; }
-html[data-theme='night'] body:has(.s2-flow) .chrome .tick { background: #35363b; } /* solid, as in the hero */
+html[data-s2] :where(body) .s2-header { height: calc(56 * var(--px)); padding-top: calc(20 * var(--px)); }
+html[data-s2] :where(body) .chrome-nav { top: calc(20 * var(--px)); }
+html[data-s2] :where(body) .s2-foot { padding-bottom: calc(24 * var(--px)); --tick-y: calc(100% - 56 * var(--px)); }
+html[data-s2] :where(body) .chrome .tick { width: 9px; height: 9px; background: #e6e6e6; }
+html[data-theme='night'][data-s2] body .chrome .tick { background: #35363b; } /* solid, as in the hero */
 
 /* Hero, same treatment (/home-2 only): header 80 → 56 to match the fixed wordmark/nav above,
    markers 12 → 9px. The logo strip's bottom markers sit 26 below the logos — the same gap as
    between the header markers and the golden construction — with less dead space under them. */
-body:has(.s2-flow) .hero .site-header { height: calc(56 * var(--px)); padding-top: calc(20 * var(--px)); }
+html[data-s2] :where(body) .hero .site-header { height: calc(56 * var(--px)); padding-top: calc(20 * var(--px)); }
 /* Solid colours (= --rule, 15% #828282, over the #2a2c31 paper) so the frame rule can't show
    through the marker. */
-body:has(.s2-flow) .hero .tick { width: 9px; height: 9px; background: #37393d; }
-body:has(.s2-flow) .hero .clients { padding-bottom: calc(40 * var(--px)); --tick-y: calc(100% - 14 * var(--px)); }
+html[data-s2] :where(body) .hero .tick { width: 9px; height: 9px; background: #37393d; }
+html[data-s2] :where(body) .hero .clients { padding-bottom: calc(40 * var(--px)); --tick-y: calc(100% - 14 * var(--px)); }
 /* The tighter header and logo strip make the composition 803 units tall instead of 832, so the
    height cap on the frame (globals.css, "Fit to viewport height") loosens to match: on tall
    windows the hero grows to fill the screen instead of leaving dead space under the logos. */
 @media (min-width: 960px) {
-  body:has(.s2-flow) .frame { width: max(880px, min(var(--frame-max), 100% - 2 * var(--gutter), 100svh * 1008 / 803 + 2 * var(--pad))); }
+  html[data-s2] :where(body) .frame { width: max(880px, min(var(--frame-max), 100% - 2 * var(--gutter), 100svh * 1008 / 803 + 2 * var(--pad))); }
 }
 
 /* Section 3 (research papers), /home-2 only: content height, and a short hold. The stage pins
    once all of it is on screen — its top at the top of the screen when it fits, else its bottom at
    the bottom — and holds for S3_HOLD of scrolling, then scrolls on. --s3-h is the stage's
    measured height (SectionThree.tsx). */
-body:has(.s2-flow) .s3 { --s3-hold: 25svh; /* S3_HOLD */ height: calc(var(--s3-h, 100svh) + var(--s3-hold)); }
-body:has(.s2-flow) .s3-pin { position: sticky; top: min(0px, 100svh - var(--s3-h, 100svh)); }
+html[data-s2] :where(body) .s3 { --s3-hold: 25svh; /* S3_HOLD */ height: calc(var(--s3-h, 100svh) + var(--s3-hold)); }
+html[data-s2] :where(body) .s3-pin { position: sticky; top: min(0px, 100svh - var(--s3-h, 100svh)); }
 
 /* ───────── Section corners (/home-2 only) ─────────
    The two margin lines run unbroken down the whole page (the fixed rules). The square markers
@@ -117,50 +117,50 @@ body:has(.s2-flow) .s3-pin { position: sticky; top: min(0px, 100svh - var(--s3-h
      Services (last)     bottom pair only (the end of the page)
    Corners sit at the header base (56 Figma px) from the frame's top and bottom. No footer.
    The hero keeps its own markers (header base, golden split, under the logos). */
-body:has(.s2-flow) .chrome .tick,
-body:has(.s2-flow) .chrome .s2-foot { display: none; }
+html[data-s2] :where(body) .chrome .tick,
+html[data-s2] :where(body) .chrome .s2-foot { display: none; }
 
-body:has(.s2-flow) :is(.s2-frame:not(.chrome-frame), .s3-frame, .iso-frame, .sv-frame) {
+html[data-s2] :where(body) :is(.s2-frame:not(.chrome-frame), .s3-frame, .iso-frame, .sv-frame) {
   --box: calc(56 * var(--px)); --box-mark: #e6e6e6;
   position: relative; align-self: stretch; height: 100svh;
 }
-body:has(.s2-flow) :is(.s2-frame:not(.chrome-frame), .s3-frame, .iso-frame, .sv-frame)::after {
+html[data-s2] :where(body) :is(.s2-frame:not(.chrome-frame), .s3-frame, .iso-frame, .sv-frame)::after {
   content: ''; position: absolute; pointer-events: none; transition: opacity 400ms ease;
   inset: calc(var(--box) - 4px) -4px; /* 9px squares, centred on the lines */
 }
-body:has(.s2-flow) .s2 .s2-frame.s2-frame::after,
-body:has(.s2-flow) .iso .iso-frame.iso-frame::after {
+html[data-s2] :where(body) .s2 .s2-frame.s2-frame::after,
+html[data-s2] :where(body) .iso .iso-frame.iso-frame::after {
   background:
     linear-gradient(var(--box-mark), var(--box-mark)) left top / 9px 9px no-repeat,
     linear-gradient(var(--box-mark), var(--box-mark)) right top / 9px 9px no-repeat,
     linear-gradient(var(--box-mark), var(--box-mark)) left bottom / 9px 9px no-repeat,
     linear-gradient(var(--box-mark), var(--box-mark)) right bottom / 9px 9px no-repeat;
 }
-body:has(.s2-flow) .sv .sv-frame.sv-frame::after {
+html[data-s2] :where(body) .sv .sv-frame.sv-frame::after {
   background:
     linear-gradient(var(--box-mark), var(--box-mark)) left bottom / 9px 9px no-repeat,
     linear-gradient(var(--box-mark), var(--box-mark)) right bottom / 9px 9px no-repeat;
 }
-html:not([data-theme='light']) body:has(.s2-flow) .s2-frame::after { opacity: 0; }
+html:not([data-theme='light'])[data-s2] body .s2-frame::after { opacity: 0; }
 
 /* Research band grid (/home-2 only): whole cells, no slivers. The band is 64 cells across (rule
    to rule) and 29 cells tall, and the grid starts at its top-left corner, so its own lines are
    the band's outer edges (no separate border to double up against a partial row). */
-body:has(.s2-flow) .s3-band {
+html[data-s2] :where(body) .s3-band {
   --cell: calc((100cqw + 2 * var(--pad)) / 64);
   height: calc(29 * var(--cell) + 1px);
   border-block: 0;
   background-position: 0 0;
 }
 @media (max-width: 759px) {
-  body:has(.s2-flow) .s3-band { height: auto; }
+  html[data-s2] :where(body) .s3-band { height: auto; }
 }
 
 
 /* Tighter spacing between sections (/home-2): the research papers take their content's height,
    not a full screen. */
-body:has(.s2-flow) .s3-frame { height: auto; padding-block: calc(var(--box) + 40 * var(--px)) calc(40 * var(--px)); }
-body:has(.s2-flow) .s3-pin { height: auto; }
+html[data-s2] :where(body) .s3-frame { height: auto; padding-block: calc(var(--box) + 40 * var(--px)) calc(40 * var(--px)); }
+html[data-s2] :where(body) .s3-pin { height: auto; }
 
 /* Research section lead (/home-2): Section 2's closing line, in place of "Read our published
    findings" — Section 2's part-3 type (12px mono caps), justified (last line centred, no orphan), in
@@ -172,16 +172,16 @@ body:has(.s2-flow) .s3-pin { height: auto; }
   font-family: var(--mono); font-size: 20px; line-height: 1.3; letter-spacing: 0.02em; text-transform: uppercase;
   text-align: justify; text-align-last: center; hyphens: none; color: #1f1f1f; text-wrap: pretty; pointer-events: auto;
 }
-body:has(.s2-flow) .s3-lead + .s3-band { margin-top: calc(56 * var(--px)); }
-@media (max-width: 759px) { body:has(.s2-flow) .s3-lead + .s3-band { margin-top: 40px; } }
+html[data-s2] :where(body) .s3-lead + .s3-band { margin-top: calc(56 * var(--px)); }
+@media (max-width: 759px) { html[data-s2] :where(body) .s3-lead + .s3-band { margin-top: 40px; } }
 
 /* Services (/home-2): the heading centred on the page, "Work with us" moved below the cards,
    centred. The header row is unwrapped (display: contents) so its two items join the column
    and can be ordered around the grid. */
-body:has(.s2-flow) .sv-head { display: contents; }
-body:has(.s2-flow) .sv-tag { order: 0; align-self: center; text-align: center; padding-bottom: calc(24 * var(--px)); }
-body:has(.s2-flow) .sv-grid { order: 1; }
-body:has(.s2-flow) .sv-cta { order: 2; align-self: center; margin: calc(28 * var(--px)) 0 0; padding: 4px 0; }
+html[data-s2] :where(body) .sv-head { display: contents; }
+html[data-s2] :where(body) .sv-tag { order: 0; align-self: center; text-align: center; padding-bottom: calc(24 * var(--px)); }
+html[data-s2] :where(body) .sv-grid { order: 1; }
+html[data-s2] :where(body) .sv-cta { order: 2; align-self: center; margin: calc(28 * var(--px)) 0 0; padding: 4px 0; }
 
 
 /* Launches (/home-2, Launches.tsx): label centred, a panel rule to rule (16:9, for the launch
@@ -201,7 +201,7 @@ body:has(.s2-flow) .sv-cta { order: 2; align-self: center; margin: calc(28 * var
   font-family: var(--mono); font-weight: 400; font-size: 12px; line-height: 1.4; text-transform: uppercase; color: #1f1f1f;
 }
 .lc-panel { width: calc(100% + 2 * var(--pad) - 2px); margin-inline: calc(1px - var(--pad)); aspect-ratio: 16 / 9; background: #f4f4f4; } /* a video later: 16:9, just inside the margin lines (they stay visible) */
-body:has(.s2-flow) .lc-frame::after {
+html[data-s2] :where(body) .lc-frame::after {
   content: ''; position: absolute; pointer-events: none; inset: calc(var(--box) - 4px) -4px;
   background:
     linear-gradient(var(--box-mark), var(--box-mark)) left bottom / 9px 9px no-repeat,
@@ -209,11 +209,11 @@ body:has(.s2-flow) .lc-frame::after {
 }
 
 /* Night (a section shown dark): the corner squares in the night rule colour. */
-html[data-theme='night'] body:has(.s2-flow) :is(.s2-frame, .s3-frame, .iso-frame, .sv-frame, .lc-frame) { --box-mark: #35363b; }
+html[data-theme='night'][data-s2] body :is(.s2-frame, .s3-frame, .iso-frame, .sv-frame, .lc-frame) { --box-mark: #35363b; }
 
 /* The page theme now follows the incoming section (ThemeDriver), so a section stays visible
    whatever the theme is while it scrolls out (Services hides its copy for the other theme). */
-body:has(.s2-flow) .sv .sv-inner { opacity: 1 !important; }
+html[data-s2] :where(body) .sv .sv-inner { opacity: 1 !important; }
 
 /* ───────── Sections follow the page theme (/home-2) ─────────
    The page takes the theme of the section coming in (ThemeDriver); every section on screen then
@@ -221,46 +221,46 @@ body:has(.s2-flow) .sv .sv-inner { opacity: 1 !important; }
    clash: at the boundary both turn together. (A section's Light / Dark option only decides which
    theme it brings in.) */
 /* graph */
-html[data-theme='light'] body:has(.s2-flow) section.tg {
+html[data-theme='light'][data-s2] body section.tg {
   --g-ink: #1f1f1f; --g-paper: #fff; --g-fill: #d9d9d6; --g-hub: #2f4a36; --g-ghost: #c8c8c4; --g-body: #6b6b6b; --g-mark: #e6e6e6;
   --g-card: rgb(255 255 255 / .86); --g-card-line: rgb(0 0 0 / .08); --g-shot-line: rgb(0 0 0 / .1); --g-shot-bg: #fff;
 }
-html[data-theme='night'] body:has(.s2-flow) section.tg {
+html[data-theme='night'][data-s2] body section.tg {
   --g-ink: #ebebeb; --g-paper: #232427; --g-fill: #4d4f53; --g-hub: #4f7a5a; --g-ghost: #4a4a4a; --g-body: #8f8f8f; --g-mark: #35363b;
   --g-card: rgb(255 255 255 / .08); --g-card-line: rgb(255 255 255 / .1); --g-shot-line: rgb(255 255 255 / .12); --g-shot-bg: #1c1c1c;
 }
-body:has(.s2-flow) .tg-shot-d { display: none; }
-html[data-theme='night'] body:has(.s2-flow) .tg-shot-d { display: block; }
-html[data-theme='night'] body:has(.s2-flow) .tg-shot-l { display: none; }
+html[data-s2] :where(body) .tg-shot-d { display: none; }
+html[data-theme='night'][data-s2] body .tg-shot-d { display: block; }
+html[data-theme='night'][data-s2] body .tg-shot-l { display: none; }
 /* device */
-html[data-theme='light'] body:has(.s2-flow) .iso {
+html[data-theme='light'][data-s2] body .iso {
   --i-paper: #fff; --i-hi: #1f1f1f; --i-body: #6b6b6b; --i-mute: #a3a3a3;
   --i-card: rgb(255 255 255 / 0.8); --i-card-line: rgb(0 0 0 / 0.08);
 }
-html[data-theme='night'] body:has(.s2-flow) .iso {
+html[data-theme='night'][data-s2] body .iso {
   --i-paper: #232427; --i-hi: #ebebeb; --i-body: #8f8f8f; --i-mute: #6a6a6a;
   --i-card: rgb(255 255 255 / 0.08); --i-card-line: rgb(255 255 255 / 0.1);
 }
 /* services, detail */
-html[data-theme='light'] body:has(.s2-flow) .svf { --f-ink: #1f1f1f; --f-label: #8f8f8f; --f-mute: #a3a3a3; --f-media: #ebebeb; --f-paper: #fff; }
-html[data-theme='night'] body:has(.s2-flow) .svf { --f-ink: #ebebeb; --f-label: #6a6a6a; --f-mute: #6a6a6a; --f-media: #2c2e33; --f-paper: #232427; }
+html[data-theme='light'][data-s2] body .svf { --f-ink: #1f1f1f; --f-label: #8f8f8f; --f-mute: #a3a3a3; --f-media: #ebebeb; --f-paper: #fff; }
+html[data-theme='night'][data-s2] body .svf { --f-ink: #ebebeb; --f-label: #6a6a6a; --f-mute: #6a6a6a; --f-media: #2c2e33; --f-paper: #232427; }
 /* services, grid (the Services section's two tones, picked by the page theme) */
-html[data-theme='light'] body:has(.s2-flow) .sv:not(.svf) {
+html[data-theme='light'][data-s2] body .sv:not(.svf) {
   --line: #e0e0e0; --ink-hi: #1f1f1f; --ink-body: #6b6b6b; --ink-mute: #a3a3a3; --num-line: #e0e0e0;
   --d-ln: #1f1f1f; --d-soft: #8f8f8f; --d-dim: #cdcdcd; --d-faint: #ececec; --d-box: #c6c6c6;
   --d-lb: #b0b0b0; --d-lb-mid: #6b6b6b; --d-lb-hi: #1f1f1f; --d-dot-mid: #8f8f8f; --d-lead: #a8a8a8; --d-paper: #fff;
   --btn-ink: #1f1f1f; --btn-bg-hover: #1f1f1f; --btn-ink-hover: #fff;
 }
-html[data-theme='night'] body:has(.s2-flow) .sv:not(.svf) {
+html[data-theme='night'][data-s2] body .sv:not(.svf) {
   --line: #363636; --ink-hi: #ebebeb; --ink-body: #8f8f8f; --ink-mute: #6a6a6a; --num-line: #3f3f3f;
   --d-ln: #ebebeb; --d-soft: #7d7d7d; --d-dim: #474747; --d-faint: #333; --d-box: #4d4d4d;
   --d-lb: #5f5f5f; --d-lb-mid: #8f8f8f; --d-lb-hi: #ebebeb; --d-dot-mid: #7d7d7d; --d-lead: #6a6a6a; --d-paper: #232427;
   --btn-ink: #ebebeb; --btn-bg-hover: #ebebeb; --btn-ink-hover: #1f1f1f;
 }
 /* launches, research lead */
-html[data-theme='night'] body:has(.s2-flow) .lc-label { color: #ebebeb; }
-html[data-theme='night'] body:has(.s2-flow) .lc-panel { background: #2c2e33; }
-html[data-theme='night'] body:has(.s2-flow) .s3-lead { color: #ebebeb; }
+html[data-theme='night'][data-s2] body .lc-label { color: #ebebeb; }
+html[data-theme='night'][data-s2] body .lc-panel { background: #2c2e33; }
+html[data-theme='night'][data-s2] body .s3-lead { color: #ebebeb; }
 
 /* ───────── Smooth theme change (/home-2) ─────────
    The page material, rules, header and nav keep their 400ms ease (globals / sections). The
@@ -307,22 +307,22 @@ html[data-theme='night'] body:has(.s2-flow) .s3-lead { color: #ebebeb; }
 @property --btn-ink { syntax: '<color>'; inherits: true; initial-value: transparent; }
 @property --btn-bg-hover { syntax: '<color>'; inherits: true; initial-value: transparent; }
 @property --btn-ink-hover { syntax: '<color>'; inherits: true; initial-value: transparent; }
-body:has(.s2-flow) section.tg { transition: --g-ink 400ms ease, --g-paper 400ms ease, --g-fill 400ms ease, --g-hub 400ms ease, --g-ghost 400ms ease, --g-body 400ms ease, --g-mark 400ms ease, --g-card 400ms ease, --g-card-line 400ms ease, --g-shot-line 400ms ease, --g-shot-bg 400ms ease; }
-body:has(.s2-flow) .iso { transition: --i-paper 400ms ease, --i-hi 400ms ease, --i-body 400ms ease, --i-mute 400ms ease, --i-card 400ms ease, --i-card-line 400ms ease; }
-body:has(.s2-flow) .svf { transition: --f-ink 400ms ease, --f-label 400ms ease, --f-mute 400ms ease, --f-media 400ms ease, --f-paper 400ms ease; }
-body:has(.s2-flow) .sv:not(.svf) { transition: --line 400ms ease, --ink-hi 400ms ease, --ink-body 400ms ease, --ink-mute 400ms ease, --num-line 400ms ease, --d-ln 400ms ease, --d-soft 400ms ease, --d-dim 400ms ease, --d-faint 400ms ease, --d-box 400ms ease, --d-lb 400ms ease, --d-lb-mid 400ms ease, --d-lb-hi 400ms ease, --d-dot-mid 400ms ease, --d-lead 400ms ease, --d-paper 400ms ease, --btn-ink 400ms ease, --btn-bg-hover 400ms ease, --btn-ink-hover 400ms ease; }
-body:has(.s2-flow) :is(.lc-label, .s3-lead) { transition: color 400ms ease; }
-body:has(.s2-flow) .lc-panel { transition: background-color 400ms ease; }
-body:has(.s2-flow) :is(.s2-frame, .s3-frame, .iso-frame, .sv-frame, .lc-frame, .tg-frame) { transition: --box-mark 400ms ease; }
+html[data-s2] :where(body) section.tg { transition: --g-ink 400ms ease, --g-paper 400ms ease, --g-fill 400ms ease, --g-hub 400ms ease, --g-ghost 400ms ease, --g-body 400ms ease, --g-mark 400ms ease, --g-card 400ms ease, --g-card-line 400ms ease, --g-shot-line 400ms ease, --g-shot-bg 400ms ease; }
+html[data-s2] :where(body) .iso { transition: --i-paper 400ms ease, --i-hi 400ms ease, --i-body 400ms ease, --i-mute 400ms ease, --i-card 400ms ease, --i-card-line 400ms ease; }
+html[data-s2] :where(body) .svf { transition: --f-ink 400ms ease, --f-label 400ms ease, --f-mute 400ms ease, --f-media 400ms ease, --f-paper 400ms ease; }
+html[data-s2] :where(body) .sv:not(.svf) { transition: --line 400ms ease, --ink-hi 400ms ease, --ink-body 400ms ease, --ink-mute 400ms ease, --num-line 400ms ease, --d-ln 400ms ease, --d-soft 400ms ease, --d-dim 400ms ease, --d-faint 400ms ease, --d-box 400ms ease, --d-lb 400ms ease, --d-lb-mid 400ms ease, --d-lb-hi 400ms ease, --d-dot-mid 400ms ease, --d-lead 400ms ease, --d-paper 400ms ease, --btn-ink 400ms ease, --btn-bg-hover 400ms ease, --btn-ink-hover 400ms ease; }
+html[data-s2] :where(body) :is(.lc-label, .s3-lead) { transition: color 400ms ease; }
+html[data-s2] :where(body) .lc-panel { transition: background-color 400ms ease; }
+html[data-s2] :where(body) :is(.s2-frame, .s3-frame, .iso-frame, .sv-frame, .lc-frame, .tg-frame) { transition: --box-mark 400ms ease; }
 @property --box-mark { syntax: '<color>'; inherits: true; initial-value: #e6e6e6; }
-body:has(.s2-flow) .opt-tabs, body:has(.s2-flow) .opt-tabs button { transition: opacity 250ms ease, translate 250ms var(--ease-out), background-color 400ms ease, color 400ms ease, outline-color 400ms ease; }
+html[data-s2] :where(body) .opt-tabs, html[data-s2] :where(body) .opt-tabs button { transition: opacity 250ms ease, translate 250ms var(--ease-out), background-color 400ms ease, color 400ms ease, outline-color 400ms ease; }
 
 /* Launches cloud (LaunchesCloud.tsx): type cards drifting toward the viewer around a large word
    with a soft paper glow behind it. Fills the 16:9 panel; paper background (no grey block). */
-body:has(.s2-flow) .lc-panel { background: #fafaf9; overflow: hidden; } /* a very slight grey behind the cloud */
-html[data-theme='night'] body:has(.s2-flow) .lc-panel { background: #26272b; }
-body:has(.s2-flow) .lc-panel.lc-box { background: #f4f4f4; } /* the simple variant: the video placeholder */
-html[data-theme='night'] body:has(.s2-flow) .lc-panel.lc-box { background: #2c2e33; }
+html[data-s2] :where(body) .lc-panel { background: #fafaf9; overflow: hidden; } /* a very slight grey behind the cloud */
+html[data-theme='night'][data-s2] body .lc-panel { background: #26272b; }
+html[data-s2] :where(body) .lc-panel.lc-box { background: #f4f4f4; } /* the simple variant: the video placeholder */
+html[data-theme='night'][data-s2] body .lc-panel.lc-box { background: #2c2e33; }
 .lcc { position: relative; width: 100%; height: 100%; overflow: hidden; perspective: 760px; perspective-origin: 50% 50%; pointer-events: auto; }
 .lcc-space { position: absolute; left: 50%; top: 50%; transform-style: preserve-3d; }
 .lcc-card {
@@ -341,11 +341,11 @@ html[data-theme='night'] body:has(.s2-flow) .lc-panel.lc-box { background: #2c2e
   position: absolute; left: 50%; top: 50%; translate: -50% -52%; margin: 0; z-index: 1001; pointer-events: none;
   font-family: var(--serif); font-weight: 400; font-size: clamp(44px, 7vw, 96px); line-height: 1; letter-spacing: -0.01em; color: var(--lcc-ink, #1f1f1f);
 }
-html[data-theme='night'] body:has(.s2-flow) .lcc { --lcc-bg: #26272b; --lcc-card: #2c2e33; --lcc-line: rgb(255 255 255 / .1); --lcc-ink: #ebebeb; --lcc-body: #8f8f8f; }
+html[data-theme='night'][data-s2] body .lcc { --lcc-bg: #26272b; --lcc-card: #2c2e33; --lcc-line: rgb(255 255 255 / .1); --lcc-ink: #ebebeb; --lcc-body: #8f8f8f; }
 @media (max-width: 759px) { .lcc-card { scale: .7; } }
 
 /* Launches grid (LaunchesGrid.tsx): an endless plane of pictures you drag; plain paper behind. */
-body:has(.s2-flow) .lc-panel.lc-gridp { background: transparent; }
+html[data-s2] :where(body) .lc-panel.lc-gridp { background: transparent; }
 .lcg {
   position: relative; width: 100%; height: 100%; overflow: hidden; cursor: grab; touch-action: none; user-select: none; pointer-events: auto;
   /* faint dotted ground on the column / half-row grid; moves with the tiles */
@@ -356,13 +356,13 @@ body:has(.s2-flow) .lc-panel.lc-gridp { background: transparent; }
 .lcg::before, .lcg::after { content: ''; position: absolute; left: 0; right: 0; height: 18%; z-index: 1; pointer-events: none; }
 .lcg::before { top: 0; background: linear-gradient(var(--lcg-bg, #fff), transparent); }
 .lcg::after { bottom: 0; background: linear-gradient(transparent, var(--lcg-bg, #fff)); }
-html[data-theme='night'] body:has(.s2-flow) .lcg { --lcg-bg: #232427; --lcg-dot: #3a3b3f; }
+html[data-theme='night'][data-s2] body .lcg { --lcg-bg: #232427; --lcg-dot: #3a3b3f; }
 .lcg[data-dragging] { cursor: grabbing; }
 .lcg-plane { position: absolute; left: 0; top: 0; will-change: transform; }
 .lcg-tile { position: absolute; display: block; background: #eee; }
 .lcg-tile img { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 .lcg-tile:focus-visible { outline: 1px solid #1f1f1f; outline-offset: 2px; }
-html[data-theme='night'] body:has(.s2-flow) .lcg-tile { background: #2c2e33; }
+html[data-theme='night'][data-s2] body .lcg-tile { background: #2c2e33; }
 @media (max-width: 759px) { .lcg-plane { scale: .7; transform-origin: 0 0; } }
 
 /* the grid's line: small and quiet, in an opening of empty cells; it moves with the grid */
@@ -370,11 +370,11 @@ html[data-theme='night'] body:has(.s2-flow) .lcg-tile { background: #2c2e33; }
   position: absolute; translate: -50% -50%; margin: 0; white-space: nowrap; pointer-events: none;
   font-family: var(--mono); font-size: 12px; line-height: 1.4; text-transform: uppercase; letter-spacing: .04em; color: var(--lcg-ink, #8f8f8f);
 }
-html[data-theme='night'] body:has(.s2-flow) .lcg { --lcg-ink: #8f8f8f; }
+html[data-theme='night'][data-s2] body .lcg { --lcg-ink: #8f8f8f; }
 
 /* Nothing on /home-2 may widen the page sideways (floating pieces, zooms): a sideways scroll would
    shift the content against the fixed frame rules. clip (not hidden) keeps sticky sections working. */
-html:has(body .s2-flow), body:has(.s2-flow) { overflow-x: clip; }
+html[data-s2], html[data-s2] :where(body) { overflow-x: clip; }
 
 /* Research lab line (/home-2, ResearchLab.tsx): its own screen between Section 2 and the papers.
    The stage pins for the typing and the highlight, then scrolls on (a half-screen stage, centred). A short centred column of
@@ -384,7 +384,14 @@ html:has(body .s2-flow), body:has(.s2-flow) { overflow-x: clip; }
 /* The stage is half a screen (not a full one), held in the middle of the screen: the section
    before sits right above the line as it comes up and the papers follow as soon as it lets go.
    Held for 100svh of scrolling (height 150svh = the 50svh stage + the hold). */
+/* Held for 100svh of scrolling (height 150svh = the 50svh stage + the hold). */
 .rl { position: relative; z-index: 1; height: 150svh; }
+/* The papers after it, placed so their title is just at the bottom of the screen at the moment the line lets go
+   (feedback 2026-11-16: they came up into the free quarter under the held line; then: no fading, a normal
+   scroll): nothing of them shows while it holds, and they scroll up after it as anything else. They centre in
+   their own full-screen stage (~560px of title, gap and grid, scaling with the width), so their title sits
+   (100svh − that) / 2 under their top; the hold ends with their top at 75svh. */
+.rl + .s3 { margin-top: calc(68px - 25svh + 12.6vw); }
 .rl-pin { position: sticky; top: 25svh; height: 50svh; display: grid; }
 .rl-frame {
   position: relative; margin-inline: auto; height: 50svh; min-height: 280px; display: grid; place-items: center;
@@ -414,7 +421,7 @@ html[data-hero='light'] .hero {
   --ink: #1f1f1f; --body-ink: #5e5e5e; --rule: #e6e6e6; --tile: transparent; --tile-hover: transparent;
   color: var(--ink);
 }
-html[data-hero='light'] body:has(.s2-flow) .hero .tick { background: #e6e6e6; }
+html[data-hero='light'][data-s2] body .hero .tick { background: #e6e6e6; }
 html[data-hero='light'] .hero .glow { display: none; }
 /* the logos are drawn light grey and white for the dark tiles: turned dark here */
 html[data-hero='light'] .hero .logo { filter: grayscale(1) invert(1) brightness(.55); }
