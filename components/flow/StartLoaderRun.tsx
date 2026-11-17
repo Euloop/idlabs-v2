@@ -37,6 +37,8 @@ export default function StartLoaderRun({ frames, golden = 0, videoPlain }: { fra
 
     // React runs this twice in dev: the first run is cancelled, and only its own timers go with it.
     let cancelled = false;
+    // a click or tap during the loader skips it (2026-11-17): the rest of the schedule is dropped
+    let skipped = false;
     let raf = 0;
     const timers: number[] = [];
     const at = (ms: number, fn: () => void) => timers.push(window.setTimeout(() => { if (!cancelled) fn(); }, ms));
@@ -152,7 +154,7 @@ export default function StartLoaderRun({ frames, golden = 0, videoPlain }: { fra
         let k = 0;
         let shown = -1;
         const step = (now: number) => {
-          if (cancelled) return;
+          if (cancelled || skipped) return;
           if (!t0) t0 = now;
           const e = now - t0;
           // (4ms of slack: a vsync can land a hair before a boundary, and must still count as on it,
@@ -171,7 +173,23 @@ export default function StartLoaderRun({ frames, golden = 0, videoPlain }: { fra
 
     // Start once every reel image is decoded, so no cut ever lands on a blank.
     let started = false;
-    const go = () => { if (!started && !cancelled) { started = true; start(); } };
+    const go = () => { if (!started && !cancelled && !skipped) { started = true; start(); } };
+
+    // Skip: a click or tap anywhere while the reel plays drops what is left of the schedule and goes
+    // straight into the loader's own ending (zoom: the white lifts and the reel fades, ~850ms, onto the
+    // hero, whose entrance plays as usual). Once the ending has begun, clicks do nothing more.
+    const skip = () => {
+      if (skipped || cancelled || root.dataset.loader !== 'run') return;
+      skipped = true;
+      started = true;
+      window.removeEventListener('pointerdown', skip, true);
+      timers.forEach(clearTimeout);
+      timers.length = 0;
+      cancelAnimationFrame(raf);
+      el.setAttribute('data-skip', ''); // start-loader.css: everything on the white fades at once
+      zoom();
+    };
+    window.addEventListener('pointerdown', skip, true);
     const imgs = Array.from(el.querySelectorAll('img'));
     Promise.all(imgs.map((img) => img.decode().catch(() => {}))).then(go);
     at(MAX_WAIT, go);
@@ -180,6 +198,7 @@ export default function StartLoaderRun({ frames, golden = 0, videoPlain }: { fra
       cancelled = true;
       cancelAnimationFrame(raf);
       timers.forEach(clearTimeout);
+      window.removeEventListener('pointerdown', skip, true);
       release();
     };
   }, [frames, videoPlain]);

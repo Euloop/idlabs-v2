@@ -6,11 +6,13 @@ import '../../components/sections.css';
 import '../../components/flow/flow.css';
 import HtmlMark from '../../components/HtmlMark';
 import '../../components/flow/launches-float.css';
+import { SITE_URL } from '../../components/seo';
 
 /* /launches: every launch, as the cards of Launches "Selected" (/home-4's See all button). Light page
    from the start (no hero), the fixed nav and the Fibonacci footer, as on /. */
 
 export const metadata: Metadata = {
+  alternates: { canonical: `${SITE_URL}/launches` },
   title: 'Launches — Identity Labs',
   description: 'Every launch Identity Labs has done for its clients: 2B+ views on X.',
   // the cards play X's videos on hover, which refuse another site's referrer (flow/launch-videos.ts)

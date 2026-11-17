@@ -258,14 +258,15 @@ html[data-theme='night'] .ti-text { color: #ebebeb; }
 /* the very end of the page (SiteChrome: html[data-page-end]) with the Fibonacci + Focus footer (its Focus
    figure, .ftf-top): the fixed wordmark and nav step away, leaving the figure's line on the screen's top */
 .chrome .s2-header { transition: opacity 300ms var(--ease-out); }
-html[data-page-end]:has(.ftf-top) .chrome .s2-header { opacity: 0; pointer-events: none; }
-html[data-page-end]:has(.ftf-top) .chrome .s2-header * { pointer-events: none !important; }
+/* (not on /about, /privacy, /terms — main.lg: a short page reaches its end almost at once, so the wordmark stays) */
+html[data-page-end]:has(.ftf-top):not(:has(main.lg)) .chrome .s2-header { opacity: 0; pointer-events: none; }
+html[data-page-end]:has(.ftf-top):not(:has(main.lg)) .chrome .s2-header * { pointer-events: none !important; }
 /* …and with the Fibonacci · low footer (shorter than the screen, so the launches above still show at the
    page's end): while the footer is on screen but the fixed wordmark and nav are still over the section
    above it — over the launch video's own controls — they step away; back when scrolling up
-   (html[data-footer] / [data-over-footer]: SiteFooter) */
-html[data-footer]:not([data-over-footer]):has(.fff-low) .chrome .s2-header { opacity: 0; pointer-events: none; }
-html[data-footer]:not([data-over-footer]):has(.fff-low) .chrome .s2-header * { pointer-events: none !important; }
+   (html[data-footer] / [data-over-footer]: SiteFooter). Not on /about, /privacy, /terms (main.lg), where the wordmark stays. */
+html[data-footer]:not([data-over-footer]):has(.fff-low):not(:has(main.lg)) .chrome .s2-header { opacity: 0; pointer-events: none; }
+html[data-footer]:not([data-over-footer]):has(.fff-low):not(:has(main.lg)) .chrome .s2-header * { pointer-events: none !important; }
 
 /* Section 2's step label: "Sourcing module" / "Ranking module" highlighted as the research lab's phrase —
    a black bar wiping across, its letters turning white (ScrollText hl, light) */

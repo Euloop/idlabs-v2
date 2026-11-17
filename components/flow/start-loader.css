@@ -440,3 +440,8 @@ html[data-fib-hero][data-sl-flow='video'][data-loader='done'] .sl-fib { opacity:
    loader's copy and the hero's together, so the two never differ while the white lifts */
 html[data-fib-hero][data-sl-land] .sl-fib,
 html[data-fib-hero][data-sl-land] .hv-fib { color: #f4f4f4; transition: color 900ms var(--ease-out); }
+
+/* Skipped (a click or tap during the loader, StartLoaderRun): the reel, the diagram, the logo and the
+   rest fade together while the white lifts, so no cut keeps flashing over the hero. !important wins
+   over the reel's own running animations. */
+.sl[data-skip] > * { opacity: 0 !important; transition: opacity 350ms var(--ease-out) !important; }

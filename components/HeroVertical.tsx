@@ -99,9 +99,9 @@ const PLACED = ORDER.map((name, i) => ({ l: BY_NAME.get(name)!, cx: COLS[i % 4],
 /* The client's list (2026-11-14): these 12, in this order, in three rows. Shown in place of ORDER when
    html[data-clients='picked'] (/home-4's Clients tab, which also hides Our Network); other pages keep ORDER. */
 const PICKED = [
-  'Gamma', 'Matic Robots', 'Andreessen Horowitz', 'Sequoia',
+  'Deel', 'Matic Robots', 'Andreessen Horowitz', 'Sequoia',
   'Lovable', 'Kleiner Perkins', 'Lightspeed', 'Wispr Flow',
-  'Deel', 'Airwallex', 'Pocket FM', 'Fish Audio',
+  'Gamma', 'Airwallex', 'Pocket FM', 'Fish Audio',
 ];
 const ROWS3 = Array.from({ length: 3 }, (_, r) => 660 + ((979.999 - 660) * (r + 0.5)) / 3);
 const PLACED_PICKED = PICKED.map((name, i) => ({ l: BY_NAME.get(name)!, cx: COLS[i % 4], cy: ROWS3[Math.floor(i / 4)] }));

@@ -1,0 +1,35 @@
+# Identity Labs
+
+> Identity Labs is a growth consulting firm that helps the world's largest technology companies build predictable organic distribution through algorithm research, predictive analytics and embedded creative teams. Founded in March 2022 and led by co-founders Ruchir Jajoo and Vedika Bhaia. Offices in San Francisco (50 California Street, San Francisco, CA 94111), London and Bangalore.
+
+In October 2026, Identity Labs merged with Social Capital Inc., the launch firm Ruchir and Vedika founded in July 2023, bringing research and execution into one practice.
+
+What the firm does:
+- Algorithm research on the largest weighted engagement datasets (more than a trillion weighted views) to reverse engineer the X and LinkedIn algorithms.
+- Analytics software, built on over two billion data points, that models the acceleration and decay of engagement and can tell within 30 minutes whether a post is on track to pass a million views.
+- Forward-deployed creative and growth teams that run product launches inside client organisations.
+
+Launch clients include Deel, Lovable, Gamma, Wispr Flow, Matic Robots, Cartesia and a range of a16z portfolio companies, together valued at more than $35B. That demand has grown revenue 7x to $20M ARR.
+
+## Pages
+
+- [Home](https://identitylabs.com/): what Identity Labs does, its clients, research, tools, services and launches
+- [About](https://identitylabs.com/about): the firm, its co-founders Ruchir Jajoo and Vedika Bhaia, and its history
+- [Launches](https://identitylabs.com/launches): product launches the firm has run for clients
+
+## Research
+
+- [How the X Algorithm Works (2026)](https://assets.ctfassets.net/xsgwjwcuxltx/2D7hwss9WnXBNLD3T8e7mK/8a276a95b9f7b0f2f1c0d1d6b14b450e/How_the_X_Algorithm_Works_2026.pdf): the firm's first working paper, by Ruchir Jajoo
+- [How the LinkedIn Algorithm Works (2026)](https://assets.ctfassets.net/xsgwjwcuxltx/7ydGxl5W28i2QZued6Z4N7/3ef2f08644ca45b23820e3b6aa6bc9ca/How_the_LinkedIn_Algorithm_Works_2026.pdf)
+
+## Profiles
+
+- Social Capital Inc. (merged into Identity Labs, October 2026): [LinkedIn](https://www.linkedin.com/company/socialcapital-inc), [X](https://x.com/socapinc), [Wikidata](https://www.wikidata.org/wiki/Q142089203)
+- Identity Labs: [LinkedIn](https://www.linkedin.com/company/theidentitylabs), [X](https://x.com/identitylabsinc), [Crunchbase](https://www.crunchbase.com/organization/identity-labs-046c), [Wikidata](https://www.wikidata.org/wiki/Q142031928)
+- Ruchir Jajoo: [ruchirjajoo.com](https://ruchirjajoo.com), [LinkedIn](https://www.linkedin.com/in/ruchirjajoo), [X](https://x.com/ruchirjajoo)
+- Vedika Bhaia: [vedikabhaia.com](https://vedikabhaia.com), [LinkedIn](https://www.linkedin.com/in/vedikabhaia), [X](https://x.com/vedikabhaia), [Instagram](https://www.instagram.com/vedikabhaia)
+
+## Optional
+
+- [Privacy Policy](https://identitylabs.com/privacy)
+- [Terms & Conditions](https://identitylabs.com/terms)

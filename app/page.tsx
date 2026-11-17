@@ -15,6 +15,7 @@ import HeroLight from '../components/flow/HeroLight';
 // the diagram's styles (on /home-2 they come with the flowchart variants of Section 2)
 import '../components/flow/flow.css';
 import HtmlMark from '../components/HtmlMark';
+import { HOME_JSON_LD, SITE_URL, ldJson } from '../components/seo';
 import PhoneSettle from '../components/flow/PhoneSettle';
 // phone layout for this page, last so it wins (2026-11-17)
 import '../components/flow/mobile.css';
@@ -33,11 +34,14 @@ export const metadata: Metadata = {
     'Identity Labs is a consulting firm based in London. The largest tech companies on earth rely on our algorithm research, analytics software, and deployed services to reach a billion people.',
   // the launch reel plays X's videos, which refuse another site's referrer (flow/launch-videos.ts)
   referrer: 'no-referrer',
+  alternates: { canonical: SITE_URL },
 };
 
 export default function Home() {
   return (
     <>
+      {/* who we are, for search and answer engines: the organization and the website (components/seo.ts) */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(HOME_JSON_LD) }} />
       {/* light hero and the client's 12 logos, before first paint (HeroLight keeps the light and
           clears it on leaving) */}
       <script dangerouslySetInnerHTML={{ __html: "var d=document.documentElement;d.dataset.hero='light';d.dataset.clients='picked'" }} />
