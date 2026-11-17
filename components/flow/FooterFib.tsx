@@ -32,6 +32,7 @@ const COLUMNS: { title: string; links: Link[] }[] = [
   ...(CONTACT.length ? [{ title: 'Contact us', links: CONTACT.map((m) => ({ label: m, href: `mailto:${m}` })) }] : []),
 ];
 const OFFICES = ['San Francisco', 'London', 'Bangalore'];
+const ADDRESS = '50 California Street, San Francisco, 94111';
 const LEGAL = [{ label: 'Terms & Conditions', href: '/terms' }, { label: 'Privacy Policy', href: '/privacy' }];
 
 const A = '/assets/footer-fib/';
@@ -117,7 +118,11 @@ export default function FooterFib({ top, full = false, behind = false, fullTop }
             <img src={`${A}ellipse71.svg`} alt="" width={6} height={6} />
             All systems operational
           </span>
-          <span className="ftf-offices">{OFFICES.map((o) => <span key={o}>{o}</span>)}</span>
+          <span className="ftf-where">
+            <span className="ftf-offices">{OFFICES.map((o) => <span key={o}>{o}</span>)}</span>
+            {/* the San Francisco office (2026-11-17) */}
+            <address className="ftf-address">{ADDRESS}</address>
+          </span>
           <span className="ftf-legal">{LEGAL.map((l) => <a key={l.label} href={l.href}>{l.label}</a>)}</span>
         </div>
   );

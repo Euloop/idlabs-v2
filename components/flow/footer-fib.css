@@ -54,6 +54,9 @@
 .ftf-status { display: inline-flex; align-items: center; gap: 12px; }
 .ftf-status img { display: block; flex: none; }
 .ftf-offices { display: flex; justify-content: center; gap: 22px; color: #666; }
+/* the cities, and the San Francisco address under them */
+.ftf-where { display: grid; justify-items: center; gap: 8px; }
+.ftf-address { font-style: normal; color: #666; white-space: normal; text-align: center; }
 .ftf-legal { display: flex; gap: 22px; justify-self: end; }
 .ftf-legal a { color: #999; text-decoration: none; }
 
@@ -62,6 +65,8 @@
   .ftf-col a, .ftf-h { white-space: normal; }
   .ftf-bar { grid-template-columns: 1fr; justify-items: start; gap: 16px; padding: 24px 20px; }
   .ftf-offices { justify-content: flex-start; flex-wrap: wrap; }
+  .ftf-where { justify-items: start; }
+  .ftf-address { text-align: left; }
   .ftf-legal { justify-self: start; }
 }
 
