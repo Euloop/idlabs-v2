@@ -92,16 +92,8 @@ export default function SiteChrome() {
             <span className="wm-space"> </span>
             <em>Labs</em>
           </a>
-          {/* The nav: one fixed copy for the whole page (hero included), always on screen, no
-              background. Same links in light and dark; only the colour follows the theme. */}
-          <nav className="chrome-nav" aria-label="Primary">
-            <a href="/manifesto" className="roll" aria-label="Manifesto">
-              <span className="roll-track" aria-hidden="true"><span>Manifesto</span><span>Manifesto</span></span>
-            </a>
-            <a href="/careers" className="roll" aria-label="Careers">
-              <span className="roll-track" aria-hidden="true"><span>Careers</span><span>Careers</span></span>
-            </a>
-          </nav>
+          {/* The nav (Manifesto, Careers) is off for now (2026-11-17), until those pages are written;
+              .chrome-nav's styles stay in sections.css for when it comes back. */}
           <span className="tick tick-l" aria-hidden="true" />
           <span className="tick tick-r" aria-hidden="true" />
         </header>

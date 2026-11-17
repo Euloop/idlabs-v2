@@ -299,8 +299,6 @@ export default function LaunchesReel({ on, start = 0, alt = false, card = false,
       {end && (
         <figure ref={(el) => { slideRefs.current[slides.length] = el; }} className="lcr-slide lcr-end" data-on={atEnd || undefined} aria-hidden={!atEnd || undefined}>
           <div className="lcr-end-in">
-            <p className="lcr-end-k">{end.total} launches · 2B+ views</p>
-            <p className="lcr-end-t">Every launch<br />we’ve done.</p>
             <a className="lcr-end-btn" href={end.href} tabIndex={on && atEnd ? 0 : -1}>See all launches <span aria-hidden="true">→</span></a>
           </div>
         </figure>

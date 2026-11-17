@@ -282,3 +282,7 @@ html[data-footer]:not([data-over-footer]):has(.fff-low) .chrome .s2-header * { p
   .chrome .s2-header .wordmark { margin-left: calc(25px - var(--pad)); }
   .chrome-nav { right: calc(25px - var(--pad)); }
 }
+
+/* The wordmark centred in the header (2026-11-17), while the nav is off (SiteChrome.tsx): no side inset. */
+.chrome .s2-header { justify-content: center; }
+.chrome .s2-header .wordmark { margin-left: 0 !important; margin-right: 0; }
