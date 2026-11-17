@@ -107,7 +107,18 @@ export default function SiteChrome() {
     <div className="chrome" data-on={on || undefined} data-away={away || undefined}>
       <div className="frame s2-frame chrome-frame">
         <header className="site-header s2-header">
-          <a className="wordmark" href="/" aria-label="Identity Labs home">
+          {/* Back to the home page's hero without the loader (2026-11-17): on / it scrolls up, no reload;
+              elsewhere it leaves a one-time flag that StartLoader's boot script reads to skip the loader.
+              A reload or a fresh visit still plays it. New-tab clicks are left alone. */}
+          <a className="wordmark" href="/" aria-label="Identity Labs home" onClick={(e) => {
+            if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+            if (location.pathname === '/') {
+              e.preventDefault();
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+              return;
+            }
+            try { sessionStorage.setItem('il-skip-loader', '1'); } catch {}
+          }}>
             <span>Identity</span>
             <span className="wm-space"> </span>
             <em>Labs</em>

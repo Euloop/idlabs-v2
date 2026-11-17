@@ -213,7 +213,7 @@ const END_LOGO = 1.65; // the Fade ending's logo, in the image slot (170 × 38)
 // with the diagram staying on as the hero's background (html[data-fib-hero], HeroVertical .hv-fib)
 const BOOT = (fixed: boolean, choice: boolean, video: boolean) => `(function(){var d=document.documentElement,u=new URLSearchParams(location.search),q=u.get('intro'),L=u.get('loader');${
   fixed ? `d.dataset.intro='fade';d.dataset.slEnd='reel';${video ? "d.dataset.slFlow='video';" : choice ? "if(L!=='new'&&L!=='first')d.dataset.slFlow='video';else d.dataset.slOpen='logo';if(L==='videobg')d.dataset.fibHero='';" : "d.dataset.slOpen='logo';"}` : "d.dataset.intro=q==='fade'?'fade':'zoom';"}${
-  choice ? "d.dataset.slReel=L==='first'?'first':'full';" : ''}if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;d.dataset.loader='run';try{history.scrollRestoration='manual'}catch(e){}scrollTo(0,0)})()`;
+  choice ? "d.dataset.slReel=L==='first'?'first':'full';" : ''}try{if(sessionStorage.getItem('il-skip-loader')){sessionStorage.removeItem('il-skip-loader');return}}catch(e){}if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;d.dataset.loader='run';try{history.scrollRestoration='manual'}catch(e){}scrollTo(0,0)})()`;
 
 export default function StartLoader({ fixed = false, choice = false, video = false }: { fixed?: boolean; choice?: boolean; video?: boolean }) {
   // the Video first flow's parts (the shortened first half, the Fibonacci background) are rendered for it
