@@ -248,19 +248,21 @@ export default function LaunchesReel({ on, start = 0, alt = false, card = false,
   }, [on, i, playing]);
   useEffect(() => { if (videoRef.current) videoRef.current.muted = muted; }, [muted, i]);
 
-  /* Float II: the caption's left edge and the controls' right edge line up with the header's
-     wordmark and its last nav link (measured, so it holds at every frame width). */
+  /* Float II: the caption's left edge and the controls' right edge sit 25px in from the header frame's
+     rules, where the wordmark and the last nav link used to be (measured, so it holds at every frame
+     width). Measured from the frame, not those two: the wordmark is centred now and the nav is off
+     (2026-11-17), which had pulled the caption to the middle of the launch. */
   const rootRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = rootRef.current;
     if (!alt || !el) return;
     const fit = () => {
-      const wm = document.querySelector('.chrome .wordmark')?.getBoundingClientRect();
-      const links = document.querySelectorAll('.chrome-nav a');
-      const last = links[links.length - 1]?.getBoundingClientRect();
+      const fr = document.querySelector('.chrome .chrome-frame')?.getBoundingClientRect();
       const box = el.getBoundingClientRect();
-      if (wm && wm.width) el.style.setProperty('--al', `${Math.round(wm.left - box.left)}px`);
-      if (last && last.width) el.style.setProperty('--ar', `${Math.round(box.right - last.right)}px`);
+      if (fr && fr.width) {
+        el.style.setProperty('--al', `${Math.round(fr.left + 25 - box.left)}px`);
+        el.style.setProperty('--ar', `${Math.round(box.right - (fr.right - 25))}px`);
+      }
     };
     fit();
     const ro = new ResizeObserver(fit);

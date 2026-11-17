@@ -171,8 +171,10 @@ export default function SectionTwo({ noOutro = false, compact = false }: { noOut
       if (chromeIn !== lastChrome) { lastChrome = chromeIn; setChrome(chromeIn); }
 
       if (intro > 0 && outro < 1) {
-        // Narrow screens: zoom the camera in inside each stage so labels stay legible.
-        const boost = Math.max(1, 760 / Math.max(1, svg.clientWidth));
+        // Narrow screens: zoom the camera in inside each stage so labels stay legible. Phones (< 560px):
+        // a fixed 1.3, the most at which a whole stage still fits across the screen (more cut its sides off)
+        const w = svg.clientWidth;
+        const boost = w < 560 ? 1.3 : Math.max(1, 760 / Math.max(1, w));
         pipe.render(reduce.matches ? 0 : (now - start) / 1000, target, boost, reduce.matches, intro);
       }
     };

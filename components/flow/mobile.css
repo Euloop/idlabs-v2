@@ -1,0 +1,65 @@
+/* ───────── Phones on the home page (≤559px, 2026-11-17) ─────────
+   One place for the phone-only layout of / (app/page.tsx imports it last). */
+@media (max-width: 559px) {
+  /* No margin lines: the fixed side rules, their tick markers, the frames' corner squares, and the
+     dashed pairs the tools and launches sections draw for themselves. (.lcf-rails stays in the layout:
+     LaunchesFloat.tsx measures its width.) */
+  .frame.rails, .tick { display: none !important; }
+  html[data-s2] body :is(.s2-frame, .s3-frame, .iso-frame, .sv-frame, .lc-frame)::after { display: none; }
+  .lcf-rails::before, .lcf-rails::after { background: none !important; }
+  section.tcl .tcl-frame::before { background: none !important; border: 0 !important; }
+  .hero .hv-copy, .hero .hv-logos { border: 0; } /* the outline round the hero's text and logos */
+  .svc[data-layout='columns'] .svc-grid::before { display: none; } /* the squares at the services' line ends */
+
+  /* Section 2's diagram: the whole width of the screen (the frame's side padding was only there for
+     the lines), and room above it for the notes */
+  .s2 .s2-window { margin-inline: calc(-1 * var(--pad)); }
+  .s2-part2 .pipe { margin-top: 40px; }
+  /* room between the diagram (and its small stage labels) and the explanation under it */
+  .s2-part2 { row-gap: 36px; }
+  /* The notes become one centred caption just above the diagram, with no leader lines: placed in the
+     drawing they covered its lines at this size. One shows at a time. */
+  .s2 svg :is(.ld, .ldd) { display: none; }
+  .s2-note {
+    left: 50% !important; top: auto !important; bottom: calc(100% + 12px);
+    width: max-content !important; max-width: calc(100% - 32px); translate: -50% 0;
+    font-size: 11px; text-align: center;
+  }
+
+  /* "Read our published findings" waited under the held research line for desktop's taller papers
+     stage; here the papers are shorter, so their lead came up while the line still held. It now
+     arrives at the bottom of the screen just as the line lets go. */
+  .rl + .s3 { margin-top: calc(25svh - 48px); }
+
+  /* The tools: the research mode's fixed box height (desktop's 16:9 stage) outranked the phone rule
+     that lets the box grow, so the card (≈600px: title, walkthrough, notes, tool names) was cut to the
+     box's 220px. The box takes the card's height; the card stays inside the screen. */
+  section.tcl[data-research] .tcl-box { height: auto; }
+  section.tcl .tcl-card { box-sizing: border-box; }
+  /* …and the tool names follow the notes: Motion's desktop offset (top: 342u) pushed them ~150px down,
+     leaving a gap and cutting the list off at the card's foot */
+  section.tcl[data-motion] .tcl-list { top: auto; width: auto; }
+  /* more air in the card, and the stage taller: the research sequence plays in the box before the card
+     comes up over it (ToolsCollage.tsx), so the box keeps most of a screen */
+  /* the box (and the card in it) runs the full width of the screen, edge to edge — exactly, centred on it
+     (desktop's bleed past the frame's padding came out wider than the screen here, the card pushed right) */
+  section.tcl .tcl-frame { padding-inline: 0; }
+  section.tcl .tcl-box, section.tcl[data-research] .tcl-box {
+    width: 100vw !important; margin-inline: calc(50% - 50vw) !important; box-sizing: border-box;
+    min-height: min(720px, calc(100svh - 100px)); padding: 56px 0; display: grid; align-content: center;
+  }
+  section.tcl .tcl-card { width: 100% !important; max-width: none; }
+  section.tcl .tcl-card { padding: 40px 24px 44px; gap: 36px; }
+  /* once the card is up, the research behind it steps well back (it played at full strength first): the busy
+     text was competing with the card on a small screen */
+  section.tcl[data-seq-done] .tcl-box .rt-scatter { opacity: .22; transition: opacity 900ms cubic-bezier(.4, 0, .2, 1); }
+  section.tcl[data-seq-done] .tcl-card { background: rgb(255 255 255 / .9); }
+  section.tcl .tcl-card, section.tcl[data-research] .tcl-card { box-shadow: none; } /* no outline round the card here */
+  section.tcl .tcl-title { font-size: 18px; letter-spacing: .02em; }
+  section.tcl .tcl-mnotes { gap: 20px; }
+  section.tcl .tcl-mnotes .tcl-note, section.tcl .tcl-mnotes .tcl-lead { line-height: 1.6; }
+  section.tcl[data-motion] .tcl-list { gap: 18px; padding-top: 8px; }
+  /* the research pieces keep desktop's share of the frame, too narrow here: each takes its text's width,
+     so a piece shows whole when it has the stage (the sequence centres it from that width) */
+  section.tcl .rt-seq .rt-pane { width: max-content !important; max-width: calc(100% - 16px); }
+}

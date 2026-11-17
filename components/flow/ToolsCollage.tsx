@@ -325,7 +325,14 @@ export default function ToolsCollage({ theme = 'white', motion = false, scroll =
       const yDrift = target;
       if (phone.matches) {
         introRef.current?.set(1);
-        termRef.current?.set(1);
+        // Phones (2026-11-17): the research sequence plays here too, before the card. The scroll brings it to
+        // its start as the box rises to the middle of the screen (0 → 1), then it plays itself and the card
+        // comes up after, as on larger screens (ResearchTerminal `auto`). Without research: all in at once.
+        const bx = boxRef.current?.getBoundingClientRect();
+        if (research === 'auto' && bx && bx.height) {
+          const startTop = vh * 0.85, at = Math.max(0, (vh - bx.height) / 2);
+          termRef.current?.set(clamp01((startTop - bx.top) / Math.max(1, startTop - at)));
+        } else termRef.current?.set(1);
         SCRAPS.forEach((_, i) => { put(`--a-s${i}`, 1); s.style.setProperty(`--a-d${i}`, '0px'); });
         ['--a-bg', '--a-card', '--a-c0', '--a-c1', '--a-c2', '--a-c3', '--a-p0', '--a-p1', '--a-p2'].forEach((k) => put(k, 1));
         put('--a-text', 0);

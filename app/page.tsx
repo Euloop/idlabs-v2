@@ -15,6 +15,8 @@ import HeroLight from '../components/flow/HeroLight';
 // the diagram's styles (on /home-2 they come with the flowchart variants of Section 2)
 import '../components/flow/flow.css';
 import HtmlMark from '../components/HtmlMark';
+// phone layout for this page, last so it wins (2026-11-17)
+import '../components/flow/mobile.css';
 
 /* The home page: /home-4 with its picks made and no option tabs (2026-11-14). The "Video first" loader
    (since 2026-11-16; before it, the /hero loader) and

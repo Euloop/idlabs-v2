@@ -205,6 +205,13 @@ html[data-theme='night'] .lcf-rails::before, html[data-theme='night'] .lcf-rails
   .lcr-nav { left: 24px; right: auto; bottom: 40px; gap: 12px; }
   .lcr[data-alt] .lcr-sub { font-size: 12px; }
   .lcr-side { width: 18vw; }
+  /* (2026-11-17) the card is ~200px tall on a phone: the side chevrons sat on the reach and the post link.
+     The reel swipes, and the sides still tap through to the previous / next launch. */
+  .lcr[data-card] .lcr-side-chev { display: none; }
+  /* play / sound sat on the bottom left, over the post link: they move to the card's top right */
+  .lcr[data-card] .lcr-nav { left: auto; right: 12px; top: 12px; bottom: auto; }
+  .lcr[data-card] .lcr-cap { left: 16px; right: 16px; bottom: 16px; }
+  .lcr[data-track] .lcr-sub a { margin-top: 10px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .lcr-slide, .lcr-slide img.lcr-media { transition: none; }

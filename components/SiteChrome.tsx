@@ -66,6 +66,26 @@ export default function SiteChrome() {
     };
   }, []);
 
+  // Phones (2026-11-17): the header has no background, so the sections' text would run through the
+  // wordmark. It slides away while scrolling down and comes back on any scroll up (or near the top).
+  const [away, setAway] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 559px)');
+    let lastY = window.scrollY, raf = 0;
+    const check = () => {
+      raf = 0;
+      const y = window.scrollY, dy = y - lastY;
+      if (!mq.matches || y < 80) setAway(false);
+      else if (dy > 6) setAway(true);
+      else if (dy < -6) setAway(false);
+      if (Math.abs(dy) > 6 || y < 80) lastY = y;
+    };
+    const onScroll = () => { if (!raf) raf = requestAnimationFrame(check); };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    mq.addEventListener('change', onScroll);
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('scroll', onScroll); mq.removeEventListener('change', onScroll); };
+  }, []);
+
   // At the very end of the page (the footer's end, the last thing on it) the wordmark and the nav step
   // away (html[data-page-end], sections.css), leaving the footer the whole screen
   useEffect(() => {
@@ -84,7 +104,7 @@ export default function SiteChrome() {
   }, []);
 
   return (
-    <div className="chrome" data-on={on || undefined}>
+    <div className="chrome" data-on={on || undefined} data-away={away || undefined}>
       <div className="frame s2-frame chrome-frame">
         <header className="site-header s2-header">
           <a className="wordmark" href="/" aria-label="Identity Labs home">

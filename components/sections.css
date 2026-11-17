@@ -286,3 +286,11 @@ html[data-footer]:not([data-over-footer]):has(.fff-low) .chrome .s2-header * { p
 /* The wordmark centred in the header (2026-11-17), while the nav is off (SiteChrome.tsx): no side inset. */
 .chrome .s2-header { justify-content: center; }
 .chrome .s2-header .wordmark { margin-left: 0 !important; margin-right: 0; }
+
+/* Phones (2026-11-17): the header steps up out of the way while scrolling down (SiteChrome.tsx, data-away),
+   so section text never runs through the wordmark; any scroll up brings it back. */
+@media (max-width: 559px) {
+  .chrome .s2-header { transition: translate 350ms var(--ease-out), opacity 300ms var(--ease-out); }
+  .chrome[data-away] .s2-header { translate: 0 -100%; opacity: 0; pointer-events: none; }
+  .chrome[data-away] .s2-header * { pointer-events: none !important; }
+}
