@@ -296,4 +296,7 @@ html[data-lcp] .frame.rails > .rails-light::before, html[data-lcp] .frame.rails 
    the site's ink (#e0e0e0 → #1f1f1f) and grey marks (#191919 → #e6e6e6); over a picture they invert. */
 html:is([data-lcp], [data-lchdr]) .chrome { mix-blend-mode: difference; }
 html:is([data-lcp], [data-lchdr]) :is(.chrome .s2-header .wordmark, .chrome .chrome-nav a, .chrome .s2-foot) { color: #e0e0e0 !important; }
+/* the wordmark: #b5b5b5 under the difference blend comes out #4a4a4a on white, the home page's grey (with #e0e0e0
+   it came out near black, #1f1f1f, and looked heavier than on /; 2026-11-17). Still light over the dark videos. */
+html:is([data-lcp], [data-lchdr]) .chrome .s2-header .wordmark { color: #b5b5b5 !important; }
 html:is([data-lcp], [data-lchdr]) .chrome .tick { background: #191919 !important; }

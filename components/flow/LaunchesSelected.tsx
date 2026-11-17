@@ -83,7 +83,7 @@ export default function LaunchesAll() {
     <div className="frame lc-frame lsel lsel-page">
       <header className="lsel-head">
         <p className="lsel-label">Launches · {pad(ALL.length)}</p>
-        <h1 id="lc-title" className="lsel-title">Every launch we’ve done<br />for our clients.</h1>
+        <h1 id="lc-title" className="lsel-title">All launches</h1>
         <p className="lsel-body">2B+ views in all. Each one links to its post on X.</p>
       </header>
       <ol className="lsel-grid">

@@ -386,7 +386,9 @@ const ORDER: ({ t: number } | { v: number })[] = [{ t: 0 }, { v: 0 }, { t: 1 }, 
 const SEQ = ['o0', 'o1', 'o2', 'o3', 'o4', 'a0', 'o5', 'o6', 'o7', 'e1', 'e2', 'e0'];
 // the run's clock: SEQ_STEP s a piece, then SEQ_SETTLE s for the scatter to build in (a piece every
 // SETTLE_GAP s, each fading up over SETTLE_FADE s); SEQ_END is where the pieces end on it
-const SEQ_STEP = 0.35, SEQ_SETTLE = 1.4, SETTLE_GAP = 0.06, SETTLE_FADE = 0.6;
+// (shortened 2026-11-17, feedback: 0.35 / 1.4 / 0.06 / 0.6 before — 5.6s in all, now 2.4s; the last piece's
+// fade, 11 × gap + fade, still ends inside the settle, so every piece is fully up when it is done)
+const SEQ_STEP = 0.15, SEQ_SETTLE = 0.6, SETTLE_GAP = 0.025, SETTLE_FADE = 0.3;
 const SEQ_END = (SEQ.length * SEQ_STEP) / (SEQ.length * SEQ_STEP + SEQ_SETTLE);
 const SEQ_W = SEQ_END / SEQ.length;
 // the sequence plays itself: SEQ_STEP seconds a piece, then the settle (the same shares of the clock)
