@@ -5,6 +5,7 @@ import TokenText from './TokenText';
 import ScrollText, { type ScrollTextHandle } from './ScrollText';
 import { createPipeline, DEFAULT_TIMELINE, timelineLength } from './pipeline/engine';
 import './pipeline/pipeline.css';
+import { addSettleZones } from './flow/settle';
 
 /* Section 2 — Algorithm research. Figma 110:920 (part 1) and 110:898 (part 2).
 
@@ -206,8 +207,23 @@ export default function SectionTwo({ noOutro = false, compact = false }: { noOut
     window.addEventListener('resize', onScroll);
     update(performance.now());
 
+    // Phones: the in-between stretches of this section's scroll (flow/settle.ts, PhoneSettle.tsx), in page px —
+    // a swipe that stops in one glides on to its end (or back to its start). In screens of `s` (since the hero left):
+    // the hero leaving (its logos still whole on screen at the start) as part 1 types in; part 1 typing out through the blank to the diagram drawn; each stage
+    // transition (the zoom, the two slides); and the diagram's end through the hand-over to the next section.
+    const offSettle = addSettleZones(() => {
+      const vh = window.innerHeight;
+      const top = section.getBoundingClientRect().top + window.scrollY;
+      const Y = (v: number) => top + vh + v * vh;
+      const D0 = HOLD + INTRO;
+      const z: [number, number][] = [[Y(-0.85), Y(0.35)], [Y(HOLD - 0.45), Y(D0)]];
+      TR.forEach(([a, b]) => z.push([Y(D0 + a * DIAGRAM), Y(D0 + b * DIAGRAM)]));
+      z.push(noOutro ? [Y(D0 + DIAGRAM), top + section.offsetHeight - vh] : [Y(D0 + DIAGRAM), Y(D0 + DIAGRAM + OUTRO)]);
+      return z;
+    });
 
     return () => {
+      offSettle();
       io.disconnect();
       stopLoop();
       cancelAnimationFrame(sraf);

@@ -15,6 +15,7 @@ import HeroLight from '../components/flow/HeroLight';
 // the diagram's styles (on /home-2 they come with the flowchart variants of Section 2)
 import '../components/flow/flow.css';
 import HtmlMark from '../components/HtmlMark';
+import PhoneSettle from '../components/flow/PhoneSettle';
 // phone layout for this page, last so it wins (2026-11-17)
 import '../components/flow/mobile.css';
 
@@ -62,6 +63,8 @@ export default function Home() {
       <SiteFooter layout="fib" />
       <SiteChrome />
       <ThemeDriver />
+      {/* phones: a swipe never ends between two states of a scroll-driven section (flow/settle.ts) */}
+      <PhoneSettle />
     </>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import OptionTabs, { useOption } from './OptionTabs';
+import { addSettleZones } from './settle';
 
 /* /home-2: the research lab's line on its own screen, between Section 2 and the research papers.
    One short centred column of 12px mono caps. The stage pins while the line types in with the
@@ -63,7 +64,13 @@ export default function ResearchLab({ fixed = false }: { fixed?: boolean } = {})
     apply();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll);
-    return () => { cancelAnimationFrame(raf); window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); };
+    // Phones (flow/settle.ts): from coming on screen until the line is typed and its bar across (s 1.8: the
+    // section's top 0.55 screens above the screen's) — a swipe stopping part way glides on to the finished line
+    const offSettle = addSettleZones(() => {
+      const vh = window.innerHeight, top = sec.getBoundingClientRect().top + window.scrollY;
+      return [[top - vh, top + 0.55 * vh]];
+    });
+    return () => { offSettle(); cancelAnimationFrame(raf); window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onScroll); };
   }, []);
 
   const letters = (t: string) => Array.from(t).map((c, i) => <span key={i} className="tc">{c}</span>);

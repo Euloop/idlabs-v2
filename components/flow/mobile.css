@@ -62,4 +62,18 @@
   /* the research pieces keep desktop's share of the frame, too narrow here: each takes its text's width,
      so a piece shows whole when it has the stage (the sequence centres it from that width) */
   section.tcl .rt-seq .rt-pane { width: max-content !important; max-width: calc(100% - 16px); }
+
+  /* Hero: the text and logos take the screen's width (~20px in from each edge: the frame's padding and the
+     box's, there for the margin lines and the outline, both gone here), and more room under the header */
+  .hero .frame:not(.rails) { padding-inline: 10px; }
+  .hero .hv-copy { padding: 136px 0 32px; }
+
+  /* "We backpropagate…": the line takes the screen's width too (it sat in a narrow centred column) */
+  .rl .rl-frame { padding-inline: 10px; }
+  .rl .rl-text { width: 100%; }
+
+  /* Services: the frame's one-screen height was shorter than the three cards here, so the launches section
+     (white, over it) covered the end of the last card. The section takes its content's height. */
+  .sv.svc, .sv.svc .sv-pin, html[data-s2] body .sv.svc .sv-frame { height: auto; min-height: 0; }
+  html[data-s2] body .sv.svc .sv-frame { padding-bottom: 56px; }
 }
