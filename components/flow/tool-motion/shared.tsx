@@ -5,9 +5,12 @@ import { createContext, useContext, useEffect, useId, useRef, useState, type Rea
 /* Tool loops for the Collage "Motion" option (ToolsCollage.tsx, motion): each tool's own UI,
    rebuilt in SVG on a 720 × 370 canvas (the app's look, lightly trimmed) and played as a short
    walkthrough — the list view, a click into one post, its detail charts drawing in. One loop
-   lasts LOOP seconds (8), the time the Collage gives each tool, and ends faded back to the start. */
+   lasts LOOP seconds (4), the time the Collage gives each tool, and ends faded back to the start. */
 
-export const LOOP = 8; // real seconds per loop (and per tool in the Collage cycle)
+export const LOOP = 4; // real seconds per loop (and per tool in the Collage cycle); was 8: faster per the client 2026-11-18 (2.5 too fast)
+/* each tool's own loop, in the LOOPS order (Classifier, Weighted, Velocity, Clusters): the Classifier
+   a little slower than the rest (client, 2026-11-18) */
+export const LOOP_S = [6, LOOP, LOOP, LOOP];
 /* The loops are timed on a 10-unit timeline (DESIGN); the clock plays it in LOOP real seconds. */
 export const DESIGN = 10;
 export const W = 720, H = 370;
@@ -42,11 +45,13 @@ export function keys(t: number, k: [number, number][]) {
    and the fade. So the story plays in the first PLAY seconds, holds finished for HOLD, then the
    last units (closing, fade) run in what is left — the loop always ends complete with the cycle. */
 export const STORY = 8.8;
-const PLAY = 6.6, HOLD = 0.8;
-export function toDesign(r: number) {
-  if (r < PLAY) return (r / PLAY) * STORY;
-  if (r < PLAY + HOLD) return STORY;
-  return STORY + ((r - PLAY - HOLD) / (LOOP - PLAY - HOLD)) * (DESIGN - STORY);
+// the play, the hold and the close as shares of the loop (were 6.6, 0.8 and 0.6 of 8 s)
+const PLAY = 0.8, HOLD = 0.1;
+export function toDesign(r: number, loop = LOOP) {
+  const play = PLAY * loop, hold = HOLD * loop;
+  if (r < play) return (r / play) * STORY;
+  if (r < play + hold) return STORY;
+  return STORY + ((r - play - hold) / (loop - play - hold)) * (DESIGN - STORY);
 }
 
 /* Detail-only loops (Weighted, Velocity, Clusters): they open straight on the detail view, whose
@@ -77,7 +82,7 @@ export function preloadAvatars() {
    next tool in a cycle) it starts at 0, not on a flash of the poster. `onEnd` is called each time a
    loop completes (the Showcase moves to the next tool on it, so a tool never changes mid-loop). */
 /* `time` (timeline units) drives the loop from outside instead (the scroll, in Motion Scroll). */
-export function useLoop(playing: boolean, poster: number, time?: number, onEnd?: () => void) {
+export function useLoop(playing: boolean, poster: number, time?: number, onEnd?: () => void, loop = LOOP) {
   const [t, setT] = useState(() => (playing ? 0 : poster));
   const elapsed = useRef(-1);
   const end = useRef(onEnd);
@@ -93,13 +98,13 @@ export function useLoop(playing: boolean, poster: number, time?: number, onEnd?:
       // (a frame's timestamp can be a little before `start`: never below 0, or crossing back over 0
       // would count as a loop ending)
       elapsed.current = Math.max(prev, (now - start) / 1000);
-      if (Math.floor(elapsed.current / LOOP) > Math.floor(prev / LOOP)) end.current?.();
-      setT(toDesign(elapsed.current % LOOP));
+      if (Math.floor(elapsed.current / loop) > Math.floor(prev / loop)) end.current?.();
+      setT(toDesign(elapsed.current % loop, loop));
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [playing, poster]);
+  }, [playing, poster, loop]);
   return time ?? t;
 }
 

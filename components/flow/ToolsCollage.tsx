@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import ScrollText, { type ScrollTextHandle } from '../ScrollText';
 import './tools-collage.css';
-import { LOOP } from './tool-motion/shared';
+import { LOOP_S } from './tool-motion/shared';
 import Classifier from './tool-motion/Classifier';
 import Weighted from './tool-motion/Weighted';
 import Velocity from './tool-motion/Velocity';
@@ -21,7 +21,7 @@ const MOTION_RECT = { x: 306, y: 68.5, w: 642, h: 330 };
    moves through the tools, PER screens each; each tool's walkthrough plays on its own clock (from
    its start when the tool comes up, looping while it stays). The active name's bar shows how far
    through its stretch you are; a name click scrolls to that tool. Phones (no pin) keep the cycle. */
-const PER = 1.0, HOLD_AT = 0.86; // a screen per tool (was 1.6: the client found it long)
+const PER = 0.7, HOLD_AT = 0.86; // 0.7 screen per tool (was 1.6, then 1.0: the client wanted it faster, 2026-11-18)
 
 /* Analytical tools, "Collage" layout (/home-2; option to Graph, Device and Stack). Figma
    "Tool section variant 4" (163:713, white) and "… - paper light theme" (165:762). A collage of
@@ -460,7 +460,7 @@ export default function ToolsCollage({ theme = 'white', motion = false, scroll =
   const t = TOOLS[idx];
   const r = motion ? { a: MOTION_RECT, b: MOTION_RECT } : place(t);
   const Loop = LOOPS[idx];
-  const cycleMs = motion ? LOOP * 1000 : CYCLE_MS;
+  const cycleMs = motion ? LOOP_S[idx] * 1000 : CYCLE_MS;
   const l = leaders(r, motion ? 360 : NOTE_W);
   const noteA = motion ? t.mA : t.noteA, noteB = motion ? t.mB : t.noteB;
 

@@ -277,7 +277,7 @@ section.tcl[data-gather] .tcl-frame::before {
 .tm .tm-m, .tm .tm-m tspan, .tm tspan.tm-m { font-family: var(--mono); }
 .tm .tm-title { font-size: 15px; font-weight: 450; fill: #1c1b19; }
 /* Motion Scroll: the pin runs on through the four tools (live at 2.7, a screen each, a hold) */
-section.tcl[data-scroll] { height: 780svh; } /* live at 2.7, a screen per tool, then the release */
+section.tcl[data-scroll] { height: 660svh; } /* live at 2.7, 0.7 screen per tool, then the release */
 /* the immersive build: nothing in the card is clickable until the card is in */
 section.tcl[data-immersive]:not([data-built]) .tcl-card { pointer-events: none; }
 section.tcl[data-immersive]:not([data-built]) .tcl-card * { pointer-events: none !important; }
@@ -308,7 +308,7 @@ section.tcl[data-motion] .tcl-list { width: calc(236 * var(--u)); top: calc(342 
    The box is 16:9, rule to rule; white, with the research in small black mono. It opens from its centre
    (--a-bg) and types in; the glass card then comes up over it, blurring it (a real backdrop blur — the
    ground has no blended layers to lose). */
-section.tcl[data-research] { height: 840svh; } /* live at 3.22, a screen per tool, then the release */
+section.tcl[data-research] { height: 720svh; } /* live at 3.22, 0.7 screen per tool, then the release */
 @media (max-width: 719px) { section.tcl[data-research] { height: auto; } }
 section.tcl[data-research] .tcl-box { height: calc(594 * var(--u)); background: transparent; }
 section.tcl[data-research] .tcl-box::before { background: #fff; box-shadow: inset 0 0 0 1px #e8e8e8; }
@@ -401,8 +401,8 @@ section.tcl[data-research='scatter'] .tcl-box::before, section.tcl[data-seq] .tc
 
 /* Research sequence (data-research='sequence', ResearchTerminal `sequence`): one piece at a time on the
    stage, growing; then all of them in place. Set every frame by the script (opacity, transform). */
-section.tcl[data-research='sequence'] { height: 1025svh; } /* · scroll: the run over 1.0–4.2, the card, live at 5.12, a screen per tool, the release */
-section.tcl[data-research='auto'] { height: 645svh; } /* · auto: started by 1.0, plays itself; live at 1.3, a screen per tool, the release */
+section.tcl[data-research='sequence'] { height: 905svh; } /* · scroll: the run over 1.0–4.2, the card, live at 5.12, 0.7 screen per tool, the release */
+section.tcl[data-research='auto'] { height: 525svh; } /* · auto: started by 1.0, plays itself; live at 1.3, 0.7 screen per tool, the release */
 /* the card and the glass wait for the sequence to finish (data-seq-done, set by ResearchTerminal), then come
    up by themselves: the glass, the card rising, its parts after it */
 section.tcl[data-research='auto'][data-seq-in] .tcl-glass { transition: opacity 1000ms cubic-bezier(.4, 0, .2, 1) 150ms; }

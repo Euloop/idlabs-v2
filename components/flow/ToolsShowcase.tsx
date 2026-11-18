@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import ScrollText, { type ScrollTextHandle } from '../ScrollText';
 import { TOOLS, LOOPS } from './ToolsCollage';
-import { LOOP, preloadAvatars } from './tool-motion/shared';
+import { LOOP_S, preloadAvatars } from './tool-motion/shared';
 import './tools-showcase.css';
 
 /* Analytical tools, "Showcase" layout (/home-2 and /home-4 Tools tabs). Two pinned screens:
@@ -144,7 +144,7 @@ export default function ToolsShowcase({ intro = 'typed' }: { intro?: ShowcaseInt
                       or off screen); the loop's own end brings the next tool (onEnd) */}
                   {i === active && (
                     <span className="tsc-prog" aria-hidden="true">
-                      <span key={active} className="tsc-prog-fill" data-run={running || undefined} style={{ animationDuration: `${LOOP}s` }} />
+                      <span key={active} className="tsc-prog-fill" data-run={running || undefined} style={{ animationDuration: `${LOOP_S[active]}s` }} />
                     </span>
                   )}
                 </button>

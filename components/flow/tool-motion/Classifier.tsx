@@ -1,6 +1,6 @@
 'use client';
 
-import { Av, C, Card, Frame, eout, fmt, lerp, loopFade, rng, seg, useLoop } from './shared';
+import { Av, C, Card, Frame, eout, fmt, lerp, loopFade, rng, seg, useLoop, LOOP_S } from './shared';
 
 /* Engagement Classifier: the "Rate vs baseline" plot. Every post starts at its own baseline (its
    first 15 minutes) and runs right as it ages; most sink, a few climb into the green. The plot is
@@ -73,7 +73,7 @@ const CALLS = [
 const COUNTS: [string, number, boolean][] = [['Viral', 58, true], ['Emerging', 8, true], ['Decaying', 230, false], ['High reach', 19, false], ['Flat', 5, false], ['Unscored', 26, false]];
 
 export default function Classifier({ playing, time, onEnd }: { playing: boolean; time?: number; onEnd?: () => void }) {
-  const t = useLoop(playing, 7, time, onEnd);
+  const t = useLoop(playing, 7, time, onEnd, LOOP_S[0]);
   const fade = loopFade(t);
   const grow = 1; // the counts as they are: nothing counts up
   // how far each stop's hover is on (0…1), and the strongest — the rest of the plot fades back by it
