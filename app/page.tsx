@@ -35,6 +35,14 @@ export const metadata: Metadata = {
   // the launch reel plays X's videos, which refuse another site's referrer (flow/launch-videos.ts)
   referrer: 'no-referrer',
   alternates: { canonical: SITE_URL },
+  // the start loader as the link preview's video (public/og/loader.mp4: the reel, the spiral, the logo
+  // drawn, 10s, H.264 1200 × 630, muted). iMessage and Discord play it; WhatsApp, Slack, X and LinkedIn
+  // show the still (app/opengraph-image.jpg). The layout's openGraph is restated: segments merge shallowly.
+  openGraph: {
+    siteName: 'Identity Labs',
+    type: 'website',
+    videos: [{ url: `${SITE_URL}/og/loader.mp4`, type: 'video/mp4', width: 1200, height: 630 }],
+  },
 };
 
 export default function Home() {
