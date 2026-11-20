@@ -56,6 +56,23 @@
 .hv-line:first-child { color: var(--hv-pale); }
 .hv-li { display: block; animation: word 950ms var(--ease-out) var(--d, 0ms) both; }
 
+/* The city (HeroVertical.tsx CITIES): the three stacked in one cell, each pushed up and out by the
+   next. 3s a city, 9s round. London holds from the intro to 3.5s (its one-off exit), then joins the
+   loop; .hv-line's overflow clips the words above and below. */
+.hv-city { display: inline-grid; }
+/* top, not transform: a transform keeps the words on their own GPU layer for the whole loop, which
+   the scaled hero draws as a resampled bitmap — soft text. top animates as plain text. */
+.hv-city > span { grid-area: 1 / 1; position: relative; top: 110%; }
+.hv-city > span:nth-child(1) { top: 0; animation: hv-city-out 400ms var(--ease-out) 3500ms forwards, hv-city 9s 9500ms infinite; }
+.hv-city > span:nth-child(2) { animation: hv-city 9s 3500ms infinite; }
+.hv-city > span:nth-child(3) { animation: hv-city 9s 6500ms infinite; }
+@keyframes hv-city {
+  0% { top: 110%; animation-timing-function: var(--ease-out); }
+  4.44%, 33.33% { top: 0; animation-timing-function: var(--ease-out); }
+  37.78%, 100% { top: -110%; }
+}
+@keyframes hv-city-out { to { top: -110%; } }
+
 .hv-body {
   display: flex; flex-direction: column; gap: calc(20 * var(--px));
   font-family: var(--mono); font-weight: 400;
@@ -200,7 +217,7 @@ html[data-intro='fade'] .hv-clients { display: block; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hv-construction, .hv-li, .hv-logo-slot, .hv-more, .hv-clients-title, .hvc-grid, .hvc-cell { animation: none; }
+  .hv-construction, .hv-li, .hv-logo-slot, .hv-more, .hv-clients-title, .hvc-grid, .hvc-cell, .hv-city > span { animation: none; }
 }
 
 /* Clients: the full set (ORDER) everywhere, or the client's 12 (PICKED) where html[data-clients='picked']

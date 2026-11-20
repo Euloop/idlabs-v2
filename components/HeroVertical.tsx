@@ -11,6 +11,10 @@ import HtmlMark from './HtmlMark';
    switch and Section 2 work unchanged. Positions are Figma px inside the construction (× --px). */
 
 const LINES = ['Identity Labs is a', 'consulting firm based', 'in London.'];
+/* The last line's city turns over, London → Bangalore → San Francisco (client, 2026-11-20); the
+   offices in the footer. CSS-only loop (hero-vertical.css .hv-city); reduced motion keeps London. */
+const CITIES = ['London.', 'Bangalore.', 'San Francisco.'];
+const HEADLINE = 'Identity Labs is a consulting firm based in London, Bangalore and San Francisco.';
 
 type Part = { src: string; inset: string };
 type Masked = Part & { box: string; mx: number; my: number };
@@ -211,10 +215,14 @@ export default function HeroVertical() {
               <img className="hv-construction" src={src('construction.svg')} width={577.663} height={980.663} alt="" aria-hidden="true" />
 
               <div className="hv-copy">
-                <h1 className="hv-headline" aria-label={LINES.join(' ')}>
+                <h1 className="hv-headline" aria-label={HEADLINE}>
                   {LINES.map((l, i) => (
                     <span className="hv-line" key={l} aria-hidden="true">
-                      <span className="hv-li" style={delay(380 + i * 90)}>{l}</span>
+                      <span className="hv-li" style={delay(380 + i * 90)}>
+                        {i < LINES.length - 1 ? l : (
+                          <>in <span className="hv-city">{CITIES.map((c) => <span key={c}>{c}</span>)}</span></>
+                        )}
+                      </span>
                     </span>
                   ))}
                 </h1>
