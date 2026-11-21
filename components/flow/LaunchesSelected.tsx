@@ -84,7 +84,6 @@ export default function LaunchesAll() {
       <header className="lsel-head">
         <p className="lsel-label">Launches · {pad(ALL.length)}</p>
         <h1 id="lc-title" className="lsel-title">All launches</h1>
-        <p className="lsel-body">2B+ views in all. Each one links to its post on X.</p>
       </header>
       <ol className="lsel-grid">
         {ALL.map((l, i) => <Card key={slug(l)} l={l} n={i + 1} />)}

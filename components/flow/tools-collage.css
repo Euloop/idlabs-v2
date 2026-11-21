@@ -453,3 +453,37 @@ section.tcl[data-numbers] .tcl-card {
 /* sequence: the frame fades in and out with the scroll (with the card, going back up) rather than opening
    from its centre */
 section.tcl[data-seq] .rt { clip-path: none; opacity: var(--a-bg, 1); }
+/* "Try it →" under each tool's copy (Motion): the note's type, ink colour, underlined on hover */
+.tcl-mnotes .tcl-try { display: inline-block; justify-self: start; color: var(--c-ink, #1c1b19); text-decoration: none; pointer-events: auto; }
+.tcl-mnotes .tcl-try:hover, .tcl-mnotes .tcl-try:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
+/* The client's final copy (2026-11-22) runs longer than the notes it replaced: on desktop the column's text
+   scales with the card (12px at full size, down to 10px), and the tool names sit at the card's foot instead
+   of a fixed top, so the copy and the names never meet */
+@media (min-width: 720px) {
+  section.tcl[data-motion] .tcl-mnotes, section.tcl[data-motion] .tcl-mnotes .tcl-lead, section.tcl[data-motion] .tcl-mnotes .tcl-note {
+    font-size: clamp(10px, calc(12 * var(--u)), 12px);
+  }
+  section.tcl[data-motion] .tcl-mnotes { gap: calc(14 * var(--u)); top: max(calc(82 * var(--u)), calc(40 * var(--u) + 44px)); } /* the title is 24px at every size: the copy stays clear of it */
+  section.tcl[data-motion] .tcl-list { top: auto; bottom: calc(22 * var(--u)); gap: calc(10 * var(--u)); }
+}
+/* …and on smaller desktops (under 1200px, where the card is under ~1000px wide) the walkthrough gives the
+   column more width: it starts further right and is a little smaller (same 720 : 370 shape) */
+@media (min-width: 720px) and (max-width: 1199px) {
+  section.tcl[data-motion] .tcl-shot.tcl-motion {
+    left: calc(372 * var(--u)) !important; top: calc(82 * var(--u)) !important;
+    width: calc(576 * var(--u)) !important; height: calc(296 * var(--u)) !important;
+  }
+  section.tcl[data-motion] .tcl-mnotes, section.tcl[data-motion] .tcl-list { width: calc(300 * var(--u)); }
+}
+/* (under 960px the card is narrower still: the column a little wider again) */
+@media (min-width: 720px) and (max-width: 959px) {
+  section.tcl[data-motion] .tcl-shot.tcl-motion {
+    left: calc(400 * var(--u)) !important; width: calc(548 * var(--u)) !important; height: calc(282 * var(--u)) !important;
+  }
+  section.tcl[data-motion] .tcl-mnotes, section.tcl[data-motion] .tcl-list { width: calc(330 * var(--u)); }
+  /* and the card runs down to the box's foot (594u − its 63.5u top): room for the copy above the names */
+  section.tcl[data-motion][data-research] .tcl-card { height: calc(528 * var(--u)); }
+}
+@media (min-width: 720px) and (max-width: 799px) {
+  section.tcl[data-motion] .tcl-mnotes, section.tcl[data-motion] .tcl-mnotes .tcl-lead, section.tcl[data-motion] .tcl-mnotes .tcl-note { font-size: 9.5px; }
+}

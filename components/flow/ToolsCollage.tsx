@@ -45,7 +45,8 @@ type Tool = {
   noteA: string; noteB: string;
   /* row: b | a side by side (b on the left); col: a over b */
   layout: 'row' | 'col';
-  /* Motion: the notes on the walkthrough's leaders (what the loop shows; two lines at most) */
+  /* Motion: the text under the lead — the client's final copy for each tool, word for word (2026-11-22; do
+     not edit). mB may be empty (one paragraph) */
   mA: string; mB: string;
   /* Showcase: the caption under the window, the lead and the walkthrough in one short text (two lines) */
   cap: string;
@@ -63,8 +64,8 @@ export const TOOLS: Tool[] = [
     noteA: 'The classifier takes a post’s engagement rate in its first 15 minutes as a baseline and measures its performance after against it.',
     noteB: 'This lets us predict how far a post will go within 30 minutes.',
     layout: 'row',
-    mA: 'Every post is measured against its own first 15 minutes. Most sink below that baseline.',
-    mB: 'The few that climb are called viral or emerging within 30 minutes.',
+    mA: 'The classifier takes a post’s engagement rate in its first 15 minutes as a baseline and measures its performance after against it.',
+    mB: 'This lets us predict how far a post will go within 30 minutes.',
     cap: 'A post is only fast or slow compared to itself. Each is measured against its own first 15 minutes; the few that climb are called viral within 30 minutes.',
   },
   {
@@ -76,8 +77,8 @@ export const TOOLS: Tool[] = [
     noteA: 'Weighted Engagement scores each interaction by who performed it -their influence, their cluster, the kind of action.',
     noteB: 'Weights every engagement by the engager’s influence',
     layout: 'col',
-    mA: 'Each interaction is scored by who made it: their influence, their cluster, the action.',
-    mB: 'The score shows which people, and which actions, it came from.',
+    mA: 'Weighted Engagement scores each interaction by who performed it -their influence, their cluster, the kind of action.',
+    mB: '',
     cap: '100 likes from strangers are not worth one quote from someone important. Every interaction is scored by who made it: influence, cluster, action.',
   },
   {
@@ -89,8 +90,8 @@ export const TOOLS: Tool[] = [
     noteA: 'A steep curve in the first 6 hours is the strongest predictor of a breakout.',
     noteB: 'Combined with the Classifier, it tells us how a launch/post will perform within its first 30 minutes.',
     layout: 'col',
-    mA: 'Views are sampled every 30 seconds, so the curve shows acceleration as it happens.',
-    mB: 'At +42m this post runs ×11.5 a typical one: a projected 31h shelf life.',
+    mA: 'A steep curve in the first 6 hours is the strongest predictor of a breakout.',
+    mB: 'Combined with the Classifier, it tells us how a launch/post will perform within its first 30 minutes.',
     cap: 'Tracks how fast engagement accelerates in real time. Views are sampled every 30 seconds: at +42m this post runs ×11.5 a typical one.',
   },
   {
@@ -102,8 +103,8 @@ export const TOOLS: Tool[] = [
     noteA: 'When a post goes out, we can see which clusters it reached',
     noteB: 'and how much of each it covered.',
     layout: 'col',
-    mA: 'We see which clusters a post reached, and how much of each it covered.',
-    mB: 'Here one quote at +5h carried a post out of Founders into five new clusters.',
+    mA: 'When a post goes out, we can see which clusters it reached and how much of each it covered.',
+    mB: '',
     cap: 'Measures how deep a post travels within a niche: which clusters it reached, and how much of each. One quote at +5h carried this one into five more.',
   },
 ];
@@ -537,7 +538,11 @@ export default function ToolsCollage({ theme = 'white', motion = false, scroll =
                 <div className="tcl-mnotes">
                   <p key={`lead-${idx}`} className="tcl-lead tcl-in1">{t.lead}</p>
                   <p className="tcl-note tcl-note-a" style={{ '--i': 0 } as CSSProperties}>{noteA}</p>
-                  <p className="tcl-note tcl-note-b" style={{ '--i': 1 } as CSSProperties}>{noteB}</p>
+                  {noteB && <p className="tcl-note tcl-note-b" style={{ '--i': 1 } as CSSProperties}>{noteB}</p>}
+                  {/* the client's "Try it →" after each tool's copy: the tool itself, in a new tab */}
+                  <a className="tcl-note tcl-try" href={t.href} target="_blank" rel="noopener noreferrer" style={{ '--i': 2 } as CSSProperties}>
+                    Try it →<span className="sr-only"> {t.name} (opens in a new tab)</span>
+                  </a>
                 </div>
               ) : (<>
               <svg className="tcl-lines" viewBox="0 0 972 467" preserveAspectRatio="none" aria-hidden="true">
