@@ -295,5 +295,3 @@ html[data-footer]:not([data-over-footer]):has(.fff-low):not(:has(main.lg)) .chro
   .chrome[data-away] .s2-header { translate: 0 -100%; opacity: 0; pointer-events: none; }
   .chrome[data-away] .s2-header * { pointer-events: none !important; }
 }
-/* SiteChrome's probe (phones): for one hit test, everything answers it, pointer-events: none layers too */
-html[data-probe] body * { pointer-events: auto !important; }
