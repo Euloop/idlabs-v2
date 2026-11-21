@@ -59,7 +59,8 @@ export default function Home() {
       {/* the start loader, "Video first" (2026-11-16): the reel from the first moment (its first half
           shortened), the golden half's spiral, the Fibonacci diagram drawn faint behind it all, then the logo
           drawn in the frame, onto the clean hero; before the hero, so it covers it from first paint */}
-      <StartLoader fixed video />
+      {/* no caption and no Fibonacci lines behind it (client feedback 2026-11-21) */}
+      <StartLoader fixed video caption={false} fib={false} />
       <HeroVertical />
       <HeroLight />
       <SectionTwo noOutro compact />

@@ -18,15 +18,17 @@ export default function PhoneSettle() {
     let timer = 0, raf = 0, gliding = false;
 
     const stopGlide = () => { if (raf) cancelAnimationFrame(raf); raf = 0; gliding = false; };
-    const glide = (to: number) => {
+    const glide = (to: number, ms?: number) => {
       const from = window.scrollY, d = to - from;
       if (Math.abs(d) < 2) return;
-      const dur = Math.min(900, Math.max(380, 320 + Math.abs(d) * 0.22));
+      // the stretch's own length (scaled by how much of it is left), or a quick glide
+      const dur = ms ? Math.max(380, ms * Math.min(1, Math.abs(d) / 900)) : Math.min(900, Math.max(380, 320 + Math.abs(d) * 0.22));
       const t0 = performance.now();
       gliding = true;
       const step = (now: number) => {
         const t = Math.min(1, (now - t0) / dur);
-        const e = 1 - Math.pow(1 - t, 3); // ease out
+        // ease out; a long glide eases in and out, so it reads as one move
+        const e = ms ? (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2) : 1 - Math.pow(1 - t, 3);
         window.scrollTo(0, from + d * e);
         if (t < 1) raf = requestAnimationFrame(step);
         else { raf = 0; gliding = false; lastY = window.scrollY; }
@@ -47,7 +49,7 @@ export default function PhoneSettle() {
       const swipe = y - startY;
       const dir = Math.abs(swipe) > 4 ? Math.sign(swipe) : lastDir;
       const fwd = dir > 0 ? true : dir < 0 ? false : y - z[0] > z[1] - y;
-      glide(fwd ? z[1] : z[0]);
+      glide(fwd ? z[1] : z[0], z[2]);
     };
     const schedule = () => { clearTimeout(timer); timer = window.setTimeout(settle, QUIET); };
 

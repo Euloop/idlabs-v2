@@ -506,7 +506,11 @@ const ResearchTerminal = forwardRef<ResearchTerminalHandle, { scatter?: boolean;
     /* While the sequence plays the page holds still: scrolling down plays it faster instead of moving on
        (so the card comes up with the tools at their start, not already scrolled past); scrolling up lets
        the page go. */
-    const playing = () => sequence && auto && playFrom >= 0 && !done;
+    /* Phones (≤559px, client feedback 2026-11-21): no research behind the tools — the card shows at once, and
+       nothing holds the page (mobile.css hides the panes) */
+    const phoneMq = window.matchMedia('(max-width: 559px)');
+    const off = () => sequence && auto && phoneMq.matches;
+    const playing = () => sequence && auto && !off() && playFrom >= 0 && !done;
     const hold = () => { if (lockY < 0) { lockY = window.scrollY; lenis()?.stop(); } };
     let graceT = 0;
     // let the page go; `after` ms later for the smooth scroll (Lenis takes the wheel before this does, so the
@@ -558,7 +562,11 @@ const ResearchTerminal = forwardRef<ResearchTerminalHandle, { scatter?: boolean;
       // sequence: the scroll (p) brings the first piece in; once it is all the way (p 1) the clock runs the
       // rest; scrolling back before that rewinds it to the scroll again
       let P = reduce ? 1 : p.current;
-      if (sequence && auto && !reduce) {
+      if (off()) {
+        P = 1; release();
+        section?.setAttribute('data-seq-done', '');
+        return; // hidden: nothing to draw, no next frame (visibility restarts it)
+      } else if (sequence && auto && !reduce) {
         if (done) {
           // played: held as it ended, however the scroll goes back, until it leaves above the start (reset)
           P = 1;

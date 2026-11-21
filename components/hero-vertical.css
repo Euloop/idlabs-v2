@@ -181,6 +181,25 @@ html[data-intro='fade'] .hv-clients { display: block; }
   animation: rise 700ms var(--ease-out) 60ms both;
 }
 .hvc-cell { display: flex; align-items: center; justify-content: center; animation: rise 700ms var(--ease-out) var(--d, 0ms) both; }
+/* The client's list's last two cells turn over (HeroVertical ROT_A, ROT_B; feedback 2026-11-21): five
+   logos stacked in each, one showing at a time, 3s each, a crossfade with a small lift between them. The
+   first shows from the start (as .hv-city), the rest come in turn from --rot-d, and the loop runs on; the
+   second cell (lane b) a step and a half behind the first, so the two never change together. The keyframes
+   assume five per cell (15s = 5 × 3s; 20% each). */
+.hvc-rot { display: grid; place-items: center; --rot-d: 3s; }
+.hvc-rot[data-lane='b'] { --rot-d: 4.5s; }
+.hvc-rot-item { grid-area: 1 / 1; display: flex; opacity: 0; }
+.hvc-rot-item:first-child {
+  opacity: 1;
+  animation: hvc-rot-out 360ms var(--ease-out) var(--rot-d) forwards, hvc-rot 15s calc(var(--rot-d) + 12s) infinite;
+}
+.hvc-rot-item:not(:first-child) { animation: hvc-rot 15s calc(var(--rot-d) + (var(--k) - 1) * 3s) infinite; }
+@keyframes hvc-rot {
+  0% { opacity: 0; translate: 0 6px; animation-timing-function: var(--ease-out); }
+  2.4%, 20% { opacity: 1; translate: 0 0; animation-timing-function: var(--ease-out); }
+  22.4%, 100% { opacity: 0; translate: 0 -6px; }
+}
+@keyframes hvc-rot-out { to { opacity: 0; translate: 0 -6px; } }
 @media (max-width: 639px) {
   .hvc-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 40px 20px; row-gap: 44px; }
 }
@@ -219,7 +238,7 @@ html[data-intro='fade'] .hv-clients { display: block; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hv-construction, .hv-li, .hv-logo-slot, .hv-more, .hv-clients-title, .hvc-grid, .hvc-cell, .hv-city > span { animation: none; }
+  .hv-construction, .hv-li, .hv-logo-slot, .hv-more, .hv-clients-title, .hvc-grid, .hvc-cell, .hv-city > span, .hvc-rot-item { animation: none; }
 }
 
 /* Clients: the full set (ORDER) everywhere, or the client's 12 (PICKED) where html[data-clients='picked']

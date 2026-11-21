@@ -100,13 +100,21 @@ const ORDER = [
 ];
 const BY_NAME = new Map([...DESIGN, ...MORE].map((l) => [l.name, l]));
 const PLACED = ORDER.map((name, i) => ({ l: BY_NAME.get(name)!, cx: COLS[i % 4], cy: ROWS[Math.floor(i / 4)] }));
-/* The client's list (2026-11-14): these 12, in this order, in three rows. Shown in place of ORDER when
-   html[data-clients='picked'] (/home-4's Clients tab, which also hides Our Network); other pages keep ORDER. */
-const PICKED = [
-  'Deel', 'Matic Robots', 'Andreessen Horowitz', 'Sequoia',
-  'Lovable', 'Kleiner Perkins', 'Lightspeed', 'Wispr Flow',
-  'Gamma', 'Airwallex', 'Pocket FM', 'Fish Audio',
+/* The client's list (2026-11-21 feedback): Andreessen Horowitz and Lovable lead, Pocket FM out. Ten that
+   stay, then two cells that keep turning over through the rest of the launch reel's clients (ROT_A, ROT_B),
+   so it reads as more than twelve. Shown in place of ORDER when html[data-clients='picked'] (/home-4's
+   Clients tab, which also hides Our Network); other pages keep ORDER. OpenAI and SpaceX stay out (pulled
+   2026-11-17), as does Pocket FM. */
+const PICKED_STILL = [
+  'Andreessen Horowitz', 'Lovable', 'Sequoia', 'Kleiner Perkins',
+  'Lightspeed', 'Wispr Flow', 'Gamma', 'Airwallex',
+  'Deel', 'Matic Robots',
 ];
+// five each: the turn-over keyframes (hero-vertical.css .hvc-rot) assume five per cell
+const ROT_A = ['Fish Audio', 'Cartesia', 'Triple Whale', 'Lindy', 'Freehand'];
+const ROT_B = ['Cursor', 'PolyAI', 'Superblocks', 'Enterpret', 'PlayerZero'];
+const PICKED = [...PICKED_STILL, ROT_A[0], ROT_B[0]];
+const ROTATING = new Map([[ROT_A[0], ROT_A], [ROT_B[0], ROT_B]]);
 const ROWS3 = Array.from({ length: 3 }, (_, r) => 660 + ((979.999 - 660) * (r + 0.5)) / 3);
 const PLACED_PICKED = PICKED.map((name, i) => ({ l: BY_NAME.get(name)!, cx: COLS[i % 4], cy: ROWS3[Math.floor(i / 4)] }));
 
@@ -176,9 +184,20 @@ function HeroClients({ names, set }: { names: string[]; set: 'all' | 'picked' })
       <ul className="hvc-grid" aria-label="Clients">
         {names.map((name, i) => {
           const l = BY_NAME.get(name)!;
+          const rot = set === 'picked' ? ROTATING.get(name) : undefined;
           return (
             <li className="hvc-cell" key={l.name} style={delay(i * 40)}>
-              <LogoVisual l={l} />
+              {rot ? (
+                // the two turning cells: their logos stacked, one showing at a time (.hvc-rot); the
+                // second cell runs half a step behind the first, so they never change together
+                <span className="hvc-rot" data-lane={rot === ROT_A ? 'a' : 'b'}>
+                  {rot.map((n, k) => (
+                    <span className="hvc-rot-item" key={n} style={vars({ '--k': k })} aria-hidden={k > 0 || undefined}>
+                      <LogoVisual l={BY_NAME.get(n)!} />
+                    </span>
+                  ))}
+                </span>
+              ) : <LogoVisual l={l} />}
             </li>
           );
         })}

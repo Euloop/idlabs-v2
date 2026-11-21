@@ -215,7 +215,9 @@ const BOOT = (fixed: boolean, choice: boolean, video: boolean) => `(function(){v
   fixed ? `d.dataset.intro='fade';d.dataset.slEnd='reel';${video ? "d.dataset.slFlow='video';" : choice ? "if(L!=='new'&&L!=='first')d.dataset.slFlow='video';else d.dataset.slOpen='logo';if(L==='videobg')d.dataset.fibHero='';" : "d.dataset.slOpen='logo';"}` : "d.dataset.intro=q==='fade'?'fade':'zoom';"}${
   choice ? "d.dataset.slReel=L==='first'?'first':'full';" : ''}try{if(sessionStorage.getItem('il-skip-loader')){sessionStorage.removeItem('il-skip-loader');return}}catch(e){}if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;d.dataset.loader='run';try{history.scrollRestoration='manual'}catch(e){}scrollTo(0,0)})()`;
 
-export default function StartLoader({ fixed = false, choice = false, video = false }: { fixed?: boolean; choice?: boolean; video?: boolean }) {
+// `caption` (the hero's line under the frame) and `fib` (the Fibonacci diagram behind Video first): both off on /
+// since the 2026-11-21 feedback; /home-4 keeps them
+export default function StartLoader({ fixed = false, choice = false, video = false, caption = true, fib = true }: { fixed?: boolean; choice?: boolean; video?: boolean; caption?: boolean; fib?: boolean }) {
   // the Video first flow's parts (the shortened first half, the Fibonacci background) are rendered for it
   const v = choice || video;
   const reel = fixed ? REEL_HERO : REEL;
@@ -242,7 +244,7 @@ export default function StartLoader({ fixed = false, choice = false, video = fal
       {/* its script sets the halves' offsets (style) before React hydrates */}
       <div className="sl" aria-hidden="true" suppressHydrationWarning>
         {/* ?loader=video: the Fibonacci diagram, edge to edge, faint (start-loader.css; hidden otherwise) */}
-        {v && <FibLines className="sl-fib" fit="slice" />}
+        {v && fib && <FibLines className="sl-fib" fit="slice" />}
         {/* Fade: the words; Zoom: the logo in two halves that overlap where the italic L tucks under the y */}
         <p className="sl-side sl-word sl-l">Engineering</p>
         <p className="sl-side sl-word sl-r">Virality</p>
@@ -281,10 +283,12 @@ export default function StartLoader({ fixed = false, choice = false, video = fal
           </span>
           <img className="sl-g-bold" src="/assets/loader/golden-bold.svg" width={124} height={210} alt="" />
         </div>
-        <p className="sl-caption">
-          The largest tech companies on earth rely on our algorithm research, analytics software, and deployed services
-          to reach a billion people.
-        </p>
+        {caption && (
+          <p className="sl-caption">
+            The largest tech companies on earth rely on our algorithm research, analytics software, and deployed services
+            to reach a billion people.
+          </p>
+        )}
       </div>
       <script dangerouslySetInnerHTML={{ __html: READY }} />
       <StartLoaderRun frames={reel.length + (fixed ? GOLDEN.length : 0)} golden={fixed ? GOLDEN.length : 0} videoPlain={v && fixed ? VIDEO_KEEP.length : undefined} />

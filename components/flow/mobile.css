@@ -77,3 +77,26 @@
   .sv.svc, .sv.svc .sv-pin, html[data-s2] body .sv.svc .sv-frame { height: auto; min-height: 0; }
   html[data-s2] body .sv.svc .sv-frame { padding-bottom: 56px; }
 }
+
+/* ───────── Client feedback, 2026-11-21 (phones) ───────── */
+@media (max-width: 559px) {
+  /* The analytical tools: no research behind the card (ResearchTerminal skips its sequence here and the page
+     is never held); the card on the plain page, in a box only as tall as it is (the box kept most of a
+     screen for the research, which left white above and below the card) */
+  section.tcl .tcl-box .rt, section.tcl .tcl-glass { display: none !important; }
+  section.tcl .tcl-box, section.tcl[data-research] .tcl-box { min-height: 0; padding: 0; }
+  section.tcl .tcl-box::before, section.tcl[data-research] .tcl-box::before { display: none; }
+  section.tcl .tcl-card, section.tcl[data-seq-done] .tcl-card, section.tcl[data-research] .tcl-card { background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; }
+}
+@media (max-width: 559px) {
+  /* …and its walkthrough in portrait (tool-motion/shared.tsx PORTRAIT: the panels laid out down a 400 × 600
+     canvas) in place of the 720 × 370 landscape */
+  section.tcl[data-motion] .tcl-shot.tcl-motion { aspect-ratio: 400 / 600; }
+}
+@media (max-width: 559px) {
+  /* Less white on the way in (feedback: "too much empty space in portrait mode"): the hero's copy starts
+     closer under the header (136px of padding left ~110px of white between the wordmark and the headline) */
+  .hero .hv-copy { padding-top: 88px; }
+  /* the tools section's frame: less padding round the card now that the box is only the card's height */
+  section.tcl .tcl-frame { padding-block: 48px 32px; }
+}

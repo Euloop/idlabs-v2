@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { PICTURED, RATIO_OF, slug, type Launch } from './LaunchesCloud';
 import LaunchesReel, { REEL, type ReelEnd } from './LaunchesReel';
 import { LAUNCH_VIDEO } from './launch-videos';
+import { addSettleZones } from './settle';
 import './launches-float.css';
 
 /* The launches as a loading teaser that scatters into a floating field (/home-2, Launches "Float"),
@@ -396,7 +397,16 @@ export default function LaunchesFloat({ alt = false, card = false, track = false
     const onResize = () => { railsW = measureRails(); if (near) start(); };
     window.addEventListener('resize', onResize);
     frame(performance.now()); // place everything before the first paint
+    /* Phones (flow/settle.ts; client feedback 2026-11-21): one swipe takes it all the way. From the pin's
+       start ("Our trajectory" in the middle) to the reel settled with its controls up (REEL_UI's end), a swipe
+       that stops anywhere in between plays on to the end, as one slow glide (2.4s) so the load, the scatter
+       and the zoom are seen; a swipe up glides back to the start. */
+    const offSettle = addSettleZones(() => {
+      const vh = window.innerHeight, top = root.getBoundingClientRect().top + window.scrollY;
+      return [[top, top + REEL_UI[1] * vh, 2400]];
+    });
     return () => {
+      offSettle();
       io.disconnect(); cancelAnimationFrame(raf);
       if (overDark) document.documentElement.removeAttribute('data-over-dark');
       window.removeEventListener('pointermove', onMove); window.removeEventListener('resize', onResize);

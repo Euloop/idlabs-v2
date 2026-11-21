@@ -116,12 +116,73 @@ export const C = {
 
 const Clip = createContext('');
 
+/* Phones (≤559px, client feedback 2026-11-21: "the visual is in landscape"): each loop drawn on a portrait
+   canvas, PW wide — the same drawing, its panels taken out of the 720 × 370 canvas and laid out one under
+   another (or two side by side), each scaled to the width it gets, so they read larger than the whole
+   landscape canvas shrunk to the phone. A part: [sx, sy, sw, sh] of the landscape canvas → at (dx, dy), dw
+   wide (its height follows). The canvas is PH tall for every tool (the card doesn't jump as the tools turn
+   over); a layout shorter than that sits in its middle. Keyed by the loop's title. */
+export const PW = 400, PH = 600;
+const HEAD = 56; // the title and, under it, the live line
+type Part = [sx: number, sy: number, sw: number, sh: number, dx: number, dy: number, dw: number];
+const PORTRAIT: Record<string, Part[]> = {
+  // the chart, full width; "Right now" and "Calls" side by side under it
+  'Engagement Classifier': [[14, 44, 494, 314, 8, HEAD, 384], [516, 44, 190, 110, 8, HEAD + 252, 188], [516, 162, 190, 196, 204, HEAD + 252, 188]],
+  // the contribution by type across the top; the score beside the score over time; the contributors
+  'Weighted Engagement': [[240, 44, 466, 106, 8, HEAD, 384], [14, 44, 218, 106, 8, HEAD + 93, 150], [14, 158, 318, 200, 164, HEAD + 93, 228], [340, 158, 366, 200, 8, HEAD + 242, 384]],
+  // the post; the chart cropped to the post's own run (to +30m: the projection after it left out); the three numbers
+  'Post Velocity': [[14, 44, 692, 34, 8, HEAD, 384], [14, 84, 560, 200, 8, HEAD + 25, 384], [14, 292, 226, 66, 8, HEAD + 170, 188], [248, 292, 226, 66, 204, HEAD + 170, 188], [482, 292, 224, 66, 8, HEAD + 231, 188]],
+  // the post and the insight, then where the views landed in two halves: the big three, then the rest
+  'Cluster Penetration': [[14, 44, 692, 70, 8, HEAD, 384], [14, 120, 340, 240, 50, HEAD + 45, 300], [340, 120, 366, 240, 8, HEAD + 265, 384]],
+};
+const partsH = (ps: Part[]) => Math.max(...ps.map(([, , sw, sh, , dy, dw]) => dy + (dw * sh) / sw)) + 8;
+
+function usePhone() {
+  const [phone, setPhone] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 559px)');
+    const on = () => setPhone(mq.matches);
+    on();
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+  return phone;
+}
+
 export function Frame({ label, title, meta, children }: { label: string; title: string; meta: string; children: ReactNode }) {
   const id = useId().replace(/[^a-zA-Z0-9]/g, '');
   // drawn in the browser only: the server's and the browser's floating point differ in the last
   // digits of a few computed positions, which React would report as a hydration mismatch
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+  const phone = usePhone();
+  const parts = phone ? PORTRAIT[title] : undefined;
+  if (parts) {
+    const h = partsH(parts), top = (PH - h) / 2;
+    return (
+      <svg className="tm tm-portrait" viewBox={`0 ${-top} ${PW} ${PH}`} role="img" aria-label={label}>
+        <defs>
+          <clipPath id={`${id}c`} clipPathUnits="objectBoundingBox"><circle cx=".5" cy=".5" r=".5" /></clipPath>
+        </defs>
+        <rect y={-top} width={PW} height={PH} fill={C.page} />
+        <text x={16} y={26} className="tm-title">{title}</text>
+        <text x={16} y={42} className="tm-m" fontSize={8.5} fill={C.soft}>
+          <tspan fill={C.green}>● LIVE</tspan>
+          <tspan fill={C.faint}>{'  |  '}</tspan>
+          {meta}
+        </text>
+        {mounted && (
+          <Clip.Provider value={`url(#${id}c)`}>
+            {parts.map(([sx, sy, sw, sh, dx, dy, dw], i) => (
+              <svg key={i} x={dx} y={dy} width={dw} height={(dw * sh) / sw} viewBox={`${sx} ${sy} ${sw} ${sh}`} overflow="hidden">
+                {children}
+              </svg>
+            ))}
+          </Clip.Provider>
+        )}
+      </svg>
+    );
+  }
   return (
     <svg className="tm" viewBox={`0 0 ${W} ${H}`} role="img" aria-label={label}>
       <defs>
