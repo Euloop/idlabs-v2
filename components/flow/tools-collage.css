@@ -110,6 +110,9 @@ section.tcl[data-theme-tc='dark'] .tcl-name:hover { color: #fff; opacity: .8; }
   position: absolute; left: calc(42 * var(--u)); top: calc(40 * var(--u)); margin: 0;
   font-weight: 400; font-size: 24px; line-height: normal; color: var(--c-title); white-space: nowrap;
 }
+/* as the other sections' headings ("Our services", services-cards.css .svc-label): mono caps, 20px, no "/"
+   (client, 2026-11-23) */
+section.tcl .tcl-title { font-family: var(--mono); font-size: 20px; line-height: 1.3; letter-spacing: 0.02em; text-transform: uppercase; }
 .tcl-lead {
   position: absolute; left: calc(42 * var(--u)); top: calc(86 * var(--u)); width: calc(230 * var(--u)); margin: 0;
   font-size: 12px; line-height: 1.5; color: var(--c-lead); text-wrap: pretty;

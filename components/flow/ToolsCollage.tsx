@@ -483,7 +483,7 @@ export default function ToolsCollage({ theme = 'white', motion = false, scroll =
             {/* the glass: the same collage, blurred, seen through the card (a copy rather than
                 backdrop-filter, which drops the blended scraps in some browsers) */}
             {!research && !dither && <Scraps blur />}
-            <h2 className="tcl-title tcl-in0">/Analytical Tools</h2>
+            <h2 className="tcl-title tcl-in0">Analytical Tools</h2>
             {!motion && <p key={`lead-${idx}`} className="tcl-lead tcl-in1">{t.lead}</p>}
 
             <ul className="tcl-list tcl-in2" role="tablist" aria-label="Tools">
@@ -536,9 +536,8 @@ export default function ToolsCollage({ theme = 'white', motion = false, scroll =
               {motion ? (
                 // Motion: the lead and the notes run as one column on the left, no leaders
                 <div className="tcl-mnotes">
-                  <p key={`lead-${idx}`} className="tcl-lead tcl-in1">{t.lead}</p>
-                  <p className="tcl-note tcl-note-a" style={{ '--i': 0 } as CSSProperties}>{noteA}</p>
-                  {noteB && <p className="tcl-note tcl-note-b" style={{ '--i': 1 } as CSSProperties}>{noteB}</p>}
+                  {/* the lead and the notes as one paragraph (client, 2026-11-23: it read broken into 2–3 lines) */}
+                  <p key={`lead-${idx}`} className="tcl-lead tcl-in1">{[t.lead, noteA, noteB].filter(Boolean).join(' ')}</p>
                   {/* the client's "Try it →" after each tool's copy: the tool itself, in a new tab */}
                   <a className="tcl-note tcl-try" href={t.href} target="_blank" rel="noopener noreferrer" style={{ '--i': 2 } as CSSProperties}>
                     Try it →<span className="sr-only"> {t.name} (opens in a new tab)</span>

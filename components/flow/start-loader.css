@@ -138,6 +138,10 @@ html[data-loader='zoom'] .sl-golden { opacity: 0.12; }
 html[data-loader='zoom'] .sl-g-thin { opacity: 1; }
 html[data-loader='zoom'] .sl-g-bold { opacity: 0; }
 
+/* the Fibonacci diagram behind the loader (.sl-fib, StartLoader <FibLines>) on desktop only (client,
+   2026-11-23): below 960px, where the hero has no construction either (hero-vertical.css), it is left out */
+@media (max-width: 959px) { .sl-fib { display: none !important; } }
+
 /* narrow screens: the side words sit above the slot, at the gutters */
 @media (max-width: 640px) {
   .sl-side { top: calc(50% - 145px); translate: 0 -50%; }

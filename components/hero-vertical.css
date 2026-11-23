@@ -275,3 +275,13 @@ html[data-intro='fade'] .hv-main { margin-top: max(20px, calc(100svh - 639px - 3
 html[data-intro='fade'] .hv-golden { gap: var(--hvc-sp); }
 html[data-intro='fade'] .hv-clients-title { margin-bottom: 16px; }
 html[data-intro='fade'] .hvc-grid { padding-block: var(--hvc-sp); row-gap: var(--hvc-sp); }
+
+/* Clients: a logo darkens under the pointer (client, 2026-11-23) — the grey marks to near-ink, eased in and
+   out. Pointer devices only, so a tap on a phone never leaves one stuck dark. */
+@media (hover: hover) and (pointer: fine) {
+  .hvc-cell, .hv-logo-slot, .hv-more { transition: filter 260ms var(--ease-out); }
+  .hvc-cell:hover, .hv-logo-slot:hover, .hv-more:hover { filter: brightness(0.35); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hvc-cell, .hv-logo-slot, .hv-more { transition: none; }
+}
