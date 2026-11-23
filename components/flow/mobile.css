@@ -137,18 +137,20 @@
     margin-inline: calc(50% - 50vw); width: 100vw; box-sizing: border-box;
     padding-block: 28px 24px; display: block; place-items: normal; /* centred, the row would shrink to its content and never scroll */
   }
+  /* each paper centred on the screen under the centred heading (client, 2026-11-23: it sat 20px from the left
+     edge), the next one peeking in at the side; snapping, the second lands centred too. The paper as seen (its
+     back and front pages) spans 297 of the box's 310.25 units, from the box's left: that is what is centred. */
   .s3-band .s3-papers {
+    --k: min(calc((100vw - 92px) / 310.25), 1.2px);
+    --edge: calc((100vw - 297 * var(--k)) / 2);
     flex-direction: row; gap: 16px; transform: none;
     overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory;
-    padding-inline: var(--pad); scroll-padding-inline: var(--pad); scrollbar-width: none;
+    padding-inline: var(--edge); scroll-padding-inline: var(--edge); scrollbar-width: none;
     pointer-events: auto; -webkit-overflow-scrolling: touch;
   }
   .s3-band .s3-papers::-webkit-scrollbar { display: none; }
-  /* each paper: the screen less 32px on its left and room for the next one to show on its right */
-  .s3-band .pp {
-    --k: min(calc((100vw - 92px) / 310.25), 1.2px);
-    flex: none; height: auto; scroll-snap-align: start;
-  }
+  /* (the paper's own --k, sections.css, is set on .pp itself: restated here so it takes the row's) */
+  .s3-band .pp { --k: min(calc((100vw - 92px) / 310.25), 1.2px); flex: none; height: auto; scroll-snap-align: start; }
   .s3-band .pp-box { height: calc(367 * var(--k)); }
   .s3-band .pp-cap {
     display: flex; flex-direction: column; gap: 6px;
