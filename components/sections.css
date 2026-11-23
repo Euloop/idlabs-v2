@@ -302,7 +302,9 @@ html[data-footer]:not([data-over-footer]):has(.fff-low):not(:has(main.lg)) .chro
     transition: background 400ms ease;
   }
   /* the dark ground: night sections, and a dark hero (pages whose hero is not the light .hv one) */
-  html[data-theme='night'] .chrome-veil, html[data-theme='dark']:not(:has(.hero.hv)) .chrome-veil {
+  /* (html[data-hv] marks the pages with the light .hv hero, HeroVertical.tsx; not :has(.hero.hv) on <html>, which
+     made every style change re-check the whole page: ~4× the style work, Section 2 at ~15fps on phones) */
+  html[data-theme='night'] .chrome-veil, html[data-theme='dark']:not([data-hv]) .chrome-veil {
     background: linear-gradient(to bottom, rgb(42 44 49 / 0.96) 0, rgb(42 44 49 / 0.92) 50px, rgb(42 44 49 / 0) 100%);
   }
   .chrome-veil i { position: absolute; inset: 0; }

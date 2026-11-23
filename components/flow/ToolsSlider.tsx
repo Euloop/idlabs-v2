@@ -81,8 +81,10 @@ export default function ToolsSlider() {
               </a>
               <h3 className="tsl-name">{t.name}</h3>
               <p className="tsl-copy">{[t.lead, t.mA, t.mB].filter(Boolean).join(' ')}</p>
-              <a className="tsl-try" href={t.href} target="_blank" rel="noopener noreferrer">
-                Try it →<span className="sr-only"> {t.name} (opens in a new tab)</span>
+              {/* named by aria-label, not an .sr-only span: absolutely placed, that span escaped the track's clip and
+                  widened the page; containing it (position: relative on the cards) doubled Section 2's frame time */}
+              <a className="tsl-try" href={t.href} target="_blank" rel="noopener noreferrer" aria-label={`Try ${t.name} (opens in a new tab)`}>
+                Try it →
               </a>
             </article>
           );

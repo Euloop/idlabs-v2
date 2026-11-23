@@ -14,17 +14,13 @@
 
   /* the cards: 20px in from the left, 12px apart, the next one peeking ~24px in at the right; snapped */
   .tsl-track {
-    position: relative; display: flex; gap: 12px; padding: 0 20px; scroll-padding-inline: 20px;
+    display: flex; gap: 12px; padding: 0 20px; scroll-padding-inline: 20px;
     overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory;
     scrollbar-width: none; -webkit-overflow-scrolling: touch;
   }
   .tsl-track::-webkit-scrollbar { display: none; }
   .tsl-slide {
     flex: 0 0 calc(100% - 16px); box-sizing: border-box; scroll-snap-align: start; scroll-snap-stop: always;
-    /* the containing block for what is absolutely placed inside (the links' .sr-only text): without it that
-       text was placed against the page, outside the track's clip, and the off-screen cards' copies made the
-       whole page ~3 screens wide on phones (the loader, fixed full-width, spread over it) */
-    position: relative;
     display: flex; flex-direction: column; align-items: flex-start;
     aspect-ratio: 3 / 4; /* the card is the 3:4 frame (it grows only if a tool's copy ever needs more) */
     background: #fafafa; border: 1px solid #ebebeb; color: #1f1f1f; padding: 16px 0 24px; /* room above the walkthrough's title */
