@@ -104,18 +104,19 @@ const PLACED = ORDER.map((name, i) => ({ l: BY_NAME.get(name)!, cx: COLS[i % 4],
 /* The client's list (2026-11-21 feedback): Andreessen Horowitz and Lovable lead, Pocket FM out. Ten that
    stay, then two cells that keep turning over through the rest of the launch reel's clients (ROT_A, ROT_B),
    so it reads as more than twelve. Shown in place of ORDER when html[data-clients='picked'] (/home-4's
-   Clients tab, which also hides Our Network); other pages keep ORDER. SpaceX stays out (pulled 2026-11-17),
-   as does Pocket FM. 2026-11-23: ordered by size, largest first (valuation, or assets under management for the
+   Clients tab, which also hides Our Network); other pages keep ORDER. Pocket FM stays out. 2026-11-23: ordered by size, largest first (valuation, or assets under management for the
    investment firms): the ten that stay, then the next ten through the two turning cells, alternating so each
    cell opens on the next in line (Wispr Flow, PolyAI). Freehand is out of the turn-over. */
+// 2026-11-23: SpaceX back, first (client); Gamma moves into the turn-over and PlayerZero, the
+// smallest, leaves it, so the grid stays at twelve
 const PICKED_STILL = [
-  'OpenAI', 'Andreessen Horowitz', 'Sequoia', 'Lightspeed',
-  'Cursor', 'Kleiner Perkins', 'Deel', 'Lovable',
-  'Airwallex', 'Gamma',
+  'SpaceX', 'OpenAI', 'Andreessen Horowitz', 'Sequoia',
+  'Lightspeed', 'Cursor', 'Kleiner Perkins', 'Deel',
+  'Lovable', 'Airwallex',
 ];
 // five each: the turn-over keyframes (hero-vertical.css .hvc-rot) assume five per cell
-const ROT_A = ['Wispr Flow', 'Matic Robots', 'Cartesia', 'Superblocks', 'Enterpret'];
-const ROT_B = ['PolyAI', 'Triple Whale', 'Fish Audio', 'Lindy', 'PlayerZero'];
+const ROT_A = ['Gamma', 'PolyAI', 'Triple Whale', 'Fish Audio', 'Lindy'];
+const ROT_B = ['Wispr Flow', 'Matic Robots', 'Cartesia', 'Superblocks', 'Enterpret'];
 const PICKED = [...PICKED_STILL, ROT_A[0], ROT_B[0]];
 const ROTATING = new Map([[ROT_A[0], ROT_A], [ROT_B[0], ROT_B]]);
 const ROWS3 = Array.from({ length: 3 }, (_, r) => 660 + ((979.999 - 660) * (r + 0.5)) / 3);
