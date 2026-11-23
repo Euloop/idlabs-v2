@@ -133,24 +133,47 @@
    screen's width (the next one peeking in at the edge), snapping one at a time; under each, its name and
    "Read the paper ↗" (SectionThree.tsx .pp-cap). The grid band runs edge to edge behind them. */
 @media (max-width: 559px) {
+  /* the section's frame takes no side padding here, so the band is simply its full width (it reached the edges
+     by pulling out over the 20px margin, calc(50% - 50vw): on a client's iPhone the band and the heading came out
+     20px right, the band not touching the left edge, 2026-11-23); the heading keeps the 20px itself */
+  html[data-s2] :where(body) .s3-frame { padding-inline: 0; grid-template-columns: minmax(0, 1fr); }
+  html[data-s2] :where(body) .s3-inner { min-width: 0; }
+  html[data-s2] :where(body) .s3-lead { padding-inline: var(--pad); }
   html[data-s2] :where(body) .s3-band {
-    margin-inline: calc(50% - 50vw); width: 100vw; box-sizing: border-box;
-    padding-block: 28px 24px; display: block; place-items: normal; /* centred, the row would shrink to its content and never scroll */
+    margin-inline: 0; width: 100%; min-width: 0; box-sizing: border-box;
+    padding-block: 64px 56px; display: block; /* grid room round the papers (client, 2026-11-23; was 28/24) */
+    place-items: normal; /* centred, the row would shrink to its content and never scroll */
   }
-  /* each paper centred on the screen under the centred heading (client, 2026-11-23: it sat 20px from the left
-     edge), the next one peeking in at the side; snapping, the second lands centred too. The paper as seen (its
-     back and front pages) spans 297 of the box's 310.25 units, from the box's left: that is what is centred. */
+  /* the grid in whole squares, closed by a line on every edge (client, 2026-11-23: the last row and column were cut
+     short, and the squares bigger: 13px, was ~7): as many whole squares as fit the band each way, centred in it
+     (a few px of white round them, never a cut square). A whole-pixel square, so the lines never drift off the
+     edge as fractional tiles round. Drawn on a layer behind the papers. */
+  html[data-s2] :where(body) .s3-band { --cell: 13px; position: relative; isolation: isolate; background-image: none; }
+  html[data-s2] :where(body) .s3-band::before {
+    content: ''; position: absolute; left: 50%; top: 50%; translate: -50% -50%; z-index: -1; pointer-events: none;
+    width: calc(round(down, 100% - 1px, var(--cell)) + 1px);
+    height: calc(round(down, 100% - 1px, var(--cell)) + 1px);
+    background-image:
+      linear-gradient(to right, var(--grid) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
+    background-size: var(--cell) var(--cell); background-position: 0 0;
+  }
+  /* each paper's cover (the white front page) centred on the screen under the centred heading (client, 2026-11-23:
+     centring the front and back pages together left the cover reading right of centre), the back page showing at
+     its left, the next paper peeking in at the side; snapping, the second lands centred too. The front page runs
+     from 20.49 to 296.59 of the box's 310.25 units, so its middle is 158.54 in; the end padding lets the last box
+     scroll as far (its own right edge, 151.71 past that middle). */
   .s3-band .s3-papers {
-    --k: min(calc((100vw - 92px) / 310.25), 1.2px);
-    --edge: calc((100vw - 297 * var(--k)) / 2);
-    flex-direction: row; gap: 16px; transform: none;
+    --k: min(calc((100vw - 132px) / 310.25), 1.1px);
+    --edge: calc(50% - 158.54 * var(--k)); /* of the band: the screen's width */
+    flex-direction: row; gap: 40px; transform: none; /* more air between the papers (client, 2026-11-23; was 16) */
     overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory;
-    padding-inline: var(--edge); scroll-padding-inline: var(--edge); scrollbar-width: none;
+    padding-inline: var(--edge) calc(50% - 151.71 * var(--k)); scroll-padding-inline: var(--edge); scrollbar-width: none;
     pointer-events: auto; -webkit-overflow-scrolling: touch;
   }
   .s3-band .s3-papers::-webkit-scrollbar { display: none; }
   /* (the paper's own --k, sections.css, is set on .pp itself: restated here so it takes the row's) */
-  .s3-band .pp { --k: min(calc((100vw - 92px) / 310.25), 1.2px); flex: none; height: auto; scroll-snap-align: start; }
+  .s3-band .pp { --k: min(calc((100vw - 132px) / 310.25), 1.1px); flex: none; height: auto; scroll-snap-align: start; }
   .s3-band .pp-box { height: calc(367 * var(--k)); }
   .s3-band .pp-cap {
     display: flex; flex-direction: column; gap: 6px;
