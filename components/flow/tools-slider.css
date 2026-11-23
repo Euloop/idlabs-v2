@@ -3,7 +3,13 @@
 .tsl { display: none; }
 @media (max-width: 559px) {
   section.tcl { display: none !important; }
-  .tsl { display: block; padding: 48px 0 0; }
+  /* scroll-driven (ToolsSlider.tsx): the section is a screen tall plus a stretch of scroll per card after the
+     first, and its content pins to the screen, centred, while the page scrolls through it */
+  .tsl { display: block; height: calc(100svh + (var(--n, 4) - 1) * 70svh); }
+  .tsl-pin {
+    position: sticky; top: 0; height: 100svh; box-sizing: border-box; padding-top: 64px; /* clear of the header */
+    display: flex; flex-direction: column; justify-content: safe center;
+  }
 
   /* the heading as the other sections' ("Our services", services-cards.css .svc-label) */
   .tsl-label {
@@ -14,13 +20,12 @@
 
   /* the cards: 20px in from the left, 12px apart, the next one peeking ~24px in at the right; snapped */
   .tsl-track {
-    display: flex; gap: 12px; padding: 0 20px; scroll-padding-inline: 20px;
-    overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory;
-    scrollbar-width: none; -webkit-overflow-scrolling: touch;
+    display: flex; gap: 12px; padding: 0 20px;
+    overflow-x: hidden; scrollbar-width: none; /* moved by the page's scroll (ToolsSlider.tsx), not swiped */
   }
   .tsl-track::-webkit-scrollbar { display: none; }
   .tsl-slide {
-    flex: 0 0 calc(100% - 16px); box-sizing: border-box; scroll-snap-align: start; scroll-snap-stop: always;
+    flex: 0 0 calc(100% - 16px); box-sizing: border-box;
     display: flex; flex-direction: column; align-items: flex-start;
     aspect-ratio: 3 / 4; /* the card is the 3:4 frame (it grows only if a tool's copy ever needs more) */
     background: #fafafa; border: 1px solid #ebebeb; color: #1f1f1f; padding: 16px 0 24px; /* room above the walkthrough's title */
