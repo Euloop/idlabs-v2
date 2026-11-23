@@ -302,3 +302,11 @@ html:is([data-lcp], [data-lchdr]) :is(.chrome .s2-header .wordmark, .chrome .chr
    it came out near black, #1f1f1f, and looked heavier than on /; 2026-11-17). Still light over the dark videos. */
 html:is([data-lcp], [data-lchdr]) .chrome .s2-header .wordmark { color: #b5b5b5 !important; }
 html:is([data-lcp], [data-lchdr]) .chrome .tick { background: #191919 !important; }
+/* Phones (2026-11-23): the header has its own white veil there (sections.css .chrome-veil), which the blend turned
+   into a black band; no blend on phones, the wordmark in the usual grey over the veil */
+@media (max-width: 559px) {
+  html:is([data-lcp], [data-lchdr]) .chrome { mix-blend-mode: normal; }
+  html:is([data-lcp], [data-lchdr]) .chrome .s2-header .wordmark { color: #4a4a4a !important; }
+  html:is([data-lcp], [data-lchdr]) :is(.chrome .chrome-nav a, .chrome .s2-foot) { color: #4a4a4a !important; }
+  html:is([data-lcp], [data-lchdr]) .chrome .tick { background: #e6e6e6 !important; }
+}

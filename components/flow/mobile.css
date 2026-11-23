@@ -65,11 +65,11 @@
 
   /* Hero: the text and logos take the screen's width (~20px in from each edge: the frame's padding and the
      box's, there for the margin lines and the outline, both gone here), and more room under the header */
-  .hero .frame:not(.rails) { padding-inline: 10px; }
+  .hero .frame:not(.rails) { padding-inline: var(--pad); } /* 20px from the screen (globals.css, phones) */
   .hero .hv-copy { padding: 136px 0 32px; }
 
   /* "We backpropagate…": the line takes the screen's width too (it sat in a narrow centred column) */
-  .rl .rl-frame { padding-inline: 10px; }
+  .rl .rl-frame { padding-inline: var(--pad); }
   .rl .rl-text { width: 100%; }
 
   /* Services: the frame's one-screen height was shorter than the three cards here, so the launches section
@@ -106,7 +106,7 @@
    the screen's edges with a gap between, the number in a hairline box on white, the title in mono caps,
    generous room above the grey copy. Replaces the ruled columns on phones only. */
 @media (max-width: 559px) {
-  .svc[data-layout='columns'] .svc-grid { margin-inline: -14px; border-block: 0; /* 34px in from the screen → 20px */ display: grid; gap: 16px; }
+  .svc[data-layout='columns'] .svc-grid { margin-inline: 0; border-block: 0; /* the frame's 20px from the screen (globals.css) */ display: grid; gap: 16px; }
   .svc[data-layout='columns'] .svc-cell,
   .svc[data-layout='columns'] .svc-cell + .svc-cell {
     padding: 24px 24px 32px; border: 1px solid #ebebeb; background: #fafafa;
@@ -140,13 +140,13 @@
   .s3-band .s3-papers {
     flex-direction: row; gap: 16px; transform: none;
     overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory;
-    padding-inline: 32px; scroll-padding-inline: 32px; scrollbar-width: none;
+    padding-inline: var(--pad); scroll-padding-inline: var(--pad); scrollbar-width: none;
     pointer-events: auto; -webkit-overflow-scrolling: touch;
   }
   .s3-band .s3-papers::-webkit-scrollbar { display: none; }
   /* each paper: the screen less 32px on its left and room for the next one to show on its right */
   .s3-band .pp {
-    --k: min(calc((100vw - 104px) / 310.25), 1.2px);
+    --k: min(calc((100vw - 92px) / 310.25), 1.2px);
     flex: none; height: auto; scroll-snap-align: start;
   }
   .s3-band .pp-box { height: calc(367 * var(--k)); }

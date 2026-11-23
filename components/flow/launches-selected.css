@@ -32,4 +32,6 @@
   .lsel-title { font-size: 32px; }
   .lsel-grid { grid-template-columns: 1fr; gap: 28px; }
 }
+/* phones (2026-11-23): the frame's 20px is the whole margin (globals.css): no extra inset for the head and grid */
+@media (max-width: 559px) { .lsel-head, .lsel-grid { padding-inline: 0; } }
 @media (prefers-reduced-motion: reduce) { .lsel-media :is(img, video) { transition: none; } .lsel-card:hover .lsel-media :is(img, video) { transform: none; } }

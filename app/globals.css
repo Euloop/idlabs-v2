@@ -234,7 +234,9 @@ html[data-theme='light'] .frame.rails > .rails-light { opacity: 1; }
 }
 
 @media (max-width: 559px) {
-  :root { --gutter: 10px; }
+  /* Phones, every page (2026-11-23): no margin lines, and a flat 20px margin each side — the frame runs the
+     screen's width (no gutter outside it) with 20px of padding inside. The lines and their markers go below. */
+  :root { --gutter: 0px; --pad: 20px; }
   .nav { gap: 22px; margin-right: 0; }
   .wordmark { margin-left: 0; }
   .body-copy { font-size: 13px; }
@@ -336,3 +338,13 @@ html[data-theme='light'] .frame.rails > .rails-light { opacity: 1; }
   *, *::before, *::after { animation: none !important; }
   .roll-track { transition: none; }
 }
+
+/* Phones, every page (2026-11-23): no margin lines — the fixed pair of side rules, their square markers, the
+   frames' corner squares and the launches' dashed pair. The footer keeps its lines (client, 2026-11-23), and
+   horizontal rules stay. */
+@media (max-width: 559px) {
+  .frame.rails, .tick:not(.ft .tick) { display: none !important; }
+  html body :is(.s2-frame, .s3-frame, .iso-frame, .sv-frame, .lc-frame)::after { display: none !important; }
+  .lcf-rails::before, .lcf-rails::after { background: none !important; }
+}
+
