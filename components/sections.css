@@ -82,6 +82,7 @@ html[data-theme='night'] .s3-band { --grid: #363636; }
 .pp-letter { height: calc(367 * var(--k)); }
 .pp-letter .pp-page { height: calc(357.3 * var(--k)); }
 .pp-letter .pp-front { --u: calc(276.1 * var(--k) / 816); background: none; } /* the holes are cut through: the back page shows */
+.pp-cap { display: none; } /* the paper's caption: phones only (flow/mobile.css) */
 .pp-page { position: absolute; display: block; width: calc(276.1 * var(--k)); height: calc(336.979 * var(--k)); overflow: clip; }
 .pp-back { left: calc(4.357 * var(--k)); top: calc(6.471 * var(--k)); rotate: -1.5deg; }
 .pp-front { left: calc(20.49 * var(--k)); top: 0; background: #000; box-shadow: calc(-3.43 * var(--k)) calc(3.43 * var(--k)) calc(11.233 * var(--k)) rgba(0, 0, 0, 0.15); }
@@ -288,10 +289,27 @@ html[data-footer]:not([data-over-footer]):has(.fff-low):not(:has(main.lg)) .chro
 .chrome .s2-header { justify-content: center; }
 .chrome .s2-header .wordmark { margin-left: 0 !important; margin-right: 0; }
 
-/* Phones (2026-11-17): the header steps up out of the way while scrolling down (SiteChrome.tsx, data-away),
-   so section text never runs through the wordmark; any scroll up brings it back. */
+/* Phones (2026-11-23): the wordmark always on screen, over a slim veil (SiteChrome.tsx, .chrome-veil): the
+   page's ground (white; the dark ground in night sections and a dark hero) solid to the wordmark's foot, then
+   fading out, with a blur that grows toward the top in three stacked layers (progressive blur). Full screen
+   width, out of the frame's padding. Hidden above phone width. */
+.chrome-veil { display: none; }
 @media (max-width: 559px) {
-  .chrome .s2-header { transition: translate 350ms var(--ease-out), opacity 300ms var(--ease-out); }
-  .chrome[data-away] .s2-header { translate: 0 -100%; opacity: 0; pointer-events: none; }
-  .chrome[data-away] .s2-header * { pointer-events: none !important; }
+  .chrome-veil {
+    display: block; position: absolute; z-index: -1; top: 0; left: 50%; width: 100vw; translate: -50% 0;
+    height: 72px; pointer-events: none;
+    background: linear-gradient(to bottom, rgb(255 255 255 / 0.97) 0, rgb(255 255 255 / 0.94) 50px, rgb(255 255 255 / 0) 100%);
+    transition: background 400ms ease;
+  }
+  /* the dark ground: night sections, and a dark hero (pages whose hero is not the light .hv one) */
+  html[data-theme='night'] .chrome-veil, html[data-theme='dark']:not(:has(.hero.hv)) .chrome-veil {
+    background: linear-gradient(to bottom, rgb(42 44 49 / 0.96) 0, rgb(42 44 49 / 0.92) 50px, rgb(42 44 49 / 0) 100%);
+  }
+  .chrome-veil i { position: absolute; inset: 0; }
+  .chrome-veil i:nth-child(1) { backdrop-filter: blur(2px); -webkit-backdrop-filter: blur(2px);
+    mask-image: linear-gradient(to bottom, #000 60%, transparent 100%); -webkit-mask-image: linear-gradient(to bottom, #000 60%, transparent 100%); }
+  .chrome-veil i:nth-child(2) { backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+    mask-image: linear-gradient(to bottom, #000 40%, transparent 80%); -webkit-mask-image: linear-gradient(to bottom, #000 40%, transparent 80%); }
+  .chrome-veil i:nth-child(3) { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    mask-image: linear-gradient(to bottom, #000 20%, transparent 60%); -webkit-mask-image: linear-gradient(to bottom, #000 20%, transparent 60%); }
 }

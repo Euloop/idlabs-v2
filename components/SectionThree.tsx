@@ -21,11 +21,12 @@ const X_TITLE = 'How the X Algorithm Works: Candidate Sourcing, Ranking, & the D
 const A = '/assets/research/';
 
 type Fig = { src: string; className: string };
-type PaperProps = { title: string; figs: Fig[]; href?: string };
+type PaperProps = { title: string; short?: string; figs: Fig[]; href?: string };
 
 export const PAPERS: PaperProps[] = [
   {
     title: X_TITLE,
+    short: 'How the X Algorithm Works',
     href: 'https://assets.ctfassets.net/xsgwjwcuxltx/2D7hwss9WnXBNLD3T8e7mK/8a276a95b9f7b0f2f1c0d1d6b14b450e/How_the_X_Algorithm_Works_2026.pdf',
     figs: [
       { src: `${A}front-fig-1.webp`, className: 'pp-ff1' },
@@ -35,6 +36,7 @@ export const PAPERS: PaperProps[] = [
   },
   {
     title: 'How the LinkedIn Algorithm Works: Two-Pass Retrieval, Multi-Objective Ranking, and the Determinants of Reach.',
+    short: 'How the LinkedIn Algorithm Works',
     href: 'https://assets.ctfassets.net/xsgwjwcuxltx/7ydGxl5W28i2QZued6Z4N7/3ef2f08644ca45b23820e3b6aa6bc9ca/How_the_LinkedIn_Algorithm_Works_2026.pdf',
     figs: [
       { src: `${A}linkedin-fig-1.webp`, className: 'pp-lf1' },
@@ -47,7 +49,7 @@ export const PAPERS: PaperProps[] = [
 /* cover "paper" (/home-2's Paper tab): the paper's real first page (immersive/PaperPage.tsx) as
    the front page, at US Letter proportions and punched like the site's front page (the black
    behind it shows through the holes), over the site's textured back page. */
-export function PaperCover({ title, figs, href = '#', index, holes = true }: PaperProps & { index: number; holes?: boolean }) {
+export function PaperCover({ title, short, figs, href = '#', index, holes = true }: PaperProps & { index: number; holes?: boolean }) {
   return (
     <a className="pp pp-letter" href={href} target="_blank" rel="noopener noreferrer" aria-label={`${title} ${AUTHORS}, ${LAB} (PDF, opens in a new tab)`}>
       <span className="pp-box" aria-hidden="true">
@@ -58,6 +60,14 @@ export function PaperCover({ title, figs, href = '#', index, holes = true }: Pap
           <PaperPage paper={PAPER_TEXT[index]} fig={figs[0].src} stack={false} holes={holes} />
         </span>
       </span>
+      {/* Phones only (flow/mobile.css): the paper is too small to read there, so its name and the way in
+          sit under it, in the copy the immersive page uses (immersive/data.ts) */}
+      {short && (
+        <span className="pp-cap" aria-hidden="true">
+          <span className="pp-cap-title">{short}</span>
+          <span className="pp-cap-cta">Read the paper ↗</span>
+        </span>
+      )}
     </a>
   );
 }

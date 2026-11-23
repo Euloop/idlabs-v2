@@ -103,15 +103,16 @@ const PLACED = ORDER.map((name, i) => ({ l: BY_NAME.get(name)!, cx: COLS[i % 4],
 /* The client's list (2026-11-21 feedback): Andreessen Horowitz and Lovable lead, Pocket FM out. Ten that
    stay, then two cells that keep turning over through the rest of the launch reel's clients (ROT_A, ROT_B),
    so it reads as more than twelve. Shown in place of ORDER when html[data-clients='picked'] (/home-4's
-   Clients tab, which also hides Our Network); other pages keep ORDER. OpenAI and SpaceX stay out (pulled
-   2026-11-17), as does Pocket FM. */
+   Clients tab, which also hides Our Network); other pages keep ORDER. SpaceX stays out (pulled 2026-11-17),
+   as does Pocket FM. 2026-11-23: OpenAI back, leading; Deel and Wispr Flow trade places; Matic Robots moves
+   into the first turning cell to keep the grid at twelve (Freehand leaves the turn-over). */
 const PICKED_STILL = [
-  'Andreessen Horowitz', 'Lovable', 'Sequoia', 'Kleiner Perkins',
-  'Lightspeed', 'Wispr Flow', 'Gamma', 'Airwallex',
-  'Deel', 'Matic Robots',
+  'OpenAI', 'Andreessen Horowitz', 'Lovable', 'Sequoia',
+  'Kleiner Perkins', 'Lightspeed', 'Deel', 'Gamma',
+  'Airwallex', 'Wispr Flow',
 ];
 // five each: the turn-over keyframes (hero-vertical.css .hvc-rot) assume five per cell
-const ROT_A = ['Fish Audio', 'Cartesia', 'Triple Whale', 'Lindy', 'Freehand'];
+const ROT_A = ['Matic Robots', 'Fish Audio', 'Cartesia', 'Triple Whale', 'Lindy'];
 const ROT_B = ['Cursor', 'PolyAI', 'Superblocks', 'Enterpret', 'PlayerZero'];
 const PICKED = [...PICKED_STILL, ROT_A[0], ROT_B[0]];
 const ROTATING = new Map([[ROT_A[0], ROT_A], [ROT_B[0], ROT_B]]);

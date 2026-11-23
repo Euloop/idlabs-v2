@@ -80,7 +80,12 @@ const Speaker = ({ muted }: { muted: boolean }) => (
    `end`, with a button to the page of all launches. The track then runs one way, first to the end
    slide (no wrap back to the first), and hands the scroll to the page there. */
 export type ReelEnd = { href: string; total: number };
-export default function LaunchesReel({ on, start = 0, alt = false, card = false, track = false, list, end }: { on: boolean; start?: number; alt?: boolean; card?: boolean; track?: boolean; list?: Launch[]; end?: ReelEnd }) {
+/* drive / seek (phones, LaunchesFloat.tsx): the page's own scroll moves the track. `drive` is filled in here:
+   the parent calls it with a position (launches from the start, fractional) as the page scrolls, and the
+   track glides there. `seek`, from the parent: the arrows, the peeks and a drag ask the page to scroll to
+   that launch instead of moving the track themselves, so the page and the reel never disagree. */
+export type ReelDrive = { current: ((p: number) => void) | null };
+export default function LaunchesReel({ on, start = 0, alt = false, card = false, track = false, list, end, drive, seek }: { on: boolean; start?: number; alt?: boolean; card?: boolean; track?: boolean; list?: Launch[]; end?: ReelEnd; drive?: ReelDrive; seek?: (k: number) => void }) {
   const [i, setI] = useState(start);
   const [muted, setMuted] = useState(true);
   const [playing, setPlaying] = useState(true); // Float II: play / pause (kept across launches)
@@ -105,6 +110,7 @@ export default function LaunchesReel({ on, start = 0, alt = false, card = false,
     if (!track) { setI((v) => (v + d + n) % n); return; }
     target.current = Math.round(target.current) + d;
     if (end) target.current = Math.min(last, Math.max(0, target.current));
+    if (seek) { seek(target.current); return; }
     kick.current();
   };
 
@@ -141,6 +147,7 @@ export default function LaunchesReel({ on, start = 0, alt = false, card = false,
     target.current = Math.round(p + (g.dx < -60 ? 0.35 : g.dx > 60 ? -0.35 : 0));
     if (end) target.current = Math.min(last, Math.max(0, target.current));
     vel.current = Math.max(-6, Math.min(6, g.v)); // the throw carries into the spring
+    if (seek) seek(target.current);
     kick.current();
   };
 
@@ -205,9 +212,15 @@ export default function LaunchesReel({ on, start = 0, alt = false, card = false,
       raf = pos.current !== target.current || vel.current !== 0 || drag.current?.on ? requestAnimationFrame(frame) : 0;
     };
     kick.current = () => { if (!raf) { then = performance.now(); raf = requestAnimationFrame(frame); } };
+    if (drive) drive.current = (p: number) => {
+      const t = Math.min(last, Math.max(0, p));
+      if (drag.current?.on || Math.abs(t - target.current) < 1e-4) return;
+      target.current = t; kick.current();
+    };
     paint();
     const onWheel = (e: WheelEvent) => {
-      if (!onRef.current || e.ctrlKey || doneRef.current) return;
+      // driven by the page's scroll (phones): the wheel scrolls the page, which moves the reel
+      if (drive || !onRef.current || e.ctrlKey || doneRef.current) return;
       const k = e.deltaMode === 1 ? 40 : e.deltaMode === 2 ? el.clientHeight : 1;
       // twice the wheel's distance sideways: a whole cycle (13 launches) in a reasonable scroll
       const dy = (Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX) * k * 2;
@@ -228,8 +241,8 @@ export default function LaunchesReel({ on, start = 0, alt = false, card = false,
       kick.current();
     };
     el.addEventListener('wheel', onWheel, { passive: false });
-    return () => { el.removeEventListener('wheel', onWheel); window.clearTimeout(idle); cancelAnimationFrame(raf); kick.current = () => {}; };
-  }, [track, n, start, finite, last]);
+    return () => { el.removeEventListener('wheel', onWheel); window.clearTimeout(idle); cancelAnimationFrame(raf); kick.current = () => {}; if (drive) drive.current = null; };
+  }, [track, n, start, finite, last, drive]);
 
   const onClickCapture = (e: React.MouseEvent) => {
     if (dragged.current) { e.preventDefault(); e.stopPropagation(); dragged.current = false; }

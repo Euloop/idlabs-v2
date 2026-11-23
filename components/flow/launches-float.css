@@ -1,6 +1,8 @@
 /* Launches "Float" (LaunchesFloat.tsx): a pinned, full-width stage, sticking for most of the section. Positions are written every frame from the script. */
 
 .lcf { position: relative; height: 600svh; } /* 5 screens pinned: load, scatter, float (3.2), zoom (1.1), the reel and a short hold */
+/* phones (Selected): more pinned screens after the reel arrives, the page's scroll moving it launch by launch (LaunchesFloat.tsx STEP) */
+.lcf { height: calc(600svh + var(--lcf-more, 0) * 100svh); }
 .lcf-stage {
   position: sticky; top: 0; width: 100%; height: 100svh; overflow: hidden;
 }

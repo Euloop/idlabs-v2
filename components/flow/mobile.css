@@ -126,3 +126,36 @@
   section.tcl .tcl-frame { padding-block: 40px 0; }
   html[data-hv][data-hv] :where(body) section.svc { margin-top: 200px; } /* two sections: clear air between (client, 2026-11-23; was 56, then 136) */
 }
+
+/* ───────── Research papers (phones, 2026-11-23) ─────────
+   The two papers stacked had to fit one screen together, so each came out ~220px wide, its text unreadable,
+   with a tall empty grid around them. Here they sit side by side in a row you swipe, each nearly the
+   screen's width (the next one peeking in at the edge), snapping one at a time; under each, its name and
+   "Read the paper ↗" (SectionThree.tsx .pp-cap). The grid band runs edge to edge behind them. */
+@media (max-width: 559px) {
+  html[data-s2] :where(body) .s3-band {
+    margin-inline: calc(50% - 50vw); width: 100vw; box-sizing: border-box;
+    padding-block: 28px 24px; display: block; place-items: normal; /* centred, the row would shrink to its content and never scroll */
+  }
+  .s3-band .s3-papers {
+    flex-direction: row; gap: 16px; transform: none;
+    overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory;
+    padding-inline: 32px; scroll-padding-inline: 32px; scrollbar-width: none;
+    pointer-events: auto; -webkit-overflow-scrolling: touch;
+  }
+  .s3-band .s3-papers::-webkit-scrollbar { display: none; }
+  /* each paper: the screen less 32px on its left and room for the next one to show on its right */
+  .s3-band .pp {
+    --k: min(calc((100vw - 104px) / 310.25), 1.2px);
+    flex: none; height: auto; scroll-snap-align: start;
+  }
+  .s3-band .pp-box { height: calc(367 * var(--k)); }
+  .s3-band .pp-cap {
+    display: flex; flex-direction: column; gap: 6px;
+    margin-top: 16px; padding-left: calc(20.49 * var(--k)); /* in line with the front page */
+    font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.02em;
+  }
+  .s3-band .pp-cap-title { font-size: 12px; line-height: 1.4; color: #1f1f1f; }
+  .s3-band .pp-cap-cta { font-size: 11px; color: #8f8f8f; }
+  html[data-theme='night'][data-s2] body .s3-band .pp-cap-title { color: #ebebeb; }
+}

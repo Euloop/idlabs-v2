@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { PICTURED, RATIO_OF, slug, type Launch } from './LaunchesCloud';
-import LaunchesReel, { REEL, type ReelEnd } from './LaunchesReel';
+import LaunchesReel, { REEL, type ReelEnd, type ReelDrive } from './LaunchesReel';
 import { LAUNCH_VIDEO } from './launch-videos';
 import { addSettleZones } from './settle';
 import './launches-float.css';
@@ -142,6 +142,16 @@ const HERO_SLIDE = Math.max(0, REEL.indexOf(TILES[HERO]?.l as Launch));
    scatter and float (as fractions of it, `prog`); then the zoom and the reel. */
 // the zoom over 1.1 screens (was 0.7: too fast), the reel in front at its end
 const FIELD = 3.2, ZOOM = [3.2, 4.3], REEL_IN = [4.22, 4.38], REEL_UI = [4.35, 4.6];
+/* Phones with a finite reel (Selected; client feedback 2026-11-23: "scrolling should scroll through all the
+   launch vids"): after REEL_UI the pin runs on, and the page's scroll moves the reel, one launch per STEP
+   screens — each launch first holds for REST (a still stretch, so a swipe can stop on it), then slides on to
+   the next over the rest of the step. The section grows by that much (--lcf-more, launches-float.css). */
+const STEP = 0.75, REST = 0.15;
+const reelAt = (s: number) => { // screens past REEL_UI's end → the reel's position (launches)
+  if (s <= 0) return 0;
+  const k = Math.floor(s / STEP), f = s - k * STEP;
+  return k + (f <= REST ? 0 : ease((f - REST) / (STEP - REST)));
+};
 
 
 /* alt (Float II): the words read "Launches we" / "have done"; no headline over the field (it stays
@@ -199,6 +209,27 @@ export default function LaunchesFloat({ alt = false, card = false, track = false
   const reelRef = useRef<HTMLDivElement>(null);
   const [reelOn, setReelOn] = useState(false);
   const reelOnRef = useRef(false);
+  const driveRef = useRef<ReelDrive['current']>(null);
+  // the reel's last position (picks + the end slide): how many steps the phones' scroll runs through
+  const reelLast = picks && end ? picks.length : 0;
+  const seek = (k: number) => {
+    const root = rootRef.current;
+    if (!root) return;
+    const top = root.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({ top: top + (REEL_UI[1] + k * STEP) * window.innerHeight, behavior: 'smooth' });
+  };
+  const [phone, setPhone] = useState(false);
+  useEffect(() => {
+    if (!reelLast) return;
+    const mq = window.matchMedia('(max-width: 559px)');
+    // reduced motion: the float is still and the reel keeps its own controls
+    const on = () => setPhone(mq.matches && !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    on(); mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, [reelLast]);
+  const phoneDrive = phone && reelLast > 0;
+  const phoneRef = useRef(false);
+  phoneRef.current = phoneDrive;
 
   useEffect(() => {
     const root = rootRef.current, stage = stageRef.current;
@@ -267,6 +298,8 @@ export default function LaunchesFloat({ alt = false, card = false, track = false
       const z = easeSine(span(ys, ZOOM[0], ZOOM[1]));    // the zoom into the hero launch (a gentle in-out: no rush in the middle)
       const reelIn = span(ys, REEL_IN[0], REEL_IN[1]);
       const ui = ease(span(ys, REEL_UI[0], REEL_UI[1]));
+      // phones: the page's scroll past the reel's arrival moves it (undamped: the reel's own spring eases it)
+      if (phoneRef.current) driveRef.current?.(reelAt(target - REEL_UI[1]));
 
       // first pass: each tile's place in the field (load → scatter → float)
       const P: { x: number; y: number; sc: number; fw: number; fh: number; b: number; si: number; from: number }[] = [];
@@ -403,7 +436,15 @@ export default function LaunchesFloat({ alt = false, card = false, track = false
        and the zoom are seen; a swipe up glides back to the start. */
     const offSettle = addSettleZones(() => {
       const vh = window.innerHeight, top = root.getBoundingClientRect().top + window.scrollY;
-      return [[top, top + REEL_UI[1] * vh, 2400]];
+      const zones: [number, number, number?][] = [[top, top + REEL_UI[1] * vh, 2400]];
+      // …and, with the scroll moving the reel, each slide from one launch to the next: a swipe that stops
+      // part way plays on to the next launch (or back). The REST stretches between keep them apart (more
+      // than settle.ts's join), so one swipe moves one launch.
+      if (phoneRef.current) for (let k = 0; k < reelLast; k++) {
+        const a = top + (REEL_UI[1] + k * STEP + REST) * vh;
+        zones.push([a, top + (REEL_UI[1] + (k + 1) * STEP) * vh, 700]);
+      }
+      return zones;
     });
     return () => {
       offSettle();
@@ -414,7 +455,7 @@ export default function LaunchesFloat({ alt = false, card = false, track = false
   }, []);
 
   return (
-    <div className="lcf" ref={rootRef}>
+    <div className="lcf" ref={rootRef} style={phoneDrive ? ({ '--lcf-more': reelLast * STEP } as React.CSSProperties) : undefined}>
       {/* the section's own margin lines, dashed, from its top edge down (over the page's solid pair) */}
       <div className="frame lcf-rails" aria-hidden="true" />
       <div className="lcf-stage" ref={stageRef}>
@@ -446,7 +487,8 @@ export default function LaunchesFloat({ alt = false, card = false, track = false
           </div>
         )}
         <div className="lcf-reel" ref={reelRef}>
-          <LaunchesReel on={reelOn} start={reelStart} alt={alt} card={card} track={track} list={picks} end={end} />
+          <LaunchesReel on={reelOn} start={reelStart} alt={alt} card={card} track={track} list={picks} end={end}
+            drive={phoneDrive ? driveRef : undefined} seek={phoneDrive ? seek : undefined} />
         </div>
       </div>
     </div>
