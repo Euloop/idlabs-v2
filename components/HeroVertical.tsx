@@ -11,9 +11,10 @@ import HtmlMark from './HtmlMark';
    switch and Section 2 work unchanged. Positions are Figma px inside the construction (× --px). */
 
 const LINES = ['Identity Labs is a', 'consulting firm based', 'in London.'];
-/* The last line's city turns over, London → Bangalore → San Francisco (client, 2026-11-20); the
-   offices in the footer. CSS-only loop (hero-vertical.css .hv-city); reduced motion keeps London. */
-const CITIES = ['London.', 'Bangalore.', 'San Francisco.'];
+/* The last line's city turns over, San Francisco (5s) → London (5s) → Bangalore (2s) (client, 2026-11-23; was
+   London → Bangalore → San Francisco, 2s each); the offices in the footer. CSS-only loop (hero-vertical.css
+   .hv-city); reduced motion keeps San Francisco. */
+const CITIES = ['San Francisco.', 'London.', 'Bangalore.'];
 const HEADLINE = 'Identity Labs is a consulting firm based in London, Bangalore and San Francisco.';
 
 type Part = { src: string; inset: string };

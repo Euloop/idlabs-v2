@@ -21,8 +21,8 @@ const PROFILES = {
   iphone: devices['iPhone 15'],
   desktop: devices['Desktop Safari'],
 };
-// moments on the animations' clock: the intro done on London, then Bangalore, then San Francisco (hero-vertical.css .hv-city)
-const CITY_SHOTS = [['london', 1500], ['bangalore', 3000], ['sanfrancisco', 5000]];
+// moments on the animations' clock: the intro done on San Francisco, then London, then Bangalore (hero-vertical.css .hv-city)
+const CITY_SHOTS = [['sanfrancisco', 1500], ['london', 7000], ['bangalore', 11000]];
 
 const browser = await webkit.launch();
 const errors = [];
