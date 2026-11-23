@@ -6,6 +6,7 @@ import ResearchLab from '../components/flow/ResearchLab';
 import SectionThree from '../components/SectionThree';
 import MonoTrail from '../components/flow/MonoTrail';
 import ToolsCollage from '../components/flow/ToolsCollage';
+import ToolsSlider from '../components/flow/ToolsSlider';
 import ServicesCards from '../components/flow/ServicesCards';
 import Launches from '../components/flow/Launches';
 import SiteFooter from '../components/flow/SiteFooter';
@@ -71,6 +72,8 @@ export default function Home() {
           research pieces playing one by one by themselves, the scatter, then the glass card; then the scroll moves
           through the four tools (a screen each); phones keep the cycle */}
       <ToolsCollage theme="white" motion scroll research="auto" intro="small" />
+      {/* phones: the tools as a slider in the card's place (tools-slider.css hides one or the other) */}
+      <ToolsSlider />
       <ServicesCards light layout="columns" still />
       <Launches variant="selected" />
       <SiteFooter layout="fib" />

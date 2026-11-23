@@ -91,7 +91,7 @@
 @media (max-width: 559px) {
   /* …and its walkthrough in portrait (tool-motion/shared.tsx PORTRAIT: the panels laid out down a 400 × 600
      canvas) in place of the 720 × 370 landscape */
-  section.tcl[data-motion] .tcl-shot.tcl-motion { aspect-ratio: 400 / 600; }
+  section.tcl[data-motion] .tcl-shot.tcl-motion { aspect-ratio: 3 / 4; } /* the portrait canvas (shared.tsx VW × VH) */
 }
 @media (max-width: 559px) {
   /* Less white on the way in (feedback: "too much empty space in portrait mode"): the hero's copy starts
@@ -99,4 +99,30 @@
   .hero .hv-copy { padding-top: 88px; }
   /* the tools section's frame: less padding round the card now that the box is only the card's height */
   section.tcl .tcl-frame { padding-block: 48px 32px; }
+}
+
+/* ───────── Services as cards (phones, 2026-11-23) ─────────
+   After the client's reference: each service its own hairline card on a faint grey fill, inset from
+   the screen's edges with a gap between, the number in a hairline box on white, the title in mono caps,
+   generous room above the grey copy. Replaces the ruled columns on phones only. */
+@media (max-width: 559px) {
+  .svc[data-layout='columns'] .svc-grid { margin-inline: -14px; border-block: 0; /* 34px in from the screen → 20px */ display: grid; gap: 16px; }
+  .svc[data-layout='columns'] .svc-cell,
+  .svc[data-layout='columns'] .svc-cell + .svc-cell {
+    padding: 24px 24px 32px; border: 1px solid #ebebeb; background: #fafafa;
+  }
+  html[data-theme='night'][data-s2] body .svc[data-layout='columns'] :is(.svc-cell, .svc-num) { border-color: var(--c-line); }
+  html[data-theme='night'][data-s2] body .svc[data-layout='columns'] .svc-cell { background: #1c1d20; }
+  .svc[data-layout='columns'] .svc-num { width: 32px; height: 32px; font-size: 22px; font-family: 'Season Mix', var(--serif); background: transparent; border-color: #ebebeb; }
+  .svc[data-layout='columns'] .svc-title { margin-top: 20px; font-size: 16px; }
+  .svc[data-layout='columns'] .svc-text { margin-top: 30px; }
+}
+
+/* ───────── Analytical tools (phones, 2026-11-23) ─────────
+   The walkthrough framed like the service cards (hairline #ebebeb, no drop shadow), and the section's
+   white cut down: Our services came 216px under it (desktop's air after the tools, services-cards.css). */
+@media (max-width: 559px) {
+  section.tcl .tcl-shot { box-shadow: none !important; border: 1px solid #ebebeb; box-sizing: border-box; }
+  section.tcl .tcl-frame { padding-block: 40px 0; }
+  html[data-hv][data-hv] :where(body) section.svc { margin-top: 200px; } /* two sections: clear air between (client, 2026-11-23; was 56, then 136) */
 }

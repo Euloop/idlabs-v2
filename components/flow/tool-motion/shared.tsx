@@ -115,14 +115,21 @@ export const C = {
 };
 
 const Clip = createContext('');
+/* true: the desktop's landscape drawing even on a phone (the phones' tools slider, ToolsSlider.tsx: the client
+   wanted the walkthroughs as on desktop, 2026-11-23) */
+export const Landscape = createContext(false);
 
 /* Phones (≤559px, client feedback 2026-11-21: "the visual is in landscape"): each loop drawn on a portrait
    canvas, PW wide — the same drawing, its panels taken out of the 720 × 370 canvas and laid out one under
    another (or two side by side), each scaled to the width it gets, so they read larger than the whole
    landscape canvas shrunk to the phone. A part: [sx, sy, sw, sh] of the landscape canvas → at (dx, dy), dw
    wide (its height follows). The canvas is PH tall for every tool (the card doesn't jump as the tools turn
-   over); a layout shorter than that sits in its middle. Keyed by the loop's title. */
-export const PW = 400, PH = 600;
+   over), and every layout is made to come out ~PH tall, top-aligned (2026-11-23: PH was 600 with each
+   layout centred in it, which left bands of empty canvas, ~125 above and below Velocity). Keyed by title. */
+export const PW = 400, PH = 520;
+/* the canvas as shown: 3:4 (client, 2026-11-23; 4:5 before), 408 × 544, each layout (~510–516 tall, 400
+   wide) centred in it, ~12–17 of the page round it */
+const VW = 408, VH = (VW * 4) / 3, VX = (PW - VW) / 2;
 const HEAD = 56; // the title and, under it, the live line
 type Part = [sx: number, sy: number, sw: number, sh: number, dx: number, dy: number, dw: number];
 const PORTRAIT: Record<string, Part[]> = {
@@ -130,10 +137,12 @@ const PORTRAIT: Record<string, Part[]> = {
   'Engagement Classifier': [[14, 44, 494, 314, 8, HEAD, 384], [516, 44, 190, 110, 8, HEAD + 252, 188], [516, 162, 190, 196, 204, HEAD + 252, 188]],
   // the contribution by type across the top; the score beside the score over time; the contributors
   'Weighted Engagement': [[240, 44, 466, 106, 8, HEAD, 384], [14, 44, 218, 106, 8, HEAD + 93, 150], [14, 158, 318, 200, 164, HEAD + 93, 228], [340, 158, 366, 200, 8, HEAD + 242, 384]],
-  // the post; the chart cropped to the post's own run (to +30m: the projection after it left out); the three numbers
-  'Post Velocity': [[14, 44, 692, 34, 8, HEAD, 384], [14, 84, 560, 200, 8, HEAD + 25, 384], [14, 292, 226, 66, 8, HEAD + 170, 188], [248, 292, 226, 66, 204, HEAD + 170, 188], [482, 292, 224, 66, 8, HEAD + 231, 188]],
+  // the post; the chart cropped to the post's own run (to +30m: the projection after it left out); the three
+  // numbers one under another, larger (they were two and one at half width, the layout ~350 of the 520)
+  'Post Velocity': [[14, 44, 692, 34, 8, HEAD, 384], [14, 84, 560, 200, 8, HEAD + 25, 384], [14, 292, 226, 66, 50, HEAD + 170, 300], [248, 292, 226, 66, 50, HEAD + 264, 300], [482, 292, 224, 66, 50, HEAD + 358, 300]],
   // the post and the insight, then where the views landed in two halves: the big three, then the rest
-  'Cluster Penetration': [[14, 44, 692, 70, 8, HEAD, 384], [14, 120, 340, 240, 50, HEAD + 45, 300], [340, 120, 366, 240, 8, HEAD + 265, 384]],
+  // (a little narrower than full width, so the whole fits the 520)
+  'Cluster Penetration': [[14, 44, 692, 70, 8, HEAD, 384], [14, 120, 340, 240, 70, HEAD + 45, 260], [340, 120, 366, 240, 35, HEAD + 235, 330]],
 };
 const partsH = (ps: Part[]) => Math.max(...ps.map(([, , sw, sh, , dy, dw]) => dy + (dw * sh) / sw)) + 8;
 
@@ -156,17 +165,18 @@ export function Frame({ label, title, meta, children }: { label: string; title: 
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const phone = usePhone();
-  const parts = phone ? PORTRAIT[title] : undefined;
+  const landscape = useContext(Landscape);
+  const parts = phone && !landscape ? PORTRAIT[title] : undefined;
   if (parts) {
-    const h = partsH(parts), top = (PH - h) / 2;
+    const y0 = (partsH(parts) - VH) / 2; // centred top to bottom
     return (
-      <svg className="tm tm-portrait" viewBox={`0 ${-top} ${PW} ${PH}`} role="img" aria-label={label}>
+      <svg className="tm tm-portrait" viewBox={`${VX} ${y0} ${VW} ${VH}`} role="img" aria-label={label}>
         <defs>
           <clipPath id={`${id}c`} clipPathUnits="objectBoundingBox"><circle cx=".5" cy=".5" r=".5" /></clipPath>
         </defs>
-        <rect y={-top} width={PW} height={PH} fill={C.page} />
-        <text x={16} y={26} className="tm-title">{title}</text>
-        <text x={16} y={42} className="tm-m" fontSize={8.5} fill={C.soft}>
+        <rect x={VX} y={y0} width={VW} height={VH} fill={C.page} />
+        <text x={8} y={26} className="tm-title">{title}</text>
+        <text x={8} y={42} className="tm-m" fontSize={8.5} fill={C.soft}>
           <tspan fill={C.green}>● LIVE</tspan>
           <tspan fill={C.faint}>{'  |  '}</tspan>
           {meta}
