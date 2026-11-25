@@ -28,9 +28,11 @@
 
 /* the site's nav wordmark, top left, as on the home page (light theme). The logo keeps its own face. */
 .xi .xi-mark {
-  position: absolute; top: 27px; left: 32px; margin: 0;
+  position: absolute; top: 20px; left: 50%; translate: -50% 0; margin: 0;
   font-size: 21px; letter-spacing: -1.68px; color: #4a4a4a; text-decoration: none;
   animation: none;
 }
 .xi .xi-mark .wm-space { letter-spacing: -3.73px; }
-@media (max-width: 640px) { .xi .xi-mark { left: 20px; top: 20px; } }
+
+/* the mono text in caps, tracked like the site's mono labels (OUR CLIENTS) */
+.xi-sub, .xi-kind { text-transform: uppercase; letter-spacing: 0.08em; }
