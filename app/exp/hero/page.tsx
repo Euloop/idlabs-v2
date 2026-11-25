@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
-import HeroVertical from '../../components/HeroVertical';
-import StartLoader from '../../components/flow/StartLoader';
-import HeroLight from '../../components/flow/HeroLight';
-import SiteChrome from '../../components/SiteChrome';
+import HeroVertical from '../../../components/HeroVertical';
+import StartLoader from '../../../components/flow/StartLoader';
+import HeroLight from '../../../components/flow/HeroLight';
+import SiteChrome from '../../../components/SiteChrome';
 // the fixed nav's styles (SiteChrome) — on /home-4 they come in with the later sections
-import '../../components/sections.css';
-import '../../components/flow/flow.css';
-import HtmlMark from '../../components/HtmlMark';
+import '../../../components/sections.css';
+import '../../../components/flow/flow.css';
+import HtmlMark from '../../../components/HtmlMark';
 
 /* /hero: the start loader and the hero on their own, to work on them. The loader opens with the
    Identity Labs logo drawing and splitting, then the image reel, then the white lifts onto the clean

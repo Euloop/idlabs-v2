@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Home4 from '../../../components/Home4';
+import Home4 from '../../../../components/Home4';
 
 /* /home-4/classic: /home-4 with the loader from before 2026-11-14 — the words or the logo splitting, the
    image reel and the golden ratio, ending in the Zoom (onto the drawn hero) or the Fade (onto the clean

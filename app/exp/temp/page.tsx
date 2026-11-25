@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import SectionTwoV1 from '../../components/snapshots/v1/SectionTwo';
+import SectionTwoV1 from '../../../components/snapshots/v1/SectionTwo';
 
 /* Temp page: a frozen snapshot of Section 2 (diagram story v1, commit 18b8973), kept for
    reference while the live version on the home page is iterated. Not linked from the site. */

@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
-import HeroVertical from '../../components/HeroVertical';
-import HeroLight from '../../components/flow/HeroLight';
-import SiteFooter from '../../components/flow/SiteFooter';
-import SiteChrome from '../../components/SiteChrome';
+import HeroVertical from '../../../components/HeroVertical';
+import HeroLight from '../../../components/flow/HeroLight';
+import SiteFooter from '../../../components/flow/SiteFooter';
+import SiteChrome from '../../../components/SiteChrome';
 // the fixed nav's styles (SiteChrome) — on /home-4 they come in with the later sections
-import '../../components/sections.css';
-import '../../components/flow/flow.css';
-import HtmlMark from '../../components/HtmlMark';
+import '../../../components/sections.css';
+import '../../../components/flow/flow.css';
+import HtmlMark from '../../../components/HtmlMark';
 
 /* /footer: to work on the footer. The Fade hero (the clean hero, no golden-ratio construction) with
    no start loader, and the footer straight below it, with its golden-ratio variants in place of the reading list

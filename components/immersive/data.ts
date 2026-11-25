@@ -36,7 +36,7 @@ export const CHAPTERS = [
   { id: 'im-contact', label: 'Contact' },
 ];
 
-export const CLIENTS = ['Cursor', 'OpenAI', 'Stripe', 'Ramp', 'Airwallex', 'Gamma', 'Deel', 'Lovable'];
+export const CLIENTS = ['Cursor', 'OpenAI', 'Airwallex', 'Gamma', 'Deel', 'Lovable'];
 
 export const RESEARCH_LEAD =
   'Our research lab backpropagates 500M posts/week to analyse how the algorithm treats each post as it goes through the sourcing and ranking stages. The dominant patterns that emerge fine-tune how we game ‘sourcing’ and ensure every post or launch we do goes consistently viral.';

@@ -1,13 +1,13 @@
 import type { Metadata, Viewport } from 'next';
-import Opening from '../../components/immersive/Opening';
-import Pipeline from '../../components/immersive/Pipeline';
-import Research from '../../components/immersive/Research';
-import Tools from '../../components/immersive/Tools';
-import Services from '../../components/immersive/Services';
-import Launches from '../../components/immersive/Launches';
-import Outro from '../../components/immersive/Outro';
-import Chrome from '../../components/immersive/Chrome';
-import '../../components/immersive/immersive.css';
+import Opening from '../../../components/immersive/Opening';
+import Pipeline from '../../../components/immersive/Pipeline';
+import Research from '../../../components/immersive/Research';
+import Tools from '../../../components/immersive/Tools';
+import Services from '../../../components/immersive/Services';
+import Launches from '../../../components/immersive/Launches';
+import Outro from '../../../components/immersive/Outro';
+import Chrome from '../../../components/immersive/Chrome';
+import '../../../components/immersive/immersive.css';
 
 /* /home-3: the whole site as one immersive, scroll-driven piece, after getty.edu/tracingart.
    No frame rules: full-bleed scenes on warm paper, each a tall section with a sticky stage

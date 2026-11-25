@@ -1,16 +1,16 @@
 import type { Metadata } from 'next';
-import Hero from '../../components/Hero';
-import Section2Options from '../../components/flow/Section2Options';
-import ResearchOptions from '../../components/flow/ResearchOptions';
-import ResearchLab from '../../components/flow/ResearchLab';
-import ToolsOptions from '../../components/flow/ToolsOptions';
-import SiteChrome from '../../components/SiteChrome';
-import ServicesOptions from '../../components/flow/ServicesOptions';
-import LaunchesOptions from '../../components/flow/LaunchesOptions';
-import ThemeDriver from '../../components/flow/ThemeDriver';
-import HeroOptions from '../../components/flow/HeroOptions';
-import SiteFooter from '../../components/flow/SiteFooter';
-import HtmlMark from '../../components/HtmlMark';
+import Hero from '../../../components/Hero';
+import Section2Options from '../../../components/flow/Section2Options';
+import ResearchOptions from '../../../components/flow/ResearchOptions';
+import ResearchLab from '../../../components/flow/ResearchLab';
+import ToolsOptions from '../../../components/flow/ToolsOptions';
+import SiteChrome from '../../../components/SiteChrome';
+import ServicesOptions from '../../../components/flow/ServicesOptions';
+import LaunchesOptions from '../../../components/flow/LaunchesOptions';
+import ThemeDriver from '../../../components/flow/ThemeDriver';
+import HeroOptions from '../../../components/flow/HeroOptions';
+import SiteFooter from '../../../components/flow/SiteFooter';
+import HtmlMark from '../../../components/HtmlMark';
 
 /* /home-2: the full home page with Section 2's funnel diagram replaced by the client's pipeline
    flowchart (components/flow/), in three styles the client can switch between (line, cards,

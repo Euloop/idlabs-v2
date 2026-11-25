@@ -14,7 +14,7 @@
 
    Browsers allow sound only after a click or key press, so `unlock()` must run from one. */
 
-import type { CharInfo } from '../../components/TokenText';
+import type { CharInfo } from '../../../components/TokenText';
 
 const LATENCY = 0.03; // s, headroom so a press is never scheduled in the past
 

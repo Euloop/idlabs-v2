@@ -43,7 +43,7 @@ export default function HeroIntroOptions({ loader = 'new' }: { loader?: 'new' | 
     if (v === 'zoom' || v === 'fade') q.set('intro', v);
     if (v === 'first' || v === 'new' || v === 'videobg') q.set('loader', v);
     const qs = q.toString();
-    window.location.href = `${v === 'new' || v === 'first' || v === 'video' || v === 'videobg' ? '/home-4' : '/home-4/classic'}${qs ? `?${qs}` : ''}`;
+    window.location.href = `${v === 'new' || v === 'first' || v === 'video' || v === 'videobg' ? '/exp/home-4' : '/exp/home-4/classic'}${qs ? `?${qs}` : ''}`;
   };
   const [heroIn, setHeroIn] = useState(false);
 

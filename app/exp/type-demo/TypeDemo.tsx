@@ -1,7 +1,7 @@
 'use client';
 
 import { Fragment, useEffect, useRef, useState } from 'react';
-import TokenText from '../../components/TokenText';
+import TokenText from '../../../components/TokenText';
 import { tick, unlock } from './tick';
 
 const LINES = [

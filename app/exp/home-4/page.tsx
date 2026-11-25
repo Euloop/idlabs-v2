@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import Home4 from '../../components/Home4';
+import Home4 from '../../../components/Home4';
 
 /* /home-4: every section's variants on bottom tabs (the page body: components/Home4.tsx), with today's
    loader; /home-4/classic has the loader before it (Zoom · Fade). Not linked from the site. */

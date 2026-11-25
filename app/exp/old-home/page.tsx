@@ -1,9 +1,9 @@
-import Hero from '../../components/Hero';
-import SectionTwo from '../../components/SectionTwo';
-import SectionThree from '../../components/SectionThree';
-import ToolsIntro from '../../components/ToolsIntro';
-import SectionFour from '../../components/SectionFour';
-import SiteChrome from '../../components/SiteChrome';
+import Hero from '../../../components/Hero';
+import SectionTwo from '../../../components/SectionTwo';
+import SectionThree from '../../../components/SectionThree';
+import ToolsIntro from '../../../components/ToolsIntro';
+import SectionFour from '../../../components/SectionFour';
+import SiteChrome from '../../../components/SiteChrome';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {

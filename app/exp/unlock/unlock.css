@@ -1,0 +1,21 @@
+/* /exp/unlock: a plain light page, the form centred */
+.xu {
+  position: fixed; inset: 0; z-index: 10;
+  display: grid; place-items: center;
+  background: #fff; color: #4a4a4a;
+}
+.xu-form { display: flex; flex-direction: column; gap: 12px; width: min(280px, calc(100% - 40px)); }
+.xu-label {
+  font-family: var(--mono); font-weight: 400; font-size: 12px; line-height: 1.4;
+  letter-spacing: 0.08em; text-transform: uppercase;
+}
+.xu-input, .xu-button {
+  height: 40px; border-radius: 0; font: 400 14px/1 var(--sans);
+}
+.xu-input { padding: 0 12px; border: 1px solid #ebebeb; background: #fafafa; color: #1a1a1a; outline: none; }
+.xu-input:focus { border-color: #989898; }
+.xu-button { border: 0; background: #2a2c31; color: #fff; cursor: pointer; }
+.xu-button:hover { background: #4a4a4a; }
+.xu-error { margin: 0; font: 400 13px/1.4 var(--sans); color: #b42318; }
+.xu-link { font: 400 14px/1.4 var(--sans); color: #4a4a4a; text-decoration: none; }
+.xu-link:hover { color: #1a1a1a; text-decoration: underline; text-underline-offset: 3px; }

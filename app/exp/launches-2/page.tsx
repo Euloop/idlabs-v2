@@ -1,10 +1,10 @@
 import type { Metadata } from 'next';
-import LaunchesGridPage from '../../components/flow/LaunchesPage';
-import SiteFooter from '../../components/flow/SiteFooter';
-import SiteChrome from '../../components/SiteChrome';
-import '../../components/sections.css';
-import '../../components/flow/flow.css';
-import HtmlMark from '../../components/HtmlMark';
+import LaunchesGridPage from '../../../components/flow/LaunchesPage';
+import SiteFooter from '../../../components/flow/SiteFooter';
+import SiteChrome from '../../../components/SiteChrome';
+import '../../../components/sections.css';
+import '../../../components/flow/flow.css';
+import HtmlMark from '../../../components/HtmlMark';
 
 /* /launches-2: a variant of /launches (2026-11-16) — the launches grid over the whole screen (drag to look
    around); a tile opens its launch in the video dialog (LaunchesPage). Light page from the start (no hero),

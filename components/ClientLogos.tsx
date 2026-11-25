@@ -22,8 +22,6 @@ const LOGOS: Logo[] = [
     ],
   },
   { name: 'OpenAI', w: 74.235, h: 19.796, parts: [{ src: 'openai.svg', inset: '0' }] },
-  { name: 'Stripe', w: 64.941, h: 31.059, parts: [{ src: 'stripe.svg', inset: '16.19% 11.54% 16.49% 11.55%' }] },
-  { name: 'Ramp', w: 74.235, h: 19.796, parts: [{ src: 'ramp.svg', inset: '0 -0.16% 0.15% 0' }] },
   {
     name: 'Airwallex', w: 84.706, h: 11.576,
     parts: [
