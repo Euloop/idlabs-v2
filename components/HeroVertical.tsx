@@ -93,12 +93,18 @@ const MORE: Logo[] = [
 const COLS = [1, 3, 5, 7].map((k) => (577.663 * k) / 8);
 // (the band's top 54 — 606 → 660 — holds the "Our Clients" title, .hv-zoom-title)
 const ROWS = Array.from({ length: 4 }, (_, r) => 660 + ((979.999 - 660) * (r + 0.5)) / 4);
-const ORDER = [
+const ORDER_ALL = [
   'OpenAI', 'Cursor', 'Sequoia', 'Andreessen Horowitz',
   'Kleiner Perkins', 'Airwallex', 'Gamma', 'Deel',
   'Triple Whale', 'Cartesia', 'Matic Robots', 'PolyAI',
   'Fish Audio', 'Wispr Flow', 'Freehand', 'Anything',
 ];
+// 2026-11-25, for the time being (client): SpaceX, OpenAI and Cursor hidden from every client grid.
+// Stand-ins from the clients a grid doesn't otherwise show keep each grid full. Empty HIDDEN to bring them back.
+const HIDDEN = new Set(['SpaceX', 'OpenAI', 'Cursor']);
+const withHidden = (names: string[], standIns: string[]) =>
+  [...names.filter((n) => !HIDDEN.has(n)), ...standIns].slice(0, names.length);
+const ORDER = withHidden(ORDER_ALL, ['Lightspeed', 'Lovable', 'PlayerZero']);
 const BY_NAME = new Map([...DESIGN, ...MORE].map((l) => [l.name, l]));
 const PLACED = ORDER.map((name, i) => ({ l: BY_NAME.get(name)!, cx: COLS[i % 4], cy: ROWS[Math.floor(i / 4)] }));
 /* The client's list (2026-11-21 feedback): Andreessen Horowitz and Lovable lead, Pocket FM out. Ten that
@@ -109,11 +115,13 @@ const PLACED = ORDER.map((name, i) => ({ l: BY_NAME.get(name)!, cx: COLS[i % 4],
    cell opens on the next in line (Wispr Flow, PolyAI). Freehand is out of the turn-over. */
 // 2026-11-23: SpaceX back, first (client); Gamma moves into the turn-over and PlayerZero, the
 // smallest, leaves it, so the grid stays at twelve
-const PICKED_STILL = [
+const PICKED_STILL_ALL = [
   'SpaceX', 'OpenAI', 'Andreessen Horowitz', 'Sequoia',
   'Lightspeed', 'Cursor', 'Kleiner Perkins', 'Deel',
   'Lovable', 'Airwallex',
 ];
+// SpaceX, OpenAI and Cursor hidden for now (HIDDEN, above); three not otherwise shown keep it at twelve
+const PICKED_STILL = withHidden(PICKED_STILL_ALL, ['PlayerZero', 'Freehand', 'Anything']);
 // five each: the turn-over keyframes (hero-vertical.css .hvc-rot) assume five per cell
 const ROT_A = ['Gamma', 'PolyAI', 'Triple Whale', 'Fish Audio', 'Lindy'];
 const ROT_B = ['Wispr Flow', 'Matic Robots', 'Cartesia', 'Superblocks', 'Enterpret'];
