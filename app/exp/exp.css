@@ -1,0 +1,36 @@
+/* /exp: the index, a narrow centred list on white. Two faces only: Season Mix, IBM Plex Mono. */
+@font-face { font-family: 'Season Mix'; src: url('/experiment/fonts/season-mix-regular.otf') format('opentype'); font-weight: 400; font-style: normal; font-display: swap; }
+
+.xi {
+  --xi-serif: 'Season Mix', var(--serif);
+  position: relative; z-index: 10; min-height: 100vh;
+  padding: 96px 20px 120px;
+  background: #fff; color: #1a1a1a;
+  font-family: var(--mono); font-weight: 400; font-feature-settings: 'ss01', 'ss02';
+}
+.xi-head { text-align: center; margin: 0 auto 56px; }
+.xi-title { margin: 0; font: 400 14px/1.3 var(--xi-serif); letter-spacing: 0; color: #1a1a1a; }
+.xi-sub { margin: 6px 0 0; font-size: 12px; line-height: 1.5; color: #737373; }
+
+.xi-group { width: min(460px, 100%); margin: 0 auto 48px; }
+.xi-group-title { margin: 0 0 4px; font: 400 13px/1.3 var(--xi-serif); letter-spacing: 0; color: #989898; }
+.xi-list { list-style: none; margin: 0; padding: 0; }
+.xi-row {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 16px;
+  padding: 10px 0; border-bottom: 1px solid #ebebeb;
+  color: inherit; text-decoration: none;
+}
+.xi-name { font: 400 14px/1.3 var(--xi-serif); letter-spacing: 0; color: #1a1a1a; transition: color 160ms ease; }
+.xi-kind { font-size: 12px; line-height: 1.4; color: #a3a3a3; text-align: right; transition: color 160ms ease; }
+.xi-row:hover .xi-name { color: #4a4a4a; }
+.xi-row:hover .xi-kind { color: #737373; }
+.xi-row:focus-visible { outline: 1px solid #989898; outline-offset: 2px; }
+
+/* the site's nav wordmark, top left, as on the home page (light theme). The logo keeps its own face. */
+.xi .xi-mark {
+  position: absolute; top: 27px; left: 32px; margin: 0;
+  font-size: 21px; letter-spacing: -1.68px; color: #4a4a4a; text-decoration: none;
+  animation: none;
+}
+.xi .xi-mark .wm-space { letter-spacing: -3.73px; }
+@media (max-width: 640px) { .xi .xi-mark { left: 20px; top: 20px; } }

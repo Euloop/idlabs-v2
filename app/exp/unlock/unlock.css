@@ -10,12 +10,12 @@
   letter-spacing: 0.08em; text-transform: uppercase;
 }
 .xu-input, .xu-button {
-  height: 40px; border-radius: 0; font: 400 14px/1 var(--sans);
+  height: 40px; border-radius: 0; font: 400 13px/1 var(--mono); font-feature-settings: "ss01", "ss02";
 }
 .xu-input { padding: 0 12px; border: 1px solid #ebebeb; background: #fafafa; color: #1a1a1a; outline: none; }
 .xu-input:focus { border-color: #989898; }
 .xu-button { border: 0; background: #2a2c31; color: #fff; cursor: pointer; }
 .xu-button:hover { background: #4a4a4a; }
-.xu-error { margin: 0; font: 400 13px/1.4 var(--sans); color: #b42318; }
-.xu-link { font: 400 14px/1.4 var(--sans); color: #4a4a4a; text-decoration: none; }
-.xu-link:hover { color: #1a1a1a; text-decoration: underline; text-underline-offset: 3px; }
+.xu-error { margin: 0; font: 400 12px/1.4 var(--mono); color: #b42318; }
+
+
