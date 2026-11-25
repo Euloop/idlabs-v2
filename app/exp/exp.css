@@ -36,3 +36,5 @@
 
 /* the mono text in caps, tracked like the site's mono labels (OUR CLIENTS) */
 .xi-sub, .xi-kind { text-transform: uppercase; letter-spacing: 0.08em; }
+/* the Season Mix text in caps as well (tracking stays 0) */
+.xi-title, .xi-group-title, .xi-name { text-transform: uppercase; }
